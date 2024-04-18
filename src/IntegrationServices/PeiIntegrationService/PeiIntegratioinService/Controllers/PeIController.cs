@@ -20,9 +20,14 @@ namespace PeiIntegratioinService.Controllers
 
         [HttpGet]
         [Route("/peis")]
-        public async Task<IActionResult> GetAsync([FromBody] PeiIntegrationServiceRequestModel requestBody)
+        public async Task<IActionResult> GetAsync([FromBody] PeiIntegrationServiceRequestModel requestBody, [FromQuery] string? scope)
         {
-            var request = CreateCDAServiceRequestModel(requestBody);
+            if (!ScopeEnum.Validate(scope!))
+            {
+                return BadRequest("Bad Request");
+            }
+
+            var request = CreateCDAServiceRequestModel(requestBody, scope);
 
             if (!ValidateCDAServiceRequestModel(request, out var headersOk, out var bodyOk))
             {
@@ -91,7 +96,7 @@ namespace PeiIntegratioinService.Controllers
             return true;
         }
 
-        private CDAServiceRequestModel CreateCDAServiceRequestModel (PeiIntegrationServiceRequestModel requestBody)
+        private CDAServiceRequestModel CreateCDAServiceRequestModel (PeiIntegrationServiceRequestModel requestBody, string scope)
         {
             Request.Headers.TryGetValue("cdaUserGuid", out var cdaUserGuid);
             Request.Headers.TryGetValue("iss", out var iss);
@@ -105,7 +110,8 @@ namespace PeiIntegratioinService.Controllers
                 Issuer = iss.ToString(),
                 UserSessionId = userSessionId.ToString(),
                 RequestId = requestBody.RequestId,
-                CdaServiceUrl = requestBody.PeisBaseUrl
+                CdaServiceUrl = requestBody.PeisBaseUrl,
+                Scope = scope
             };
 
             return _cdaServiceRequestModel;

@@ -27,7 +27,8 @@ namespace PeiIntegrationService.UnitTests
                 Issuer = "https://maps.com",
                 UserSessionId = "askdj902139012ekasdlasdj",
                 Authorization = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI",
-                CdaServiceUrl = "http://localhost:5089"
+                CdaServiceUrl = "http://localhost:5089",
+                Scope = "owner"
             };
 
             PeiModel[] peis = [ new PeiModel {Pei = "asas",

@@ -31,15 +31,16 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectBody_ThenItShouldReturn_Ok200Response()
+        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectBody_CorrectScope_ThenItShouldReturn_Ok200Response()
         {
             //Arrange
             AddAuthorisationHeader();
             AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "https://maps.com", "askdj902139012ekasdlasdj");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "qwertyuoip", PeisBaseUrl = "http://localhost:5089" };
+            var scope = "owner";
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, scope);
             OkObjectResult okResult = (OkObjectResult)result;
             var data = (PeiModel[])okResult!.Value!;
 
@@ -51,14 +52,30 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithoutAuthHeader_ButWithOtherHeaders_CorrectBody_ThenItShouldReturn_Unauthorized401Response()
+        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectBody_IncorrectScope_ThenItShould_BadRequest400Response()
         {
             //Arrange
+            AddAuthorisationHeader();
             AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "https://maps.com", "askdj902139012ekasdlasdj");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "qwertyuoip", PeisBaseUrl = "http://localhost:5089" };
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, string.Empty);
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_WithoutAuthHeader_ButWithOtherHeaders_CorrectScope_CorrectBody_ThenItShouldReturn_Unauthorized401Response()
+        {
+            //Arrange
+            AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "https://maps.com", "askdj902139012ekasdlasdj");
+            var request = new PeiIntegrationServiceRequestModel { RequestId = "qwertyuoip", PeisBaseUrl = "http://localhost:5089" };
+            var scope = "owner";
+
+            // Act
+            var result = await _controller.GetAsync(request, scope);
 
             // Assert
             Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
@@ -66,14 +83,15 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeader_IncompleteBody_ThenItShouldReturn_BadRequest400Response()
+        public async void WhenControllerIsCalled_WithCorrectHeader_IncompleteBody_CorrectScope_ThenItShouldReturn_BadRequest400Response()
         {
             //Arrange
             AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "https://maps.com", "askdj902139012ekasdlasdj");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "qwertyuoip", PeisBaseUrl = "" };
+            var scope = "owner";
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, scope);
 
             // Assert
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
@@ -81,15 +99,16 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithHeader_AnotherIncompleteBody_ThenItShouldReturn_BadRequest400Response()
+        public async void WhenControllerIsCalled_WithHeader_AnotherIncompleteBody_CorrectScope_ThenItShouldReturn_BadRequest400Response()
         {
             //Arrange
             AddAuthorisationHeader();
             AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "https://maps.com", "askdj902139012ekasdlasdj");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "", PeisBaseUrl = "http://localhost:5089" };
+            var scope = "owner";
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, scope);
 
             // Assert
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
@@ -97,15 +116,16 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithoutUserGuidHeader_CorrectBody_ThenItShouldReturn_Unauthorized401Response()
+        public async void WhenControllerIsCalled_WithoutUserGuidHeader_CorrectBody__CorrectScope_ThenItShouldReturn_Unauthorized401Response()
         {
             //Arrange
             AddAuthorisationHeader();
             AddOtherHeaders("", "https://maps.com", "askdj902139012ekasdlasdj");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "", PeisBaseUrl = "http://localhost:5089" };
+            var scope = "owner";    
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, scope);
 
             // Assert
             Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
@@ -113,15 +133,16 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithoutIssHeader_CorrectBody_ThenItShouldReturn_Unauthorized401Response()
+        public async void WhenControllerIsCalled_WithoutIssHeader_CorrectBody_CorrectScope_ThenItShouldReturn_Unauthorized401Response()
         {
             //Arrange
             AddAuthorisationHeader();
             AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "", "askdj902139012ekasdlasdj");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "", PeisBaseUrl = "http://localhost:5089" };
+            var scope = "owner";
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, scope);
 
             // Assert
             Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
@@ -129,15 +150,16 @@ namespace PeiIntegrationService.UnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithoutUserSessionHeader_CorrectBody_ThenItShouldReturn_Unauthorized401Response()
+        public async void WhenControllerIsCalled_WithoutUserSessionHeader_CorrectBody_CorrectScope_ThenItShouldReturn_Unauthorized401Response()
         {
             //Arrange
             AddAuthorisationHeader();
             AddOtherHeaders("cd0e4fdc-8586-4483-9899-17dd85af9074", "https://maps.com", "");
             var request = new PeiIntegrationServiceRequestModel { RequestId = "", PeisBaseUrl = "http://localhost:5089" };
+            var scope = "owner";
 
             // Act
-            var result = await _controller.GetAsync(request);
+            var result = await _controller.GetAsync(request, scope);
 
             // Assert
             Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));

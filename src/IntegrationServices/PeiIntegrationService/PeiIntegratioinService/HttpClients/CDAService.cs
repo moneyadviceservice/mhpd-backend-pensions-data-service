@@ -20,7 +20,7 @@ namespace PeiIntegratioinService.HttpClients
             client.DefaultRequestHeaders.Add("X-Request-ID", request.RequestId);
             client.BaseAddress = new Uri(request.CdaServiceUrl!);
 
-            var endPoint = $"peis/{request.CdaUserGuid}";
+            var endPoint = $"peis/{request.CdaUserGuid}?scope={request.Scope}";
 
             var response =  await client!.GetAsync(endPoint);
 

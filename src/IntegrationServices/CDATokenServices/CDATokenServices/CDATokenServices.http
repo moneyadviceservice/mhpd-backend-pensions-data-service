@@ -1,0 +1,6 @@
+@CDATokenServices_HostAddress = http://localhost:5044
+
+GET {{CDATokenServices_HostAddress}}/cdatoken/
+Accept: application/json
+
+###

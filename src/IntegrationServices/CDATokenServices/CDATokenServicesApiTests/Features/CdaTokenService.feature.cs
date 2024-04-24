@@ -35,7 +35,8 @@ namespace CDATokenServicesApiTests.Features
         public virtual void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "CDATokenService Tests", "API Tests for CDA Token Service", ProgrammingLanguage.CSharp, ((string[])(null)));
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "CDATokenService Tests", "API Tests for CDA Token Service.  To Test on Local use localhost in place of Azur" +
+                    "e QA Environment.", ProgrammingLanguage.CSharp, ((string[])(null)));
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -75,17 +76,15 @@ namespace CDATokenServicesApiTests.Features
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("CDA Token Service Post Request with Valid inputs")]
-        [NUnit.Framework.IgnoreAttribute("Ignored scenario")]
         [NUnit.Framework.CategoryAttribute("smoke")]
         [NUnit.Framework.CategoryAttribute("regression")]
-        [NUnit.Framework.CategoryAttribute("pei")]
+        [NUnit.Framework.CategoryAttribute("tokenservice")]
         public virtual void CDATokenServicePostRequestWithValidInputs()
         {
             string[] tagsOfScenario = new string[] {
                     "smoke",
                     "regression",
-                    "pei",
-                    "ignore"};
+                    "tokenservice"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("CDA Token Service Post Request with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 6
@@ -109,7 +108,7 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 7
- testRunner.Given("user sends post request to \'localhost\' cda token service endpoint", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("user sends post request to \'Azure QA Environment\' cda token service endpoint", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 8
  testRunner.Then("response is all ok with response code as \'OK\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -123,38 +122,26 @@ this.ScenarioInitialize(scenarioInfo);
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Get Request with various invalid inputs")]
-        [NUnit.Framework.IgnoreAttribute("Ignored scenario")]
-        [NUnit.Framework.CategoryAttribute("smoke")]
         [NUnit.Framework.CategoryAttribute("regression")]
-        [NUnit.Framework.CategoryAttribute("pei")]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsa", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqp", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqp", "Unauthorized", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsbxxx", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqp", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsc", "", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqp", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsd", "urn:ietf:params:oauth:grant-type:jwt-bearerxxx", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqp", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadse", "urn:ietf:params:oauth:grant-type:jwt-bearer", "", "pension_dashboad_rqp", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsf", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.xxx", "pension_dashboad_rqp", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsg", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsh", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqpxxx", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsa", "", "", "", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsa", "urn:ietf:params:oauth:grant-type:jwt-bearer", "", "", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsa", "urn:ietf:params:oauth:grant-type:jwt-bearer", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4g" +
-            "RG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.", "pension_dashboad_rqp", "OK", null)]
-        public virtual void GetRequestWithVariousInvalidInputs(string x_Request_ID, string grant_Type, string ticket, string claim_Token_Format, string statusCode, string[] exampleTags)
+        [NUnit.Framework.CategoryAttribute("tokenservice")]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsa", "owner", "gt", "idno", "idno", "pension_dashboad_rqp", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsb", "owner", "gt", "", "idno", "pension_dashboad_rqp", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("", "owner", "gt", "idno", "idno", "pension_dashboad_rqp", "Unauthorized", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsdxxx", "owner", "gt", "idno", "idno", "pension_dashboad_rqp", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadse", "owner", "", "idno", "idno", "pension_dashboad_rqp", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsf", "owner", "gtxxx", "idno", "idno", "pension_dashboad_rqp", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsg", "owner", "gt", "idnoxxx", "idno", "pension_dashboad_rqp", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsh", "owner", "gt", "idno", "", "pension_dashboad_rqp", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsi", "owner", "gt", "idno", "idnoxxx", "pension_dashboad_rqp", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsj", "", "gt", "idno", "idno", "pension_dashboad_rqp", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsk", "ownerxxx", "gt", "idno", "idno", "pension_dashboad_rqp", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsl", "owner", "gt", "idno", "idno", "", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsm", "owner", "gt", "idno", "idno", "pension_dashboad_rqpxxx", "BadRequest", null)]
+        public virtual void GetRequestWithVariousInvalidInputs(string x_Request_ID, string scope, string grant_Type, string ticket, string claim_Token, string claim_Token_Format, string statusCode, string[] exampleTags)
         {
             string[] @__tags = new string[] {
-                    "smoke",
                     "regression",
-                    "pei",
-                    "ignore"};
+                    "tokenservice"};
             if ((exampleTags != null))
             {
                 @__tags = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(@__tags, exampleTags));
@@ -162,8 +149,10 @@ this.ScenarioInitialize(scenarioInfo);
             string[] tagsOfScenario = @__tags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             argumentsOfScenario.Add("X-Request-ID", x_Request_ID);
+            argumentsOfScenario.Add("scope", scope);
             argumentsOfScenario.Add("grant_type", grant_Type);
             argumentsOfScenario.Add("ticket", ticket);
+            argumentsOfScenario.Add("claim_token", claim_Token);
             argumentsOfScenario.Add("claim_token_format", claim_Token_Format);
             argumentsOfScenario.Add("StatusCode", statusCode);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with various invalid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
@@ -188,8 +177,9 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 14
- testRunner.Given(string.Format("user sends post request to \'localhost\'with headers as \'{0}\' with params as \'{1}\' " +
-                            "for grant type \'{2}\' for ticket \'{3}\' for claim token format", x_Request_ID, grant_Type, ticket, claim_Token_Format), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given(string.Format("user sends post request to \'Azure QA Environment\' with headers as \'{0}\' with para" +
+                            "ms as \'{1}\' for scope \'{2}\' for grant type \'{3}\' for ticket \'{4}\' for claim toke" +
+                            "n \'{5}\' for claim token format", x_Request_ID, scope, grant_Type, ticket, claim_Token, claim_Token_Format), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 15
  testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

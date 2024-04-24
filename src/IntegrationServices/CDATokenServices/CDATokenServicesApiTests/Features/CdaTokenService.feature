@@ -1,30 +1,32 @@
 ﻿Feature: CDATokenService Tests
 
-API Tests for CDA Token Service
+API Tests for CDA Token Service.  To Test on Local use localhost in place of Azure QA Environment.
 
-@smoke @regression @pei @ignore
+@smoke @regression @tokenservice
 Scenario: CDA Token Service Post Request with Valid inputs
-	Given user sends post request to 'localhost' cda token service endpoint
+	Given user sends post request to 'Azure QA Environment' cda token service endpoint
 	Then response is all ok with response code as 'OK'
 	And response body contains access_token, token_type, upgraded, pct
 
 
-@smoke @regression @pei @ignore
+@regression @tokenservice
 Scenario Outline: Get Request with various invalid inputs
-	Given user sends post request to 'localhost'with headers as '<X-Request-ID>' with params as '<grant_type>' for grant type '<ticket>' for ticket '<claim_token_format>' for claim token format
+	Given user sends post request to 'Azure QA Environment' with headers as '<X-Request-ID>' with params as '<scope>' for scope '<grant_type>' for grant type '<ticket>' for ticket '<claim_token>' for claim token '<claim_token_format>' for claim token format
 	Then response is all ok with response code as '<StatusCode>'
 
 Examples:
-	| X-Request-ID         | grant_type                                     | ticket                                                                                                                                                          | claim_token_format      | StatusCode   |
-	| sdfasdfasdasdadsa    | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqp    | OK           |
-	|                      | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqp    | Unauthorized |
-	| sdfasdfasdasdadsbxxx | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqp    | OK           |
-	| sdfasdfasdasdadsc    |                                                | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqp    | BadRequest   |
-	| sdfasdfasdasdadsd    | urn:ietf:params:oauth:grant-type:jwt-bearerxxx | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqp    | BadRequest   |
-	| sdfasdfasdasdadse    | urn:ietf:params:oauth:grant-type:jwt-bearer    |                                                                                                                                                                 | pension_dashboad_rqp    | OK           |
-	| sdfasdfasdasdadsf    | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.xxx | pension_dashboad_rqp    | OK           |
-	| sdfasdfasdasdadsg    | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    |                         | OK           |
-	| sdfasdfasdasdadsh    | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqpxxx | BadRequest   |
-	| sdfasdfasdasdadsa    |                                                |                                                                                                                                                                 |                         | BadRequest   |
-	| sdfasdfasdasdadsa    | urn:ietf:params:oauth:grant-type:jwt-bearer    |                                                                                                                                                                 |                         | OK           |
-	| sdfasdfasdasdadsa    | urn:ietf:params:oauth:grant-type:jwt-bearer    | eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.    | pension_dashboad_rqp    | OK           |
+	| X-Request-ID         | scope    | grant_type | ticket  | claim_token | claim_token_format      | StatusCode   |
+	| sdfasdfasdasdadsa    | owner    | gt         | idno    | idno        | pension_dashboad_rqp    | OK           |
+	| sdfasdfasdasdadsb    | owner    | gt         |         | idno        | pension_dashboad_rqp    | BadRequest   |
+	|                      | owner    | gt         | idno    | idno        | pension_dashboad_rqp    | Unauthorized |
+	| sdfasdfasdasdadsdxxx | owner    | gt         | idno    | idno        | pension_dashboad_rqp    | OK           |
+	| sdfasdfasdasdadse    | owner    |            | idno    | idno        | pension_dashboad_rqp    | BadRequest   |
+	| sdfasdfasdasdadsf    | owner    | gtxxx      | idno    | idno        | pension_dashboad_rqp    | BadRequest   |
+	| sdfasdfasdasdadsg    | owner    | gt         | idnoxxx | idno        | pension_dashboad_rqp    | OK           |
+	| sdfasdfasdasdadsh    | owner    | gt         | idno    |             | pension_dashboad_rqp    | BadRequest   |
+	| sdfasdfasdasdadsi    | owner    | gt         | idno    | idnoxxx     | pension_dashboad_rqp    | OK           |
+	| sdfasdfasdasdadsj    |          | gt         | idno    | idno        | pension_dashboad_rqp    | BadRequest   |
+	| sdfasdfasdasdadsk    | ownerxxx | gt         | idno    | idno        | pension_dashboad_rqp    | BadRequest   |
+	| sdfasdfasdasdadsl    | owner    | gt         | idno    | idno        |                         | BadRequest   |
+	| sdfasdfasdasdadsm    | owner    | gt         | idno    | idno        | pension_dashboad_rqpxxx | BadRequest   |
+		

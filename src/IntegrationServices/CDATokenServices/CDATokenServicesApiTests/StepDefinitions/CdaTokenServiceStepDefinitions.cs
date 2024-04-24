@@ -1,5 +1,6 @@
 using CDATokenServicesApiTests.Support;
 using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using SpecFlow.Internal.Json;
@@ -7,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using TechTalk.SpecFlow.CommonModels;
 using static CDATokenServicesApiTests.Support.ResponseDataModel;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace CDATokenServicesApiTests.StepDefinitions
 {
@@ -31,12 +33,22 @@ namespace CDATokenServicesApiTests.StepDefinitions
             if (hostedOn.Equals("localhost"))
             {
                 UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5044, "token");
-                uriBuilder.Query = "grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&ticket=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c.&claim_token_format=pension_dashboad_rqp";
+                uriBuilder.Query = Parameters.requestQuery;
                 httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
                 httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
                 httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
                 _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;                
+                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
+            }
+            else if (hostedOn.Equals("Azure QA Environment"))
+            {
+                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenServiceUrl);
+                uriBuilder.Query = Parameters.requestQuery;
+                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
+                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
             }
         }
 
@@ -61,21 +73,21 @@ namespace CDATokenServicesApiTests.StepDefinitions
 
             var jsonExpectedResponseBody = JsonConvert.SerializeObject(expectedResponseBody);
             var expectedResponseDictionary = JsonConvert.DeserializeObject<CdaTokenResponses>(JsonConvert.DeserializeObject<string>(jsonExpectedResponseBody));
-            
+
             var expectedAccessToken = expectedResponseDictionary.access_token;
             if (expectedAccessToken is not null)
             {
                 bool accessTokenResponseCondition = checkResponseBodyAsExpected(actualResponseAccessToken, expectedAccessToken);
                 Assert.True(accessTokenResponseCondition);
             }
-            
+
             var expectedTokenType = expectedResponseDictionary.token_type;
             if (expectedTokenType is not null)
             {
                 bool tokenTypeResponseCondition = checkResponseBodyAsExpected(actualResponseTokenType, expectedTokenType);
                 Assert.True(tokenTypeResponseCondition);
             }
-            
+
             var expectedUpgraded = expectedResponseDictionary.upgraded;
             Assert.AreEqual(actualResponseUpgraded, expectedUpgraded);
 
@@ -84,36 +96,116 @@ namespace CDATokenServicesApiTests.StepDefinitions
             {
                 bool pctCondition = checkResponseBodyAsExpected(actualResponsePct, expectedPct);
                 Assert.True(pctCondition);
-            }            
+            }
         }
 
         bool checkResponseBodyAsExpected(string? responseBody, string expectedValue)
         {
-            bool value=false;                        
+            bool value = false;
             if (responseBody is not null && expectedValue is not null)
             {
-                value= (responseBody.Equals(expectedValue));
+                value = (responseBody.Equals(expectedValue));
             }
             return value;
         }
 
-        [StepDefinition(@"user sends post request to '([^']*)'with headers as '([^']*)' with params as '([^']*)' for grant type '([^']*)' for ticket '([^']*)' for claim token format")]
-        public async Task GivenUserSendsPostRequestToWithHeadersAsWithParamsAsForGrantTypeForTicketForClaimTokenFormat(string hostedOn, string xRequestId, string grantType, string ticketNo, string claimTokenFormat)
+
+        [Given(@"user sends post request to '(.*)' with headers as '(.*)' with params as '(.*)' for scope '(.*)' for grant type '(.*)' for ticket '(.*)' for claim token '(.*)' for claim token format")]
+        public async Task GivenUserSendsPostRequestToWithHeadersAsWithParamsAsForScopeForGrantTypeForTicketForClaimTokenForClaimTokenFormat
+        (string hostedOn, string xRequestId, string scope, string grantType, string ticketNo, string claimToken, string claimTokenFormat)
         {
             if (hostedOn.Equals("localhost"))
             {
-                UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5044, "token");
-                string query=string.Empty;
-                if (!(grantType.Equals(string.Empty)))
-                    query = "grant_type=" + grantType + "&";
-                if (!(ticketNo.Equals(string.Empty)))
-                    query = query+"ticket=" + ticketNo + "&";
-                if (!(claimTokenFormat.Equals(string.Empty)))
-                    query = query+"claim_token_format=" + claimTokenFormat;
+                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenServiceUrl);
+                string query = string.Empty;
+                if (scope.Equals(string.Empty))
+                    query = "scope=" + "&";
+                else if (scope.EndsWith('x'))
+                    query = "scope=" + scope + "xxx" + "&";
+                else
+                    query = "scope=" + scope + "&";
+                if (grantType.Equals(string.Empty))
+                    query = query + "grant_type=" + "&";
+                else if (grantType.EndsWith('x'))
+                    query = query + "grant_type=" + Parameters.grantType + "xxx" + "&";
+                else
+                    query = query + "grant_type=" + Parameters.grantType + "&";
+                if (ticketNo.Equals(string.Empty))
+                    query = query + "ticket=" + "&";
+                else if (ticketNo.EndsWith('x'))
+                    query = query + "ticket=" + Parameters.ticketNo + "xxx" + "&";
+                else
+                    query = query + "ticket=" + Parameters.ticketNo + "&";
+                if (claimToken.Equals(string.Empty))
+                    query = query + "claim_token=" + "&";
+                else if (claimToken.EndsWith('x'))
+                    query = query + "claim_token=" + Parameters.ticketNo + "xxx" + "&";
+                else
+                    query = query + "claim_token=" + Parameters.ticketNo + "&";
+                if (claimTokenFormat.Equals(string.Empty))
+                    query = query + "claim_token_format=";
+                else if (claimTokenFormat.EndsWith('x'))
+                    query = query + "claim_token_format=" + claimTokenFormat + "xxx";
+                else
+                    query = query + "claim_token_format=" + claimTokenFormat;
                 uriBuilder.Query = query;
                 httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
-                if (!(xRequestId.Equals(string.Empty)))
+
+                if (xRequestId.Equals(string.Empty))
+                    httpRequestMessage.Headers.Add("X-Request-ID", string.Empty);
+                else if (xRequestId.EndsWith('x'))
+                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+                else
                     httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+
+                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
+            }
+            else if (hostedOn.Equals("Azure QA Environment"))
+            {
+                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenServiceUrl);
+                string query = string.Empty;
+                if (scope.Equals(string.Empty))
+                    query = "scope=" + "&";
+                else if (scope.EndsWith('x'))
+                    query = "scope=" + scope + "xxx" + "&";
+                else
+                    query = "scope=" + scope + "&";
+                if (grantType.Equals(string.Empty))
+                    query = query + "grant_type=" + "&";
+                else if (grantType.EndsWith('x'))
+                    query = query + "grant_type=" + Parameters.grantType + "xxx" + "&";
+                else
+                    query = query + "grant_type=" + Parameters.grantType + "&";
+                if (ticketNo.Equals(string.Empty))
+                    query = query + "ticket=" + "&";
+                else if (ticketNo.EndsWith('x'))
+                    query = query + "ticket=" + Parameters.ticketNo + "xxx" + "&";
+                else
+                    query = query + "ticket=" + Parameters.ticketNo + "&";
+                if (claimToken.Equals(string.Empty))
+                    query = query + "claim_token=" + "&";
+                else if (claimToken.EndsWith('x'))
+                    query = query + "claim_token=" + Parameters.ticketNo + "xxx" + "&";
+                else
+                    query = query + "claim_token=" + Parameters.ticketNo + "&";
+                if (claimTokenFormat.Equals(string.Empty))
+                    query = query + "claim_token_format=";
+                else if (claimTokenFormat.EndsWith('x'))
+                    query = query + "claim_token_format=" + claimTokenFormat + "xxx";
+                else
+                    query = query + "claim_token_format=" + claimTokenFormat;
+                uriBuilder.Query = query;
+                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
+
+                if (xRequestId.Equals(string.Empty))
+                    httpRequestMessage.Headers.Add("X-Request-ID", string.Empty);
+                else if (xRequestId.EndsWith('x'))
+                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+                else
+                    httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+
                 httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
                 _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
                 _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;

@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TokenIntegrationService.HttpClients;
+using TokenIntegrationService.Models;
+using static System.Net.WebRequestMethods;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,36 +11,76 @@ namespace TokenIntegrationService.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
-        // GET: api/<TokenController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        private readonly ICDAToken _iCDAToken;
+        private CDATokenRequestModel? _cdaTokenRequestModel;
 
-        // GET api/<TokenController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        public TokenController(ICDAToken iCDAToken)
         {
-            return "value";
+            _iCDAToken = iCDAToken;
         }
 
         // POST api/<TokenController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        [Route("/rpt")]
+        
+        public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel requestBody)
         {
+            var request = CreateCDATokenRequestModel(requestBody);
+            if (ValidateQuery(requestBody, out var message) == false)
+                return BadRequest(message);
+            var result = await _iCDAToken.PostRpts(request);
+            return Ok(result!);
+            //return Ok(CreateResponse());
+        }       
+        private TokenIntegrationResponseModel CreateResponse()
+        {
+            return new TokenIntegrationResponseModel
+            {  
+                //rpt = access_token from CDA Token service
+                Rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
+            };
         }
 
-        // PUT api/<TokenController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        private bool ValidateQuery(TokenIntegrationRequestModel requestBody, out string message)
         {
+            message = string.Empty;            
+
+            
+            if (string.IsNullOrEmpty(requestBody.Ticket))
+            {
+                message = BadRequestModel.InvalidRequest;
+                return false;
+            }
+            if (string.IsNullOrEmpty(requestBody.Rqp))
+            {
+                message = BadRequestModel.InvalidRequest;
+                return false;
+            }
+            if (string.IsNullOrEmpty(requestBody.AsUri))
+            {
+                message = BadRequestModel.InvalidRequest;
+                return false;
+            }
+            return true;
+        }      
+        private CDATokenRequestModel CreateCDATokenRequestModel(TokenIntegrationRequestModel requestBody)
+        {
+            
+            _cdaTokenRequestModel = new CDATokenRequestModel
+            {
+                GrantType = "urn:ietf:params:oauth:grant-type:uma-ticket",
+                ClaimToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                ClaimTokenFormat = "pension_dashboad_rqp",
+                Scope = "owner",
+                RequestId = "sdfasdfasdasdadsg",
+                Ticket = requestBody.Ticket,
+                Rqp = requestBody.Rqp,                
+                CdaTokenUrl = requestBody.AsUri                
+            };
+
+            return _cdaTokenRequestModel;
         }
 
-        // DELETE api/<TokenController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+
     }
 }

@@ -1,7 +1,12 @@
+using Microsoft.AspNetCore.HttpLogging;
+using TokenIntegrationService.HttpClients;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddHttpClient<CDAToken>("CDAService", c =>
+{
 
+});
 // Add services to the container.
-
+builder.Services.AddScoped<ICDAToken, CDAToken>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

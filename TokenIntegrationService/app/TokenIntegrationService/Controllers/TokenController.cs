@@ -37,7 +37,7 @@ namespace TokenIntegrationService.Controllers
             return new TokenIntegrationResponseModel
             {  
                 //rpt = access_token from CDA Token service
-                rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
+                Rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
             };
         }
 
@@ -45,17 +45,17 @@ namespace TokenIntegrationService.Controllers
         {
             message = string.Empty; 
             
-            if (string.IsNullOrEmpty(requestBody.rqp))
+            if (string.IsNullOrEmpty(requestBody.Rqp))
             {
                 message = BadRequestModel.InvalidRequest;
                 return false;
             }
-            if (string.IsNullOrEmpty(requestBody.ticket))
+            if (string.IsNullOrEmpty(requestBody.Ticket))
             {
                 message = BadRequestModel.InvalidRequest;
                 return false;
             }
-            if (string.IsNullOrEmpty(requestBody.as_uri))
+            if (string.IsNullOrEmpty(requestBody.As_Uri))
             {
                 message = BadRequestModel.InvalidRequest;
                 return false;

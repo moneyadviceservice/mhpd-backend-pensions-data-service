@@ -9,10 +9,11 @@ using System.Text.Json.Serialization;
 namespace TokenIntegrationService.Models
 {
     public class TokenIntegrationRequestModel
-    {      
-        public string? rqp { get; set; }
-        public string? ticket { get; set; }    
-        public string? as_uri{ get; set; }
+    {
+        //public string? rqp { get; set; }
+        public string Rqp { get; set; }
+        public string? Ticket { get; set; }    
+        public string? As_Uri{ get; set; }
        
     }
 }

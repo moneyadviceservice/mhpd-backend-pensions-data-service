@@ -2,9 +2,8 @@
 namespace TokenIntegrationService.Models
 {
     public class TokenIntegrationResponseModel
-    {   
-        [JsonPropertyName("rpt")]
-        public string? Rpt { get; set; }
+    {           
+        public string? rpt { get; set; }
 
     }
 }

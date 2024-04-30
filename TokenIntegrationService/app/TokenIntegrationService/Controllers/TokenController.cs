@@ -11,13 +11,13 @@ namespace TokenIntegrationService.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
-        private readonly ICDAToken _iCDAToken;
+        //private readonly ICDAToken _iCDAToken;
         private CDATokenRequestModel? _cdaTokenRequestModel;
 
-        public TokenController(ICDAToken iCDAToken)
-        {
-            _iCDAToken = iCDAToken;
-        }
+        //public TokenController(ICDAToken iCDAToken)
+        //{
+        //    _iCDAToken = iCDAToken;
+        //}
 
         // POST api/<TokenController>
         [HttpPost]
@@ -25,61 +25,59 @@ namespace TokenIntegrationService.Controllers
         
         public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel requestBody)
         {
-            var request = CreateCDATokenRequestModel(requestBody);
+            //var request = CreateCDATokenRequestModel(requestBody);
             if (ValidateQuery(requestBody, out var message) == false)
                 return BadRequest(message);
-            var result = await _iCDAToken.PostRpts(request);
-            return Ok(result!);
-            //return Ok(CreateResponse());
+            //var result = await _iCDAToken.PostRpts(request);
+            //return Ok(result!);
+            return Ok(CreateResponse());
         }       
         private TokenIntegrationResponseModel CreateResponse()
         {
             return new TokenIntegrationResponseModel
             {  
                 //rpt = access_token from CDA Token service
-                Rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
+                rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
             };
         }
 
         private bool ValidateQuery(TokenIntegrationRequestModel requestBody, out string message)
         {
-            message = string.Empty;            
-
+            message = string.Empty; 
             
-            if (string.IsNullOrEmpty(requestBody.Ticket))
+            if (string.IsNullOrEmpty(requestBody.rqp))
             {
                 message = BadRequestModel.InvalidRequest;
                 return false;
             }
-            if (string.IsNullOrEmpty(requestBody.Rqp))
+            if (string.IsNullOrEmpty(requestBody.ticket))
             {
                 message = BadRequestModel.InvalidRequest;
                 return false;
             }
-            if (string.IsNullOrEmpty(requestBody.AsUri))
+            if (string.IsNullOrEmpty(requestBody.as_uri))
             {
                 message = BadRequestModel.InvalidRequest;
                 return false;
             }
             return true;
-        }      
-        private CDATokenRequestModel CreateCDATokenRequestModel(TokenIntegrationRequestModel requestBody)
-        {
-            
-            _cdaTokenRequestModel = new CDATokenRequestModel
-            {
-                GrantType = "urn:ietf:params:oauth:grant-type:uma-ticket",
-                ClaimToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                ClaimTokenFormat = "pension_dashboad_rqp",
-                Scope = "owner",
-                RequestId = "sdfasdfasdasdadsg",
-                Ticket = requestBody.Ticket,
-                Rqp = requestBody.Rqp,                
-                CdaTokenUrl = requestBody.AsUri                
-            };
-
-            return _cdaTokenRequestModel;
         }
+        //private CDATokenRequestModel CreateCDATokenRequestModel(TokenIntegrationRequestModel requestBody)
+        //{
+        //    _cdaTokenRequestModel = new CDATokenRequestModel
+        //    {
+        //        GrantType = "urn:ietf:params:oauth:grant-type:uma-ticket",
+        //        ClaimToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+        //        ClaimTokenFormat = "pension_dashboad_rqp",
+        //        Scope = "owner",
+        //        RequestId = "sdfasdfasdasdadsg",
+        //        Ticket = requestBody.Ticket,
+        //        Rqp = requestBody.Rqp,
+        //        CdaTokenUrl = requestBody.AsUri
+        //    };
+
+        //    return _cdaTokenRequestModel;
+        //}
 
 
     }

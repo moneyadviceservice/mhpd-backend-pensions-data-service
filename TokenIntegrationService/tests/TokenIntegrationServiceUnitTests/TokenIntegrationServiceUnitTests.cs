@@ -160,5 +160,43 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
+        [Fact]
+        public async void WhenControllerIsCalled_NoValues_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+
+            var request = new TokenIntegrationRequestModel
+            {
+                
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+        [Fact]
+        public async void WhenControllerIsCalled_AllEmptyValues_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = string.Empty,
+                Ticket = string.Empty,
+                As_Uri = string.Empty
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
     }
 }

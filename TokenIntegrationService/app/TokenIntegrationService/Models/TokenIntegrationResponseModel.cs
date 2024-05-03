@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-namespace TokenIntegrationService.Models
+﻿namespace TokenIntegrationService.Models
 {
     public class TokenIntegrationResponseModel
     {           

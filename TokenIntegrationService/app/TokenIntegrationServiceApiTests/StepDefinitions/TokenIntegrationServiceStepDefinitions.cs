@@ -1,7 +1,9 @@
 using System.Text;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using TokenIntegrationServiceApiTests.Support;
+using static System.Formats.Asn1.AsnWriter;
 using static TokenIntegrationServiceApiTests.Support.ResponseDataModel;
 
 namespace TokenIntegrationServiceApiTests.StepDefinitions
@@ -51,16 +53,45 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
             if (hostedOn.Equals("localhost"))
             {
                 RequestBodyData requestBodyData = new RequestBodyData();
-                requestBodyData.Ticket = Parameters.ticketNo;
-                requestBodyData.Rqp = Parameters.rqp;
-                requestBodyData.AsUri = Parameters.asUri;
+                requestBodyData.ticket = Parameters.ticketNo;
+                requestBodyData.rqp = Parameters.rqp;
+                requestBodyData.as_uri= Parameters.localHostAsUri;
                 var data = JsonConvert.SerializeObject(requestBodyData);
                 var contentData = new StringContent(data, Encoding.UTF8, "application/json");
 
-                UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5289, "token");                
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
+                UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5289, "rpt");
+                Uri uri = uriBuilder.Uri;
+                var httpRequestMessage = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = uri,
+                    Content = contentData
+                };
+                
                 httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
+            }
+            else if(hostedOn.Equals("Azure QA Environment"))
+            {
+                RequestBodyData requestBodyData = new RequestBodyData();
+                requestBodyData.ticket = Parameters.ticketNo;
+                requestBodyData.rqp = Parameters.rqp;
+                requestBodyData.as_uri = Parameters.azureAsUri;
+                var data = JsonConvert.SerializeObject(requestBodyData);
+                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
 
+                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
+                Uri uri = uriBuilder.Uri;
+                var httpRequestMessage = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = uri,
+                    Content = contentData
+                };
+
+                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
                 httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
                 _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
                 _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
@@ -145,6 +176,144 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
             }
         }
 
+        [StepDefinition(@"user sends post request to '([^']*)' with headers as '([^']*)' with body as '([^']*)' for rqp '([^']*)' for ticket '([^']*)' for as_uri")]
+        public async Task GivenUserSendsPostRequestToWithHeadersAsWithBodyAsForRqpForTicketForAs_Uri(string hostedOn, string xRequestId, string rqp, string ticket, string asUri)
+        {
+            if (hostedOn.Equals("localhost"))
+            {
+                RequestBodyData requestBodyData = new RequestBodyData();
+                if(ticket.Equals(string.Empty))
+                {
+                    requestBodyData.ticket = ticket;
+                }
+                else if (ticket.EndsWith('x'))
+                {
+                    requestBodyData.ticket = Parameters.ticketNo+"xxx";
+                }
+                else
+                {
+                    requestBodyData.ticket = Parameters.ticketNo;
+                }
+                if (rqp.Equals(string.Empty))
+                {
+                    requestBodyData.rqp = rqp;
+                }
+                else if (ticket.EndsWith('x'))
+                {
+                    requestBodyData.rqp = Parameters.rqp+"xxx";
+                }
+                else
+                {
+                    requestBodyData.rqp = Parameters.rqp;
+                }
+                if (asUri.Equals(string.Empty))
+                {
+                    requestBodyData.as_uri = asUri;
+                }
+                else if (asUri.EndsWith('x'))
+                {
+                    requestBodyData.as_uri = Parameters.localHostAsUri + "xxx";
+                }
+                else
+                {
+                    requestBodyData.as_uri = Parameters.localHostAsUri;
+                }
+                
+                var data = JsonConvert.SerializeObject(requestBodyData);
+                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+
+                UriBuilder uriBuilder = new UriBuilder("http", Parameters.localHostTokenIntegrationServiceUrl, Parameters.localHostPortNo, "rpt");
+
+                Uri uri = uriBuilder.Uri;
+                var httpRequestMessage = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = uri,
+                    Content = contentData
+                };
+
+                if (xRequestId.Equals(string.Empty))
+                    httpRequestMessage.Headers.Add("X-Request-ID", string.Empty);
+                else if (xRequestId.EndsWith('x'))
+                {
+                    xRequestId = xRequestId + "xxx";
+                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+                }
+                else
+                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+
+                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;                
+            }
+            else if (hostedOn.Equals("Azure QA Environment"))
+            {
+                RequestBodyData requestBodyData = new RequestBodyData();
+                if (ticket.Equals(string.Empty))
+                {
+                    requestBodyData.ticket = ticket;
+                }
+                else if (ticket.EndsWith('x'))
+                {
+                    requestBodyData.ticket = Parameters.ticketNo + "xxx";
+                }
+                else
+                {
+                    requestBodyData.ticket = Parameters.ticketNo;
+                }
+                if (rqp.Equals(string.Empty))
+                {
+                    requestBodyData.rqp = rqp;
+                }
+                else if (ticket.EndsWith('x'))
+                {
+                    requestBodyData.rqp = Parameters.rqp + "xxx";
+                }
+                else
+                {
+                    requestBodyData.rqp = Parameters.rqp;
+                }
+                if (asUri.Equals(string.Empty))
+                {
+                    requestBodyData.as_uri = asUri;
+                }
+                else if (asUri.EndsWith('x'))
+                {
+                    requestBodyData.as_uri = Parameters.azureAsUri + "xxx";
+                }
+                else
+                {
+                    requestBodyData.as_uri = Parameters.azureAsUri;
+                }
+
+                var data = JsonConvert.SerializeObject(requestBodyData);
+                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+
+                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
+
+                Uri uri = uriBuilder.Uri;
+                var httpRequestMessage = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Post,
+                    RequestUri = uri,
+                    Content = contentData
+                };
+
+                if (xRequestId.Equals(string.Empty))
+                    httpRequestMessage.Headers.Add("X-Request-ID", string.Empty);
+                else if (xRequestId.EndsWith('x'))
+                {
+                    xRequestId = xRequestId + "xxx";
+                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+                }
+                else
+                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+
+                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
+            }
+        }
 
 
         [Given(@"user sends post request to '(.*)' with headers as '(.*)' with params as '(.*)' for scope '(.*)' for grant type '(.*)' for ticket '(.*)' for claim token '(.*)' for claim token format")]

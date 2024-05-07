@@ -8,9 +8,9 @@ namespace TokenIntegrationServiceApiTests.Support
 {
     internal class RequestBodyData
     {
-        public string? Ticket { get; set; }
-        public string? Rqp { get; set; }
+        public string? ticket { get; set; }
+        public string? rqp { get; set; }
 
-        public string? AsUri { get; set; }
+        public string? as_uri { get; set; }
     }
 }

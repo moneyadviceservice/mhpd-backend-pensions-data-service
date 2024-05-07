@@ -1,15 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TokenIntegrationService.Models;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
 namespace TokenIntegrationService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class TokenController : ControllerBase
-    {       
-        // POST api/<TokenController>
+    {
+        private const string RptValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
         [HttpPost]
         [Route("/rpt")]
         
@@ -23,7 +21,7 @@ namespace TokenIntegrationService.Controllers
         {
             return new TokenIntegrationResponseModel
             {                
-                Rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
+                Rpt = RptValue
             };
         }
 

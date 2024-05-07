@@ -1,9 +1,8 @@
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TokenIntegrationService.Models;
 using TokenIntegrationService.Controllers;
-using System.Net;
-using System.Net.Http;
+using TokenIntegrationService.Models;
 
 namespace TokenIntegrationServiceUnitTests
 {
@@ -14,6 +13,7 @@ namespace TokenIntegrationServiceUnitTests
         private const string RqpValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
         private const string TicketValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
         private const string As_UriValue = "http://localhost:5044";        
+    
         public TokenIntegrationServiceUnitTests()
         {
             _httpContext = new DefaultHttpContext();
@@ -25,6 +25,7 @@ namespace TokenIntegrationServiceUnitTests
                 }
             };
         }       
+        
         [Fact]
         public async void WhenControllerIsCalled_WithValidRequestBody_ThenItShouldReturn_OKReques200Response()
         {
@@ -149,7 +150,6 @@ namespace TokenIntegrationServiceUnitTests
             {
                 Rqp = RqpValue,
                 Ticket = TicketValue
-
             };
 
             // Act
@@ -165,10 +165,7 @@ namespace TokenIntegrationServiceUnitTests
         public async void WhenControllerIsCalled_NoValues_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-            var request = new TokenIntegrationRequestModel
-            {
-                
-            };
+            var request = new TokenIntegrationRequestModel { };
 
             // Act
             var result = await _controller.PostAsync(request);

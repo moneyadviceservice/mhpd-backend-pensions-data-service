@@ -176,9 +176,9 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
             }
         }
 
-        [StepDefinition(@"user sends post request to '([^']*)' with headers as '([^']*)' with body as '([^']*)' for rqp '([^']*)' for ticket '([^']*)' for as_uri")]
-        public async Task GivenUserSendsPostRequestToWithHeadersAsWithBodyAsForRqpForTicketForAs_Uri(string hostedOn, string xRequestId, string rqp, string ticket, string asUri)
-        {
+        [StepDefinition(@"user sends post request to '([^']*)' with body as '([^']*)' for rqp '([^']*)' for ticket '([^']*)' for as_uri")]
+        public async Task GivenUserSendsPostRequestToWithBodyAsForRqpForTicketForAs_Uri(string hostedOn, string rqp, string ticket, string asUri)
+        {            
             if (hostedOn.Equals("localhost"))
             {
                 RequestBodyData requestBodyData = new RequestBodyData();
@@ -230,17 +230,7 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
                     Method = HttpMethod.Post,
                     RequestUri = uri,
                     Content = contentData
-                };
-
-                if (xRequestId.Equals(string.Empty))
-                    httpRequestMessage.Headers.Add("X-Request-ID", string.Empty);
-                else if (xRequestId.EndsWith('x'))
-                {
-                    xRequestId = xRequestId + "xxx";
-                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
-                }
-                else
-                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+                };                
 
                 httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
                 _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
@@ -297,17 +287,7 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
                     Method = HttpMethod.Post,
                     RequestUri = uri,
                     Content = contentData
-                };
-
-                if (xRequestId.Equals(string.Empty))
-                    httpRequestMessage.Headers.Add("X-Request-ID", string.Empty);
-                else if (xRequestId.EndsWith('x'))
-                {
-                    xRequestId = xRequestId + "xxx";
-                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
-                }
-                else
-                    httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);
+                };                
 
                 httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
                 _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();

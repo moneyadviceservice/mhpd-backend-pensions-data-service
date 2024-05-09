@@ -128,18 +128,14 @@ this.ScenarioInitialize(scenarioInfo);
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("tokenservice")]
         [NUnit.Framework.CategoryAttribute("tokenintegrationservice")]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsa", "rqpNo", "idno", "idno", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsb", "rqpNo", "idno", "idno", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("", "rqpNo", "idno", "idno", "Unauthorized", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsdxxx", "rqpNo", "idno", "idno", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadse", "", "idno", "idno", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsf", "rqpNoxxx", "idno", "idno", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsg", "rqpNo", "", "idno", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsh", "rqpNo", "idnoxxx", "", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsi", "rqpNo", "idno", "idno", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsj", "", "idno", "idnoxxx", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("sdfasdfasdasdadsk", "rqpNoxxx", "idno", "", "BadRequest", null)]
-        public virtual void GetRequestWithVariousInvalidInputs(string x_Request_ID, string rqp, string ticket, string as_Uri, string statusCode, string[] exampleTags)
+        [NUnit.Framework.TestCaseAttribute("rqpNo", "idno", "idno", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("", "idno", "idno", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("rqpNoxxx", "idno", "idno", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("rqpNo", "", "idno", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("rqpNo", "idnoxxx", "idno", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("rqpNo", "idno", "idnoxxx", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("rqpNoxxx", "idno", "", "BadRequest", null)]
+        public virtual void GetRequestWithVariousInvalidInputs(string rqp, string ticket, string as_Uri, string statusCode, string[] exampleTags)
         {
             string[] @__tags = new string[] {
                     "regression",
@@ -152,7 +148,6 @@ this.ScenarioInitialize(scenarioInfo);
             }
             string[] tagsOfScenario = @__tags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("X-Request-ID", x_Request_ID);
             argumentsOfScenario.Add("rqp", rqp);
             argumentsOfScenario.Add("ticket", ticket);
             argumentsOfScenario.Add("as_uri", as_Uri);
@@ -179,8 +174,8 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 14
- testRunner.Given(string.Format("user sends post request to \'localhost\' with headers as \'{0}\' with body as \'{1}\' f" +
-                            "or rqp \'{2}\' for ticket \'{3}\' for as_uri", x_Request_ID, rqp, ticket, as_Uri), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given(string.Format("user sends post request to \'localhost\' with body as \'{0}\' for rqp \'{1}\' for ticke" +
+                            "t \'{2}\' for as_uri", rqp, ticket, as_Uri), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 15
  testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

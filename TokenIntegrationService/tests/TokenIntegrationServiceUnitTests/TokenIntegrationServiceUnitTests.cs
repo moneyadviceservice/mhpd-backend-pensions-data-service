@@ -1,9 +1,8 @@
+using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TokenIntegrationService.Models;
 using TokenIntegrationService.Controllers;
-using System.Net;
-using System.Net.Http;
+using TokenIntegrationService.Models;
 
 namespace TokenIntegrationServiceUnitTests
 {
@@ -11,6 +10,10 @@ namespace TokenIntegrationServiceUnitTests
     {
         private readonly DefaultHttpContext _httpContext;
         private readonly TokenController _controller;
+        private const string RqpValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        private const string TicketValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        private const string As_UriValue = "http://localhost:5044";        
+    
         public TokenIntegrationServiceUnitTests()
         {
             _httpContext = new DefaultHttpContext();
@@ -21,37 +24,35 @@ namespace TokenIntegrationServiceUnitTests
                     HttpContext = _httpContext
                 }
             };
-        }
-       
+        }       
+        
         [Fact]
         public async void WhenControllerIsCalled_WithValidRequestBody_ThenItShouldReturn_OKReques200Response()
         {
-            // Arrange
-           
+            // Arrange           
             var request = new TokenIntegrationRequestModel
             {
-                Rqp = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                Ticket = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                As_Uri = "http://localhost:5044"
+                Rqp = RqpValue,
+                Ticket = TicketValue,
+                As_Uri = As_UriValue
             };
 
             // Act
             var result = await _controller.PostAsync(request);
 
             // Assert
-            Assert.True(result.GetType() == typeof(OkObjectResult));        
-            
+            Assert.True(result.GetType() == typeof(OkObjectResult));
         }
+
         [Fact]
         public async void WhenControllerIsCalled_EmptyRqp_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-
             var request = new TokenIntegrationRequestModel
             {
                 Rqp = string.Empty,
-                Ticket = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                As_Uri = "http://localhost:5044"
+                Ticket = TicketValue,
+                As_Uri = As_UriValue
             };
 
             // Act
@@ -62,16 +63,16 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
+
         [Fact]
         public async void WhenControllerIsCalled_EmptyTicket_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-
             var request = new TokenIntegrationRequestModel
             {
-                Rqp = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                Rqp = RqpValue,
                 Ticket = string.Empty,
-                As_Uri = "http://localhost:5044"
+                As_Uri = As_UriValue
             };
 
             // Act
@@ -82,15 +83,15 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
+
         [Fact]
         public async void WhenControllerIsCalled_EmptyAsUri_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-
             var request = new TokenIntegrationRequestModel
             {
-                Rqp = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                Ticket = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+                Rqp = RqpValue,
+                Ticket = TicketValue,
                 As_Uri = string.Empty
             };
 
@@ -102,15 +103,15 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
+
         [Fact]
         public async void WhenControllerIsCalled_NoRqp_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-
             var request = new TokenIntegrationRequestModel
             {                
-                Ticket = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                As_Uri = "http://localhost:5044"
+                Ticket = TicketValue,
+                As_Uri = As_UriValue
             };
 
             // Act
@@ -121,15 +122,15 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
+
         [Fact]
         public async void WhenControllerIsCalled_NoTicket_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-
             var request = new TokenIntegrationRequestModel
             {
-                Rqp = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                As_Uri = "http://localhost:5044"
+                Rqp = RqpValue,
+                As_Uri = As_UriValue
             };
 
             // Act
@@ -140,16 +141,50 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
+
         [Fact]
         public async void WhenControllerIsCalled_NoAsUri_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
-
             var request = new TokenIntegrationRequestModel
             {
-                Rqp = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
-                Ticket = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-               
+                Rqp = RqpValue,
+                Ticket = TicketValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_NoValues_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel { };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_AllEmptyValues_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = string.Empty,
+                Ticket = string.Empty,
+                As_Uri = string.Empty
             };
 
             // Act

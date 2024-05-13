@@ -41,8 +41,7 @@
     "infrastructureResourceGroup": {
         "type": "string",
         "metadata" : {
-            "description": "The name of the resource group in which the common infrastructure used by backend services exists.
-                            eg. the parameter appServicePlanName exists in this (infrastructureResourceGroup) "
+            "description": "The name of the resource group in which the common infrastructure used by backend services exists"
         },
         "defaultValue": "mhpd-cloudservices-rg-dev"
     }

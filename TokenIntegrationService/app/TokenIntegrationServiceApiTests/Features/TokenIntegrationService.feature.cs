@@ -76,7 +76,6 @@ namespace TokenIntegrationServiceApiTests.Features
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Token Integration Service Post Request with Valid inputs")]
-        [NUnit.Framework.IgnoreAttribute("Ignored scenario")]
         [NUnit.Framework.CategoryAttribute("smoke")]
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("tokenintegrationservice")]
@@ -85,8 +84,7 @@ namespace TokenIntegrationServiceApiTests.Features
             string[] tagsOfScenario = new string[] {
                     "smoke",
                     "regression",
-                    "tokenintegrationservice",
-                    "ignore"};
+                    "tokenintegrationservice"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Token Integration Service Post Request with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 6
@@ -110,7 +108,8 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 7
- testRunner.Given("user sends post request to \'localhost\' Token Integration Service endpoint", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given("user sends post request to \'Azure QA Environment\' Token Integration Service endpo" +
+                        "int", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 8
  testRunner.Then("response is all ok with response code as \'OK\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
@@ -124,7 +123,6 @@ this.ScenarioInitialize(scenarioInfo);
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Get Request with various invalid inputs")]
-        [NUnit.Framework.IgnoreAttribute("Ignored scenario")]
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("tokenservice")]
         [NUnit.Framework.CategoryAttribute("tokenintegrationservice")]
@@ -140,8 +138,7 @@ this.ScenarioInitialize(scenarioInfo);
             string[] @__tags = new string[] {
                     "regression",
                     "tokenservice",
-                    "tokenintegrationservice",
-                    "ignore"};
+                    "tokenintegrationservice"};
             if ((exampleTags != null))
             {
                 @__tags = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(@__tags, exampleTags));
@@ -174,8 +171,8 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 14
- testRunner.Given(string.Format("user sends post request to \'localhost\' with body as \'{0}\' for rqp \'{1}\' for ticke" +
-                            "t \'{2}\' for as_uri", rqp, ticket, as_Uri), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given(string.Format("user sends post request to \'Azure QA Environment\' with body as \'{0}\' for rqp \'{1}" +
+                            "\' for ticket \'{2}\' for as_uri", rqp, ticket, as_Uri), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 15
  testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");

@@ -37,7 +37,7 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
             }
             else if (hostedOn.Equals("Azure QA Environment"))
             {
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenServiceUrl);
+                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
                 uriBuilder.Query = Parameters.requestQuery;
                 httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
                 httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);

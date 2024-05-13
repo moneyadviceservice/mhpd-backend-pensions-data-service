@@ -40,11 +40,11 @@ namespace TokenIntegrationServiceApiTests.Support
         
         public static string localHostAsUri = "http://localhost:5044";
 
-        public static string azureAsUri = "";
+        public static string azureAsUri = "https://tokenintegrationservice.azurewebsites.net/rpt";
 
         public static string responseRpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
 
-        public static string azureTokenIntegrationServiceUrl = "";
+        public static string azureTokenIntegrationServiceUrl = "tokenintegrationservice.azurewebsites.net/rpt";
 
         public static string localHostTokenIntegrationServiceUrl = "localhost";
 

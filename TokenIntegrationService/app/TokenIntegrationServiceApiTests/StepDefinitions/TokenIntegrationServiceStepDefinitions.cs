@@ -103,47 +103,7 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
         {
             var actualStatusResponse = _scenarioContext["StatusResponse"];
             Assert.True(actualStatusResponse.Equals(expectedResponseCode));
-        }
-
-        [Then(@"response body contains access_token, token_type, upgraded, pct")]
-        public async Task ThenResponseBodyContainsAccess_TokenToken_TypeUpgradedPct()
-        {
-            var responseContent = await httpResponseMessage!.Content.ReadAsStringAsync();
-            var responseData = JsonConvert.DeserializeObject<CdaTokenResponses>(responseContent);
-            string? actualResponseAccessToken = responseData.access_token;
-            string? actualResponseTokenType = responseData.token_type;
-            bool actualResponseUpgraded = responseData.upgraded;
-            string? actualResponsePct = responseData.access_token;
-
-            var expectedResponseBody = _scenarioContext["ResponseBody"];
-
-            var jsonExpectedResponseBody = JsonConvert.SerializeObject(expectedResponseBody);
-            var expectedResponseDictionary = JsonConvert.DeserializeObject<CdaTokenResponses>(JsonConvert.DeserializeObject<string>(jsonExpectedResponseBody));
-
-            var expectedAccessToken = expectedResponseDictionary.access_token;
-            if (expectedAccessToken is not null)
-            {
-                bool accessTokenResponseCondition = checkResponseBodyAsExpected(actualResponseAccessToken, expectedAccessToken);
-                Assert.True(accessTokenResponseCondition);
-            }
-
-            var expectedTokenType = expectedResponseDictionary.token_type;
-            if (expectedTokenType is not null)
-            {
-                bool tokenTypeResponseCondition = checkResponseBodyAsExpected(actualResponseTokenType, expectedTokenType);
-                Assert.True(tokenTypeResponseCondition);
-            }
-
-            var expectedUpgraded = expectedResponseDictionary.upgraded;
-            Assert.AreEqual(actualResponseUpgraded, expectedUpgraded);
-
-            var expectedPct = expectedResponseDictionary.pct;
-            if (expectedPct is not null)
-            {
-                bool pctCondition = checkResponseBodyAsExpected(actualResponsePct, expectedPct);
-                Assert.True(pctCondition);
-            }
-        }
+        }        
 
         bool checkResponseBodyAsExpected(string? responseBody, string expectedValue)
         {

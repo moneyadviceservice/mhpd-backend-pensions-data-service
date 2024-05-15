@@ -9,14 +9,10 @@ namespace TokenIntegrationServiceApiTests.Support
 {
     internal class ResponseDataModel
     {
-        
-
         public class RptTokenResponses
         {
             [JsonProperty("rpt")]
-            public string? rpt { get; set; }
-
-            
+            public string? rpt { get; set; }            
         }
     }
 }

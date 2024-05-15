@@ -10,7 +10,6 @@ namespace TokenIntegrationServiceApiTests.Support
     {
         public string? ticket { get; set; }
         public string? rqp { get; set; }
-
         public string? as_uri { get; set; }
     }
 }

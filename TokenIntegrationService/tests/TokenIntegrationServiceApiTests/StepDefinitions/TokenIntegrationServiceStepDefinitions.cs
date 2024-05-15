@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
@@ -19,91 +20,56 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
         {
             httpClient = new HttpClient();
             _scenarioContext = scenarioContext;
-        }
+        }        
 
-        [StepDefinition(@"user sends post request to '([^']*)' cda token service endpoint")]
-        public async Task GivenUserSendsPostRequestToCdaTokenServiceEndpoint(string hostedOn)
-        {
-            if (hostedOn.Equals("localhost"))
-            {
-                UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5044, "token");
-                uriBuilder.Query = Parameters.requestQuery;
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
-                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            }
-            else if (hostedOn.Equals("Azure QA Environment"))
-            {
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
-                uriBuilder.Query = Parameters.requestQuery;
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uriBuilder.ToString());
-                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            }
-        }
-
-        [Given(@"user sends post request to '([^']*)' Token Integration Service endpoint")]
+        [StepDefinition(@"user sends post request to '([^']*)' Token Integration Service endpoint")]
         public async Task GivenUserSendsPostRequestToTokenIntegrationServiceEndpoint(string hostedOn)
         {
+            HttpRequestMessage httpRequest = new HttpRequestMessage();
+            RequestBodyData requestBodyData = new RequestBodyData();
             if (hostedOn.Equals("localhost"))
-            {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                requestBodyData.ticket = Parameters.ticketNo;
-                requestBodyData.rqp = Parameters.rqp;
-                requestBodyData.as_uri= Parameters.localHostAsUri;
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-
-                UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5289, "rpt");
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = uri,
-                    Content = contentData
-                };
-                
-                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            }
-            else if(hostedOn.Equals("Azure QA Environment"))
-            {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                requestBodyData.ticket = Parameters.ticketNo;
-                requestBodyData.rqp = Parameters.rqp;
-                requestBodyData.as_uri = Parameters.azureAsUri;
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = uri,
-                    Content = contentData
-                };
-
-                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            }
+                httpRequest = buildHttpRequestMessageForService(requestBodyData, "localhost");
+            else if (hostedOn.Equals("Azure QA Environment"))
+                httpRequest = buildHttpRequestMessageForService(requestBodyData, Parameters.azureTokenIntegrationServiceUrl);
+            httpResponseMessage = await httpClient.SendAsync(httpRequest);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+            _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
         }
 
+        HttpRequestMessage buildHttpRequestMessageForService(RequestBodyData requestBodyData, string hostedOn)
+        {
+            requestBodyData.ticket = Parameters.ticketNo;
+            requestBodyData.rqp = Parameters.rqp;
+            requestBodyData.as_uri = Parameters.localHostAsUri;
+            var data = JsonConvert.SerializeObject(requestBodyData);
+            var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+            UriBuilder uriBuilder = new UriBuilder();
+            if (hostedOn.Equals("localhost"))
+            {
+                uriBuilder = new UriBuilder("http", "localhost", 5289, "rpt");
+            }
+            else
+            {
+                uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
+            }
+            Uri uri = uriBuilder.Uri;
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = uri,
+                Content = contentData
+            };
 
-        [Then(@"response is all ok with response code as '([^']*)'")]
+            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+            return httpRequestMessage;
+        }
+
+        [StepDefinition(@"response is all ok with response code as '([^']*)'")]
         public void ThenResponseIsAllOkWithResponseCodeAs(string expectedResponseCode)
         {
             var actualStatusResponse = _scenarioContext["StatusResponse"];
             Assert.True(actualStatusResponse.Equals(expectedResponseCode));
-        }        
+        }
 
         bool checkResponseBodyAsExpected(string? responseBody, string expectedValue)
         {
@@ -115,18 +81,15 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
             return value;
         }
 
-        [Then(@"response body contains rqp")]
+        [StepDefinition(@"response body contains rqp")]
         public async Task ThenResponseBodyContainsRqp()
-        {            
+        {
             var responseContent = await httpResponseMessage!.Content.ReadAsStringAsync();
             var responseData = JsonConvert.DeserializeObject<RptTokenResponses>(responseContent);
-            string? actualResponseAccessToken = responseData.rpt;            
-
+            string? actualResponseAccessToken = responseData.rpt;
             var expectedResponseBody = _scenarioContext["ResponseBody"];
-
             var jsonExpectedResponseBody = JsonConvert.SerializeObject(expectedResponseBody);
             var expectedResponseDictionary = JsonConvert.DeserializeObject<RptTokenResponses>(JsonConvert.DeserializeObject<string>(jsonExpectedResponseBody));
-
             var expectedAccessToken = expectedResponseDictionary.rpt;
             if (expectedAccessToken is not null)
             {
@@ -192,58 +155,35 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
                     requestBodyData.as_uri = Parameters.azureAsUri;
                 }
             }
-            
-
             return requestBodyData;
         }
 
+
         [StepDefinition(@"user sends post request to '([^']*)' with body as '([^']*)' for rqp '([^']*)' for ticket '([^']*)' for as_uri")]
         public async Task GivenUserSendsPostRequestToWithBodyAsForRqpForTicketForAs_Uri(string hostedOn, string rqp, string ticket, string asUri)
-        {            
+        {
+            RequestBodyData requestBodyData = new RequestBodyData();
             if (hostedOn.Equals("localhost"))
-            {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                requestBodyData = buildRequestBody(hostedOn, requestBodyData, ticket, rqp, asUri);                
-                
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-
-                UriBuilder uriBuilder = new UriBuilder("http", Parameters.localHostTokenIntegrationServiceUrl, Parameters.localHostPortNo, "rpt");
-
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = uri,
-                    Content = contentData
-                };                
-
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;                
-            }
-            else if (hostedOn.Equals("Azure QA Environment"))
-            {
-                RequestBodyData requestBodyData = new RequestBodyData();
                 requestBodyData = buildRequestBody(hostedOn, requestBodyData, ticket, rqp, asUri);
-
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
-
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Post,
-                    RequestUri = uri,
-                    Content = contentData
-                };                
-
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-                _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
-            }
-        }        
+            else if (hostedOn.Equals("Azure QA Environment"))
+                requestBodyData = buildRequestBody(hostedOn, requestBodyData, ticket, rqp, asUri);                
+            var data = JsonConvert.SerializeObject(requestBodyData);
+            var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+            UriBuilder uriBuilder = new UriBuilder();
+            if (hostedOn.Equals("localhost"))
+                uriBuilder = new UriBuilder("http", Parameters.localHostTokenIntegrationServiceUrl, Parameters.localHostPortNo, "rpt");
+            else if (hostedOn.Equals("Azure QA Environment"))
+                uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
+            Uri uri = uriBuilder.Uri;
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = uri,
+                Content = contentData
+            };
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+            _scenarioContext["ResponseBody"] = httpResponseMessage.Content.ReadAsStringAsync().Result;
+        }
     }
 }

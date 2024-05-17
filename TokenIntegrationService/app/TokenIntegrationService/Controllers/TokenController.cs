@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TokenIntegrationService.HttpClients;
 using TokenIntegrationService.Models;
 
 namespace TokenIntegrationService.Controllers
@@ -7,42 +8,45 @@ namespace TokenIntegrationService.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
-        private const string RptValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
+        private readonly ICDATokenService _iCDATokenService;
+
+        private const string GrantType = "urn:ietf:params:oauth:grant-type:uma-ticket";
+        private const string ClaimTokenFormat = "pension_dashboad_rqp";
+        private const string Scope = "owner";
+        private const string RequestId = "sdfasdfasdasdadsg";
+
+        public TokenController(ICDATokenService iCDATokenService)
+        {
+            _iCDATokenService = iCDATokenService;
+        }
 
         [HttpPost]
-        [Route("/rpt")]
+        [Route("/rpts")]
         public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel requestBody)
         {
-            if (ValidateQuery(requestBody, out var message) == false)
-                return BadRequest(message);
+            if (!requestBody.Validate())
+                return BadRequest("Bad Request");
+
+            var request = CreateCDATokenServiceRequestModel(requestBody);
             
-            return Ok(CreateResponse());
-        }
-        private TokenIntegrationResponseModel CreateResponse()
-        {
-            return new TokenIntegrationResponseModel { Rpt = RptValue };
+            var result = await _iCDATokenService.PostRpt(request);           
+            
+            return Ok(new TokenIntegrationResponseModel {  Rpt = result.AccessToken });             
         }
 
-        private bool ValidateQuery(TokenIntegrationRequestModel requestBody, out string message)
+        private CDATokenRequestModel CreateCDATokenServiceRequestModel(TokenIntegrationRequestModel requestBody)
         {
-            message = string.Empty; 
-            
-            if (string.IsNullOrEmpty(requestBody.Rqp))
+            return new CDATokenRequestModel
             {
-                message = BadRequestModel.InvalidRequest;
-                return false;
-            }
-            if (string.IsNullOrEmpty(requestBody.Ticket))
-            {
-                message = BadRequestModel.InvalidRequest;
-                return false;
-            }
-            if (string.IsNullOrEmpty(requestBody.As_Uri))
-            {
-                message = BadRequestModel.InvalidRequest;
-                return false;
-            }
-            return true;
-        }      
+                GrantType = GrantType,
+                ClaimToken = requestBody.Rqp,
+                ClaimTokenFormat = ClaimTokenFormat,
+                Scope = Scope,
+                RequestId = RequestId,
+                Ticket = requestBody.Ticket,
+                Rqp = requestBody.Rqp,
+                CdaTokenUrl = requestBody.As_Uri
+            };
+        }
     }
 }

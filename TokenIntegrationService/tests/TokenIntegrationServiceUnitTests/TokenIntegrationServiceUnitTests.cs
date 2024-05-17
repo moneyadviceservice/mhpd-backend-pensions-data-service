@@ -2,7 +2,9 @@ using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TokenIntegrationService.Controllers;
+using TokenIntegrationService.HttpClients;
 using TokenIntegrationService.Models;
+using Moq;
 
 namespace TokenIntegrationServiceUnitTests
 {
@@ -10,20 +12,25 @@ namespace TokenIntegrationServiceUnitTests
     {
         private readonly DefaultHttpContext _httpContext;
         private readonly TokenController _controller;
+        private readonly Mock<ICDATokenService> _iCDAToken = new Mock<ICDATokenService>();
         private const string RqpValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
         private const string TicketValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
-        private const string As_UriValue = "http://localhost:5044";        
-    
+        private const string As_UriValue = "http://localhost:5044";
+        private const string InvalidRqpValue = "ABC123InvalidRqpValue";
+        private const string InvalidTicketValue = "ZYZ123InvalidTicketValue";
+
         public TokenIntegrationServiceUnitTests()
         {
             _httpContext = new DefaultHttpContext();
-            _controller = new TokenController()
+            _controller = new TokenController(_iCDAToken.Object)
             {
                 ControllerContext = new ControllerContext()
                 {
                     HttpContext = _httpContext
                 }
             };
+
+            _iCDAToken.Setup(x => x.PostRpt(It.IsAny<CDATokenRequestModel>())).Returns(Task.FromResult<RptsModel>(new RptsModel { AccessToken = RqpValue }));
         }       
         
         [Fact]
@@ -38,10 +45,15 @@ namespace TokenIntegrationServiceUnitTests
             };
 
             // Act
-            var result = await _controller.PostAsync(request);
+            var result = await _controller.PostAsync(request); 
+            OkObjectResult okResult = (OkObjectResult)result;
+            var data = (TokenIntegrationResponseModel)okResult!.Value!;
 
             // Assert
+            Assert.NotNull(result);
             Assert.True(result.GetType() == typeof(OkObjectResult));
+            Assert.True(data.GetType() == typeof(TokenIntegrationResponseModel));
+            Assert.True(okResult.StatusCode == (int)HttpStatusCode.OK);
         }
 
         [Fact]
@@ -194,6 +206,75 @@ namespace TokenIntegrationServiceUnitTests
             // Assert
             Assert.True(result.GetType() == typeof(BadRequestObjectResult));
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_InvalidRqp_ThenItShouldReturn_OKReques200Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = InvalidRqpValue,
+                Ticket = TicketValue,
+                As_Uri = As_UriValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            OkObjectResult okResult = (OkObjectResult)result;
+            var data = (TokenIntegrationResponseModel)okResult!.Value!;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.GetType() == typeof(OkObjectResult));
+            Assert.True(data.GetType() == typeof(TokenIntegrationResponseModel));
+            Assert.True(okResult.StatusCode == (int)HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_InvalidTicket_ThenItShouldReturn_OKReques200Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = RqpValue,
+                Ticket = InvalidTicketValue,
+                As_Uri = As_UriValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            OkObjectResult okResult = (OkObjectResult)result;
+            var data = (TokenIntegrationResponseModel)okResult!.Value!;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.GetType() == typeof(OkObjectResult));
+            Assert.True(data.GetType() == typeof(TokenIntegrationResponseModel));
+            Assert.True(okResult.StatusCode == (int)HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_InvalidRQPandTicket_ThenItShouldReturn_OKReques200Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = InvalidRqpValue,
+                Ticket = InvalidTicketValue,
+                As_Uri = As_UriValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            OkObjectResult okResult = (OkObjectResult)result;
+            var data = (TokenIntegrationResponseModel)okResult!.Value!;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.GetType() == typeof(OkObjectResult));
+            Assert.True(data.GetType() == typeof(TokenIntegrationResponseModel));
+            Assert.True(okResult.StatusCode == (int)HttpStatusCode.OK);
         }
     }
 }

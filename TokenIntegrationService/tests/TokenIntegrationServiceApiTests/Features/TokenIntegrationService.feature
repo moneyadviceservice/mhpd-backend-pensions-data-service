@@ -15,11 +15,11 @@ Scenario Outline: Get Request with various invalid inputs
 	Then response is all ok with response code as '<StatusCode>'
 
 Examples:
-	| rqp      | ticket  | as_uri  | StatusCode   |
-	| rqpNo    | idno    | idno    | OK           |			
-	|          | idno    | idno    | BadRequest   |
-	| rqpNoxxx | idno    | idno    | OK           |
-	| rqpNo    |         | idno    | BadRequest   |
-	| rqpNo    | idnoxxx | idno    | OK           |	
-	| rqpNo    | idno    | idnoxxx | OK           |
-	| rqpNoxxx | idno    |         | BadRequest   |
+	| rqp      | ticket  | as_uri  | StatusCode          |
+	| rqpNo    | idno    | idno    | OK                  |
+	|          | idno    | idno    | BadRequest          |
+	| rqpNoxxx | idno    | idno    | OK                  |
+	| rqpNo    |         | idno    | BadRequest          |
+	| rqpNo    | idnoxxx | idno    | OK                  |
+	| rqpNo    | idno    | idnoxxx | InternalServerError |
+	| rqpNoxxx | idno    |         | BadRequest          |

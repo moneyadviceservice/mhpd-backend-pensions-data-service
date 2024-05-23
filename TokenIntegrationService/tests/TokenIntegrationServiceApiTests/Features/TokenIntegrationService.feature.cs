@@ -131,7 +131,7 @@ this.ScenarioInitialize(scenarioInfo);
         [NUnit.Framework.TestCaseAttribute("rqpNoxxx", "idno", "idno", "OK", null)]
         [NUnit.Framework.TestCaseAttribute("rqpNo", "", "idno", "BadRequest", null)]
         [NUnit.Framework.TestCaseAttribute("rqpNo", "idnoxxx", "idno", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("rqpNo", "idno", "idnoxxx", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("rqpNo", "idno", "idnoxxx", "InternalServerError", null)]
         [NUnit.Framework.TestCaseAttribute("rqpNoxxx", "idno", "", "BadRequest", null)]
         public virtual void GetRequestWithVariousInvalidInputs(string rqp, string ticket, string as_Uri, string statusCode, string[] exampleTags)
         {

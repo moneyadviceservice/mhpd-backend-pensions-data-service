@@ -40,18 +40,20 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
         {
             requestBodyData.ticket = Parameters.ticketNo;
             requestBodyData.rqp = Parameters.rqp;
-            requestBodyData.as_uri = Parameters.localHostAsUri;
-            var data = JsonConvert.SerializeObject(requestBodyData);
-            var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+            requestBodyData.as_uri = Parameters.localHostAsUri;            
             UriBuilder uriBuilder = new UriBuilder();
             if (hostedOn.Equals("localhost"))
             {
+                requestBodyData.as_uri = Parameters.localHostAsUri;
                 uriBuilder = new UriBuilder("http", "localhost", 5289, "rpt");
             }
             else
             {
+                requestBodyData.as_uri = Parameters.azureTokenServiceBaseUrl;
                 uriBuilder = new UriBuilder("https", Parameters.azureTokenIntegrationServiceUrl);
             }
+            var data = JsonConvert.SerializeObject(requestBodyData);
+            var contentData = new StringContent(data, Encoding.UTF8, "application/json");
             Uri uri = uriBuilder.Uri;
             var httpRequestMessage = new HttpRequestMessage
             {
@@ -59,8 +61,7 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
                 RequestUri = uri,
                 Content = contentData
             };
-
-            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+            
             return httpRequestMessage;
         }
 
@@ -152,7 +153,7 @@ namespace TokenIntegrationServiceApiTests.StepDefinitions
                 }
                 else
                 {
-                    requestBodyData.as_uri = Parameters.azureAsUri;
+                    requestBodyData.as_uri = Parameters.azureTokenServiceBaseUrl;
                 }
             }
             return requestBodyData;

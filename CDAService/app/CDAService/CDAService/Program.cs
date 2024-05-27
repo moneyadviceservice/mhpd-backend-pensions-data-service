@@ -1,7 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
+using Azure.Identity;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration.AddAzureKeyVault(
+    new Uri(builder.Configuration.GetSection("KeyVaultConfiguration")["KeyVaultURL"]!), 
+    new DefaultAzureCredential()
+    );
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -16,11 +22,6 @@ builder.Services.AddHttpLogging(logging =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    
-}
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

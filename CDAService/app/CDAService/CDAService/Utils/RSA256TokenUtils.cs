@@ -10,16 +10,18 @@ namespace CDAService.Utils
     {
         public class RQPTokenManager
         {
-            private const string Kid = "ec1abf89-225b-49c2-ab87-1d425ac70f8d";
             private const string Role = "owner";
 
-            private string Audience = "https://pdp/ig/token";
-            private string _iss;
+            private string _kid = string.Empty;
+            private string _audience = string.Empty;
+            private string _iss = string.Empty;
             private string _userSessionId;
 
-            public RQPTokenManager(string iss, string userSessionId)
+            public RQPTokenManager(string userSessionId, string issuer, KeyVaultSecrets secrets)
             {
-                _iss = iss;
+                _kid = secrets.Kid!;
+                _audience = secrets.Audience!;
+                _iss = issuer;
                 _userSessionId = userSessionId;
             }
 
@@ -28,7 +30,10 @@ namespace CDAService.Utils
                 var rsa = RSA.Create();
                 rsa.ImportFromPem(LoadGeneratedRsaPrivateKeyPem());
 
-                var mySecurityKey = new SigningCredentials(new RsaSecurityKey(rsa) { KeyId = Kid }, SecurityAlgorithms.RsaSha256Signature);
+                var mySecurityKey = new SigningCredentials(
+                    new RsaSecurityKey(rsa) { KeyId = _kid }, 
+                    SecurityAlgorithms.RsaSha256Signature
+                );
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var tokenDescriptor = new SecurityTokenDescriptor
@@ -46,7 +51,7 @@ namespace CDAService.Utils
                     IssuedAt = DateTime.UtcNow,
                     Expires = DateTime.UtcNow.AddSeconds(60),
                     Issuer = _iss,
-                    Audience = Audience,
+                    Audience = _audience,
                     SigningCredentials = mySecurityKey,
                 };
 
@@ -59,7 +64,7 @@ namespace CDAService.Utils
             {
                 var rsa = RSA.Create();
                 rsa.ImportFromPem(LoadGeneratedRsaPrivateKeyPem());
-                var mySecurityKey = new RsaSecurityKey(rsa) { KeyId = Kid };
+                var mySecurityKey = new RsaSecurityKey(rsa) { KeyId = _kid };
 
                 var tokenHandler = new JwtSecurityTokenHandler();
                 try
@@ -70,7 +75,7 @@ namespace CDAService.Utils
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidIssuer = _iss,
-                        ValidAudience = Audience,
+                        ValidAudience = _audience,
                         IssuerSigningKey = mySecurityKey,
                         ClockSkew = TimeSpan.Zero
                     }, out SecurityToken validatedToken);
@@ -85,7 +90,7 @@ namespace CDAService.Utils
                         Jti = (jwtToken.Claims.First(x => x.Type == "jti").Value),
                         Subject = (jwtToken.Claims.First(x => x.Type == "sub").Value),
                         Role = jwtToken.Claims.First(x => x.Type == "Role").Value,
-                        Audience = Audience,
+                        Audience = _audience,
                     };
                     
                 }

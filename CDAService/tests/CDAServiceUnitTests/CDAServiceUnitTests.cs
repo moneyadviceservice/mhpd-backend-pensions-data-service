@@ -3,7 +3,7 @@ using CDAService.Controllers;
 using CDAService.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
+using Microsoft.Extensions.Configuration;
 using static CDAService.Utils.RSA256TokenUtils;
 
 namespace CDAServiceUnitTests
@@ -12,18 +12,26 @@ namespace CDAServiceUnitTests
     {
         private readonly DefaultHttpContext _httpContext;
         private readonly CDAServiceController _controller;
-     
+        private readonly IConfiguration _configuration;
+
         public CDAServiceUnitTests()
         {
+            _configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+
+            _configuration["Kid"] = "ec1abf89-225b-49c2-ab87-1d425ac70f8d";
+            _configuration["Audience"] = "https://pdp/ig/token";
+
             _httpContext = new DefaultHttpContext();
-            _controller = new CDAServiceController()
+            _controller = new CDAServiceController(_configuration)
             {
                 ControllerContext = new ControllerContext()
                 {
                     HttpContext = _httpContext
                 }
             };
-        } 
+        }
 
         [Fact]
         public async Task GivenValidInput_WhenPostIsCalled_ThenReturnsOk()
@@ -43,7 +51,7 @@ namespace CDAServiceUnitTests
             Assert.IsType<OkObjectResult>(result);
             var okResult = result as OkObjectResult;
             Assert.NotNull(okResult);
-            var response = okResult.Value; 
+            var response = okResult.Value;
             Assert.NotNull(response);
         }
 
@@ -57,7 +65,13 @@ namespace CDAServiceUnitTests
                 UserSessionId = "mySessionId-123abcd"
             };
 
-            var _tokenManager = new RQPTokenManager(validRequest.Iss, validRequest.UserSessionId);
+            var secrets = new KeyVaultSecrets
+            {
+                Kid = _configuration["Kid"],
+                Audience = _configuration["Audience"]
+            };
+
+            var _tokenManager = new RQPTokenManager(validRequest.UserSessionId, validRequest.Iss, secrets);
 
             // Act
             var result = await _controller.PostAsync(validRequest) as OkObjectResult;
@@ -87,11 +101,11 @@ namespace CDAServiceUnitTests
 
             //Assert
             Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-            
+
         }
 
         [Fact]
-        public async Task GivenInvalidIss_WhenPostIsCalled_ThenReturnsBadRequest ()
+        public async Task GivenInvalidIss_WhenPostIsCalled_ThenReturnsBadRequest()
         {
             //Arrange
             var request = new RPQRequestModel
@@ -119,7 +133,7 @@ namespace CDAServiceUnitTests
             };
 
             //Act
-            var result =await _controller.PostAsync(request);
+            var result = await _controller.PostAsync(request);
             BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
             //Assert

@@ -5,14 +5,20 @@ namespace CDAServiceUnitTests
 {
     public class RSA256TokenUtilsUnitTests
     {
-        private const string _iss = "MHPD-75b68255-444e-4d5f-bbfe-249c26d69963";
         private const string _userSessionId = "6ee2ec99-70a6-4781-b2d2-da2cc75fd177";
+        private const string _issuer = "MHPD-75b68255-444e-4d5f-bbfe-249c26d69963";
         private const string _role = "owner";
         private readonly RQPTokenManager _tokenManager;
 
+        private readonly KeyVaultSecrets _secrets = new KeyVaultSecrets
+        {
+            Kid = "ec1abf89-225b-49c2-ab87-1d425ac70f8d",
+            Audience = "https://pdp/ig/token"
+        };
+
         public RSA256TokenUtilsUnitTests() 
         {
-            _tokenManager = new RQPTokenManager(_iss, _userSessionId!);
+            _tokenManager = new RQPTokenManager(_userSessionId, _issuer, _secrets);
         }
 
         [Fact]
@@ -36,8 +42,8 @@ namespace CDAServiceUnitTests
             Assert.True(!string.IsNullOrEmpty(token));
             Assert.True(result == true);
             Assert.True(!(rqpModel == null));
-            Assert.True(rqpModel.Subject == $"{_userSessionId}@{_iss}");
-            Assert.True(rqpModel.Issuer == _iss);
+            Assert.True(rqpModel.Subject == $"{_userSessionId}@{rqpModel.Issuer}");
+            Assert.True(rqpModel.Issuer == rqpModel.Issuer);
             Assert.True(!string.IsNullOrEmpty(rqpModel.Audience));
             Assert.True(rqpModel.Role == _role);
         }

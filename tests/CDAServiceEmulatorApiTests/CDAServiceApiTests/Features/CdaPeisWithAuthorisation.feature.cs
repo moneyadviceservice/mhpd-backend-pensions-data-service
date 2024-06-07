@@ -77,13 +77,11 @@ namespace CDAServiceApiTests.Features
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Get Request with Valid inputs")]
         [NUnit.Framework.CategoryAttribute("smoke")]
-        [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("cdapei")]
         public virtual void GetRequestWithValidInputs()
         {
             string[] tagsOfScenario = new string[] {
                     "smoke",
-                    "regression",
                     "cdapei"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
@@ -119,7 +117,6 @@ this.ScenarioInitialize(scenarioInfo);
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Get Request with various invalid inputs")]
-        [NUnit.Framework.CategoryAttribute("smoke")]
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("cdapei")]
         [NUnit.Framework.TestCaseAttribute("uma_protection", "1111-2222-3333-4444", "1.0", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "OK", null)]
@@ -135,7 +132,6 @@ this.ScenarioInitialize(scenarioInfo);
         public virtual void GetRequestWithVariousInvalidInputs(string scope, string x_Request_ID, string x_Version, string gUID, string statusCode, string[] exampleTags)
         {
             string[] @__tags = new string[] {
-                    "smoke",
                     "regression",
                     "cdapei"};
             if ((exampleTags != null))

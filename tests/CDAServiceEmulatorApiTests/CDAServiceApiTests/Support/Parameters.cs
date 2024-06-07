@@ -22,8 +22,18 @@ namespace CDAPeIsServiceApiTests.Support
 
         public static string guid = "0d9b46c0-00fd-4f18-86b2-dfa0994c9ff3";
 
-        public static string azureUrl = "cdaserviceemulator.azurewebsites.net/peis/cd0e4fdc-8586-4483-9899-17dd85af9074";
+        public static string azureCdaEmulatorPeiUrl = "cdaserviceemulator.azurewebsites.net/peis/cd0e4fdc-8586-4483-9899-17dd85af9074";
+
+        public static string azureCdaEmulatorHolderNameConfigurationsUrl = "cdaserviceemulator.azurewebsites.net/holdername-configurations";
 
         public static string azureBaseUrl = "cdaserviceemulator.azurewebsites.net";
+
+        public static string firstElementGuid = "7075aa11-10ad-4b2f-a9f5-1068e79119bf";
+
+        public static string firstElementViewDataUrl = "https://local.exampleprovider/pensiondataprovider";
+
+        public static string secondElementGuid = "550e8400-e29b-41d4-a716-446655440000";
+
+        public static string secondElementViewDataUrl = "https://local.exampleprovider2/pensiondataprovider";
     }
 }

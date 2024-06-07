@@ -1,7 +1,7 @@
 ﻿Feature: CDA Pei API Test Without RPT Authorization
 API Tests with RPT Authorization as per policy on Service Emulator. To Test on Local use localhost in place of Azure QA Environment.
 
-@smoke @regression @cdapei
+@smoke @cdapei
 Scenario: Get Request without RPT & Valid inputs	
 	Given user sends request to 'Azure QA Environment' endpoint 'without' RPT authorization
 	Then response is all ok with response code as 'Unauthorized'

@@ -1,8 +1,14 @@
 using CDAPeIsServiceApiTests.Support;
+using CDAServiceApiTests.Support;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using Newtonsoft.Json;
 using NUnit.Framework;
+using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using static CDAServiceApiTests.Support.ResponseDataModel;
 
 namespace CDAServiceApiTests.StepDefinitions
 {
@@ -13,6 +19,7 @@ namespace CDAServiceApiTests.StepDefinitions
         public static HttpRequestMessage? httpRequestMessage;
         public static HttpResponseMessage? httpResponseMessage;
         private readonly ScenarioContext _scenarioContext;
+        private QueryRequest? queryRequest;
 
         public CdaPeisStepDefinition(ScenarioContext scenarioContext)
         {
@@ -20,35 +27,73 @@ namespace CDAServiceApiTests.StepDefinitions
             _scenarioContext = scenarioContext;
         }
 
+        [StepDefinition(@"user sends GET request to '([^']*)' endpoint for holder name configurations of cda service emulator")]
+        public async Task GivenUserSendsGETRequestToEndpointForHolderNameConfigurationsOfCdaServiceEmulator(string hostedOn)
+        {
+            httpRequestMessage = buildCdaEmulatorHolderConfigurationsEndpoint(hostedOn);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        HttpRequestMessage buildCdaEmulatorHolderConfigurationsEndpoint(string hostedOn)
+        {
+            UriBuilder uriBuilder;
+            if (hostedOn.Equals("localhost"))
+            {
+                uriBuilder = new UriBuilder("http", "localhost", 5089, "holdername-configurations");
+            }
+            else
+            {
+                uriBuilder = new UriBuilder("https", Parameters.azureCdaEmulatorHolderNameConfigurationsUrl);
+            }            
+            httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.guid);                        
+            return httpRequestMessage;
+        }
+
+        HttpRequestMessage buildCdaEmulatorHolderConfigurationsEndpoint(string hostedOn, string xRequestId)
+        {
+            UriBuilder uriBuilder;
+            if (hostedOn.Equals("localhost"))
+            {
+                uriBuilder = new UriBuilder("http", "localhost", 5089, "holdername-configurations");
+            }
+            else
+            {
+                uriBuilder = new UriBuilder("https", Parameters.azureCdaEmulatorHolderNameConfigurationsUrl);
+            }
+            httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            if(xRequestId != "x") 
+                httpRequestMessage.Headers.Add("X-Request-ID", xRequestId);            
+            return httpRequestMessage;
+        }
+
+        HttpRequestMessage buildCdaPeiEndpoint(string hostedOn, string authorisationCondition)
+        {
+            UriBuilder uriBuilder;
+            if (hostedOn.Equals("localhost"))
+            {
+                uriBuilder = new UriBuilder("http", "localhost", 5089, "peis/0d9b46c0-00fd-4f18-86b2-dfa0994c9ff3");
+            }
+            else
+            {
+                uriBuilder = new UriBuilder("https", Parameters.azureCdaEmulatorPeiUrl);
+            }
+            uriBuilder.Query = "scope=uma_protection";
+            httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
+            httpRequestMessage.Headers.Add("X-Version", Parameters.xVersion);
+            if (authorisationCondition.Equals("with"))
+                httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
+            return httpRequestMessage;
+        }
 
         [StepDefinition(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization")]
         public async Task GivenUserSendsRequestToEndpointRPTAuthorization(string hostedOn, string authorisationCondition)
         {
-            if (hostedOn.Equals("localhost"))
-            {
-                UriBuilder uriBuilder = new UriBuilder("http", "localhost", 5089, "peis/0d9b46c0-00fd-4f18-86b2-dfa0994c9ff3");
-                uriBuilder.Query = "scope=uma_protection";
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
-                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-                httpRequestMessage.Headers.Add("X-Version", Parameters.xVersion);
-                if (authorisationCondition.Equals("with"))
-                    httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-            }
-
-            else if (hostedOn.Equals("Azure QA Environment"))
-            {
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureUrl);
-                uriBuilder.Query = "scope=uma_protection";
-                httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
-                httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-                httpRequestMessage.Headers.Add("X-Version", Parameters.xVersion);
-                if (authorisationCondition.Equals("with"))
-                    httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-            }
+            httpRequestMessage = buildCdaPeiEndpoint(hostedOn, authorisationCondition);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
         }
 
         [StepDefinition(@"response is all ok with response code as '([^']*)'")]
@@ -58,70 +103,98 @@ namespace CDAServiceApiTests.StepDefinitions
             Assert.True(actualStatusResponse.Equals(expectedResponseCode));
         }
 
-        [StepDefinition(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization as per '([^']*)' with request as '([^']*)' and version as '([^']*)' with guid as '([^']*)'")]
-        public async Task GivenUserSendsRequestToEndpointRPTAuthorizationAsPerOwnerWithRequestAsAndVersionAsWithGuidAs
-            (string hostedOn, string authorisationCondition, string expectedScope, string expectedRequestId, string expectedVersion, string expectedGuid)
+        [StepDefinition(@"response body contains holder_configurations with expected values")]
+        public async Task ThenResponseBodyContainsHolder_ConfigurationsWithExpectedValues()
+        {            
+            var responseContent = await httpResponseMessage!.Content.ReadAsStringAsync();
+            bool result = responseContent.Contains("holder_configurations");
+            Assert.True(result);
+            var data = JsonConvert.DeserializeObject<HolderConfigurationsList>(responseContent);
+            data.holder_configurations.Should().HaveCount(2);
+            var holderConfigurationList = data.holder_configurations;
+            if (holderConfigurationList is not null)
+            {
+                var firstElement = holderConfigurationList.ElementAt(0);
+                if (firstElement is not null)
+                {
+                    if(firstElement.holdername_guid is not null)
+                        Assert.IsTrue(firstElement.holdername_guid.ToString().Equals(Parameters.firstElementGuid));
+                    if (firstElement.veiw_data_url is not null)
+                        Assert.IsTrue(firstElement.veiw_data_url.ToString().Equals(Parameters.firstElementViewDataUrl));
+                }
+                var secondElement = holderConfigurationList.ElementAt(1);
+                if (secondElement is not null)
+                {
+                    if (secondElement.holdername_guid is not null)
+                        Assert.IsTrue(secondElement.holdername_guid.ToString().Equals(Parameters.secondElementGuid));
+                    if (secondElement.veiw_data_url is not null)
+                        Assert.IsTrue(secondElement.veiw_data_url.ToString().Equals(Parameters.secondElementViewDataUrl));
+                }
+            }
+        }
+
+        QueryRequest buildUrl(string hostedOn, string expectedGuid, string expectedVersion, string expectedRequestId, string expectedScope)
         {
             string? pathValue = null;
-            string? xRequestID = null;
-            string? xVersion = null;
             string? queryScope = string.Empty;
             string? baseUrl = string.Empty;
             UriBuilder uriBuilder = new UriBuilder();
+            queryRequest = new QueryRequest(uriBuilder);
+            if (expectedGuid.Equals(string.Empty))
+            {
+                pathValue = "peis/" + expectedGuid;
+                baseUrl = Parameters.azureBaseUrl;
+            }
+            else
+            {
+                pathValue = "/peis/" + expectedGuid;
+                baseUrl = Parameters.azureBaseUrl + pathValue;
+            }
+            if (!(expectedVersion.Equals(null)))
+                queryRequest.xVersion = expectedVersion;
+            if (!(expectedRequestId.Equals(null)))
+                queryRequest.xRequestID = expectedRequestId;
+            if (!(expectedScope.Equals(string.Empty)))
+                queryScope = "scope=" + expectedScope;
+            else
+                queryScope = "";
             if (hostedOn.Equals("localhost"))
-            {
-                if (expectedGuid.Equals(string.Empty))
-                {
-                    pathValue = "peis/" + expectedGuid;
-                    baseUrl = Parameters.azureBaseUrl;
-                }
-                else
-                {
-                    pathValue = "/peis/" + expectedGuid;
-                    baseUrl = Parameters.azureBaseUrl + pathValue;
-                }
-                if (!(expectedVersion.Equals(null)))
-                    xVersion = expectedVersion;
-                if (!(expectedRequestId.Equals(null)))
-                    xRequestID = expectedRequestId;
-                if (!(expectedScope.Equals(string.Empty)))
-                    queryScope = "scope=" + expectedScope;
-                else
-                    queryScope = "";
+                queryRequest.uriBuilder = new UriBuilder("http", "localhost", 5089, pathValue);
+            else
+                queryRequest.uriBuilder = new UriBuilder("https", baseUrl);
+            queryRequest.uriBuilder.Query = queryScope;
+            return queryRequest;
+        }
 
-                uriBuilder = new UriBuilder("http", "localhost", 5089, pathValue);
-            }
-            else if (hostedOn.Equals("Azure QA Environment"))
-            {
-                if (expectedGuid.Equals(string.Empty))
-                {
-                    pathValue = "peis/" + expectedGuid;
-                    baseUrl = Parameters.azureBaseUrl;
-                }
-                else
-                {
-                    pathValue = "/peis/" + expectedGuid;
-                    baseUrl = Parameters.azureBaseUrl + pathValue;
-                }
-                if (!(expectedVersion.Equals(null)))
-                    xVersion = expectedVersion;
-                if (!(expectedRequestId.Equals(null)))
-                    xRequestID = expectedRequestId;
-                if (!(expectedScope.Equals(string.Empty)))
-                    queryScope = "scope=" + expectedScope;
-                else
-                    queryScope = "";                
-                uriBuilder = new UriBuilder("https", baseUrl);
-            }
-
-            uriBuilder.Query = queryScope;
-            httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
-            httpRequestMessage.Headers.Add("X-Request-ID", xRequestID);
-            httpRequestMessage.Headers.Add("X-Version", xVersion);
+        [StepDefinition(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization as per '([^']*)' with request as '([^']*)' and version as '([^']*)' with guid as '([^']*)'")]
+        public async Task GivenUserSendsRequestToEndpointRPTAuthorizationAsPerOwnerWithRequestAsAndVersionAsWithGuidAs
+            (string hostedOn, string authorisationCondition, string expectedScope, string expectedRequestId, string expectedVersion, string expectedGuid)
+        {            
+            queryRequest = buildUrl(hostedOn, expectedGuid, expectedVersion, expectedRequestId, expectedScope);
+            httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, queryRequest.uriBuilder.ToString());
+            httpRequestMessage.Headers.Add("X-Request-ID", queryRequest.xRequestID);
+            httpRequestMessage.Headers.Add("X-Version", queryRequest.xVersion);
             if (authorisationCondition.Equals("with"))
                 httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
             httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
             _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
         }
+
+        [StepDefinition(@"user sends Get request to '([^']*)' endpoint as per '([^']*)'")]
+        public async Task GivenUserSendsGetRequestToEndpointAsPer(string hostedOn, string xRequestId)
+        {
+            httpRequestMessage = buildCdaEmulatorHolderConfigurationsEndpoint(hostedOn, xRequestId);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends Get request to '([^']*)' endpoint with missing X-Request-ID")]
+        public async Task GivenUserSendsGetRequestToEndpointWithMissingX_Request_ID(string hostedOn)
+        {
+            httpRequestMessage = buildCdaEmulatorHolderConfigurationsEndpoint(hostedOn,"x");
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
     }
 }

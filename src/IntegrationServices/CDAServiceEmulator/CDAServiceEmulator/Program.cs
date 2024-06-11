@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +13,6 @@ builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;
     logging.RequestHeaders.Add("X-Request-ID");
-    logging.RequestHeaders.Add("X-Version");
     logging.RequestHeaders.Add("Authorisation");
     logging.ResponseHeaders.Add("WWW-Authenticate");
     logging.RequestBodyLogLimit = 4096;
@@ -37,3 +37,6 @@ app.MapControllers();
 app.UseHttpLogging();
 
 app.Run();
+
+[ExcludeFromCodeCoverage]
+public partial class Program { }

@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
@@ -13,6 +14,7 @@ using static CDAServiceApiTests.Support.ResponseDataModel;
 namespace CDAServiceApiTests.StepDefinitions
 {
     [Binding]
+    [ExcludeFromCodeCoverage]
     public sealed class CdaPeisStepDefinition
     {
         private HttpClient httpClient;

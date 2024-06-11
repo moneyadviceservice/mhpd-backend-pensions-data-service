@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using PeisServiceEmulator.Controllers;
 using PeIsServiceEmulator.Models.Peis;
 
@@ -10,12 +11,12 @@ namespace PeIsServiceEmulatorUnitTests
     {
         private readonly DefaultHttpContext _httpContext;
         private readonly PeisController _controller;
+        private readonly int totalRecordsInMock = 1;
 
         public PeisServiceEmulatorTests()
         {
             _httpContext = new DefaultHttpContext();
-            _httpContext.Request.Headers["X-Request-ID"] = "1111-2222-3333-4444";
-            _httpContext.Request.Headers["X-Version"] = "1.0";
+            //_httpContext.Request.Headers["X-Request-ID"] = "b7301d11-f166-499a-9bf1-0598c2f1af52";
             
             _controller = new PeisController()
             {
@@ -27,16 +28,15 @@ namespace PeIsServiceEmulatorUnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectPath_CorrectScope_ThenItShouldReturn_Ok200Response()
+        public async void WhenControllerIsCalled_WithCorrectAuthorisationHeader_CorrectRoute_ThenItShouldReturn_Ok200Response()
         {
             // Arrange
             AddAuthorisationHeader();
-            int totalRecordsInMock = 1; // Change this if you change the number of records in mock
-            string userGuid = "06f4b162-c29f-460c-b9ba-e9251e165798";
-            string? scope = "owner";
-            
+            _httpContext.Request.Headers["X-Request-ID"] = "b7301d11-f166-499a-9bf1-0598c2f1af52";
+            string peis_id = "cd0e4fdc-8586-4483-9899-17dd85af9074";
+
             // Act
-            var result = await _controller.GetAsync(userGuid, scope);
+            var result = await _controller.GetAsync(peis_id);
             OkObjectResult okResult = (OkObjectResult)result;
             var data = (PeiModel[])okResult!.Value!;
 
@@ -51,31 +51,46 @@ namespace PeIsServiceEmulatorUnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectPath_VariationOfScope_ThenItShouldReturn_Ok200Response ()
+        public async void WhenControllerIsCalled_WithCorrectAuthorisationHeader_InCorrectPiesRoute_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
             AddAuthorisationHeader();
-            string userGuid = "a66af766-0500-4ad4-b3ed-f31c973bea82";
-            string? scope = "uma_protection";
+            _httpContext.Request.Headers["X-Request-ID"] = "b7301d11-f166-499a-9bf1-0598c2f1af52";
+            string peis_id = "?><>(*)&&-8586-4483-9899-17dd85af9074";
 
             // Act
-            var result = await _controller.GetAsync(userGuid, scope);
+            var result = await _controller.GetAsync(peis_id);
+            BadRequestObjectResult okResult = (BadRequestObjectResult)result;
 
             // Assert
-            Assert.True(result.GetType() == typeof(OkObjectResult));
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(okResult.StatusCode == (int)HttpStatusCode.BadRequest);
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectPath_WrongScope_ThenItShouldReturn_BadRequest400Response()
+        public async void WhenControllerIsCalled_WithInCorrectAuthorisationHeader_CorrectRoutePies_ThenItShouldReturn_UnAuthorised401Response()
+        {
+            // Arrange
+            AddInCorrectAuthorisationHeader();
+            _httpContext.Request.Headers["X-Request-ID"] = "b7301d11-f166-499a-9bf1-0598c2f1af52";
+            string peis_id = "8586-4483-9899-17dd85af9074";
+
+            // Act
+            var result = await _controller.GetAsync(peis_id);
+
+            // Assert
+            Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectPath_No_X_Request_Id_ThenItShouldReturn_BadRequest400Response()
         {
             // Arrange
             AddAuthorisationHeader();
-            string userGuid = "1f50ddf9-3212-48bc-9762-092cf044bfc3";
-            string? scope = "abc";
-            _httpContext.Request.QueryString = new QueryString("?scope=abc");
+            string peis_id = "8586-4483-9899-17dd85af9074";
 
             // Act
-            var result = await _controller.GetAsync(userGuid, scope);
+            var result = await _controller.GetAsync(peis_id);
             BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
             // Assert
@@ -84,16 +99,15 @@ namespace PeIsServiceEmulatorUnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithNoAuthorisationHeader_CorrectPath_CorrectScope_ThenItShouldReturn_Unauthorised401Response()
+        public async void WhenControllerIsCalled_WithNoAuthorisationHeader_CorrectRoutePies_ThenItShouldReturn_Unauthorised401ResponseAnd_WwwAuthenticateResponseHeader()
         {
             // Arrange
-            string userGuid = "040221bb-5175-4a6e-8d0b-2798f2f378aa";
-            string? scope = "uma_protection";
-            _httpContext.Request.QueryString = new QueryString("?scope=uma_protection");
+            string peis_id = "8586-4483-9899-17dd85af9074";
+            _httpContext.Request.Headers["X-Version"] = "b7301d11-f166-499a-9bf1-0598c2f1af52";
             var responseHeaderValue = "realm=\"PensionDashboard\", as_uri=\"https://as.pdp.com\", ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
 
             // Act
-            var result = await _controller.GetAsync(userGuid, scope);
+            var result = await _controller.GetAsync(peis_id);
             UnauthorizedObjectResult unAuthorizedResult = (UnauthorizedObjectResult)result;
             _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -103,56 +117,14 @@ namespace PeIsServiceEmulatorUnitTests
             Assert.True(wwwAuthenticate == responseHeaderValue);
         }
 
-        [Fact]
-        public async void WhenControllerIsCalled_WithNoAuthorisationHeader_CorrectPath_NoScope_ThenItShouldReturn_Unauthorised401Response()
-        {
-            // Arrange
-            string userGuid = "06f4b162-c29f-460c-b9ba-e9251e165798";
-
-            // Act
-            var result = await _controller.GetAsync(userGuid, string.Empty);
-
-            // Assert
-            Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
-        }
-
-        [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeaders_InvalidVersion_ThenItShouldReturn_BadReques400Response()
-        {
-            // Arrange
-            AddAuthorisationHeader();
-            _httpContext.Request.Headers["X-Version"] = "1";
-            string userGuid = "bf142408-ca72-4541-96a5-056cb5d8f301";
-            string? scope = "owner";
-
-            // Act
-            var result = await _controller.GetAsync(userGuid, scope);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
-        }
-
-        [Fact]
-        public async void WhenControllerIsCalled_WithCorrectHeaders_WrongUserGuid_ThenItShouldReturn_BadReques400Response()
-        {
-            // Arrange
-            AddAuthorisationHeader();
-            _httpContext.Request.Headers["X-Version"] = "1";
-            string userGuid = "1111-1111-1111-1111";
-            string? scope = "owner";
-
-            // Act
-            var result = await _controller.GetAsync(userGuid, scope);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
-        }
-
         private void AddAuthorisationHeader()
         {
-            _httpContext.Request.Headers["Authorisation"] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+            _httpContext.Request.Headers[HeaderNames.Authorization] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        }
+
+        private void AddInCorrectAuthorisationHeader()
+        {
+            _httpContext.Request.Headers[HeaderNames.Authorization] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
         }
     }
 }

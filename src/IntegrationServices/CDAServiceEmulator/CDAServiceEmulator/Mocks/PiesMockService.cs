@@ -3,7 +3,7 @@ using PeIsServiceEmulator.Models.Peis;
 
 namespace PeIsServiceEmulator.Mocks
 {
-    public static class MockService
+    public static class PiesMockService
     {
         public static async Task<PeiModel[]> GetPeisJsonMock()
         {

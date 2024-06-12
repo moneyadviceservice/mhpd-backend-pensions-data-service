@@ -1,15 +1,21 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.HttpLogging;
-using PeiIntegratioinService.HttpClients;
+using PeiIntegrationService.HttpClients.Implementation;
+using PeiIntegrationService.HttpClients.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpClient<CDAService>("CDAService", c =>
-{
+// add appsettings.json
+builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
-});
+builder.Services.AddHttpClient<CdaPiesServiceClient>("CdaPiesService", c => { });
+builder.Services.AddHttpClient<MapsCdaServiceClient>("MapsCdaService", c => { });
+builder.Services.AddHttpClient<MapsCdaServiceClient>("TokenIntegrationService", c => { });
 
 // Add services to the container.
-builder.Services.AddScoped<ICDAService, CDAService>();
+builder.Services.AddTransient<ICdaPiesServiceClient, CdaPiesServiceClient>();
+builder.Services.AddTransient<IMapsRqpServiceClient, MapsCdaServiceClient>();
+builder.Services.AddTransient<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
 
 builder.Services.AddControllers();
 
@@ -30,7 +36,6 @@ builder.Services.AddHttpLogging(logging =>
     logging.CombineLogs = true;
 });
 
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -41,9 +46,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.UseHttpLogging();
-
 app.Run();
+
+[ExcludeFromCodeCoverage]
+public partial class Program { }
+

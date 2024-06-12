@@ -1,4 +1,4 @@
-﻿namespace PeiIntegrationService.Models
+﻿namespace PeiIntegrationService.Models.PeiIntegrationService
 {
     public class ScopeEnum
     {

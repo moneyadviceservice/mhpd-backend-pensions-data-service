@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace PeiIntegrationService.Models
+namespace PeiIntegrationService.Models.CdaPiesService
 {
     public class PeiModel
     {

@@ -362,3 +362,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /PDPViewDataServicedEmulator/app/PDPViewDataServicedEmulator/appsettings.Development.json
 /CDAService/app/CDAService/CDAService/appsettings.Development.json
+/src/IntegrationServices/PeIIntegrationService/PeiIntegratioinService/appsettings.Development.json

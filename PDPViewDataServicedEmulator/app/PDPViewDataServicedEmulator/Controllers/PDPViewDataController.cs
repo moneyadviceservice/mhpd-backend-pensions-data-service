@@ -1,41 +1,87 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
+using PDPViewDataServicedEmulator.Mocks;
+using PDPViewDataServicedEmulator.Models;
+using System.Net.Http.Headers;
+using static PDPViewDataServicedEmulator.Utils.ViewDataTokenUtils;
 
 namespace PDPViewDataServicedEmulator.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class PDPViewDataController : ControllerBase
-    {   
-        private const string CDATokenEmulatorEndPoint = "https://auth-server/";
+    {       
+        private readonly string Kid = "c00b40ea-6da1-408a-a6c9-17b1ff45bb9a";
+        private readonly string Audience = "https://pdpviewdataservice/";       
+        private readonly string Subject = "324bqfw348f9q4398h3";
+        private const string BearerValue = "Bearer";
 
-        public PDPViewDataController() {}
+        public PDPViewDataController()
+        {          
+        }
 
         [HttpGet]
         [Route("/view-data/{asset_guid?}")]
-        public async Task<IActionResult> GetAsync([FromRoute] string? asset_guid, [FromQuery] string? scope)
+        public async Task<IActionResult> GetAsync([FromRoute] string? asset_guid)
         {
-            if (!ValidateAuthHeader())
-            {
-                return Unauthorized("Unauthorized");
-            }
 
-            return await Task.FromResult(Ok());
+            if (!ValidateAuthHeader())
+                return Unauthorized("Unauthorized");
+
+            Request.Headers.TryGetValue("X-Request-ID", out var xRequestId);
+
+            if (!ValidateGuid(xRequestId!) || !ValidateGuid(asset_guid!))
+                return BadRequest("Bad Request");
+
+            ViewDataMockModel viewData = new ViewDataMockService().GetViewData(asset_guid!);
+          
+            if (viewData == null)
+                return NotFound("Not Found");
+
+            string viewDataToken = GenerateViewDataToken(Kid, Audience, Subject, viewData);
+            
+            return Ok(await Task.FromResult(new ViewDataResponseModel { ViewDataToken = viewDataToken }));
         }
 
         private bool ValidateAuthHeader()
-        {
-            Request.Headers.TryGetValue("Authorisation", out var authorisation);
-
-            if (string.IsNullOrEmpty(authorisation.ToString()))
+        {         
+            var accessTokenValue = Request.Headers[HeaderNames.Authorization];
+            var parameter = string.Empty;
+            if (AuthenticationHeaderValue.TryParse(accessTokenValue, out var headerValue))
+            {
+                var scheme = headerValue.Scheme;
+                if (scheme != BearerValue)
+                {
+                    return false;
+                }
+                parameter = headerValue.Parameter;
+            }            
+            if (string.IsNullOrEmpty(parameter))
             {
                 var headers = Response.Headers;
                 headers.Append("WWW-Authenticate", "realm=\"PensionDashboard\", " +
-                    $"as_uri=\"{CDATokenEmulatorEndPoint}\", " +
-                    "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"");
+                        $"as_uri=\"https://pdp/ig/token\", " +
+                        "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"");
                 return false;
-            }
 
+            }
             return true;
         }
+
+        private bool ValidateGuid(string guid)
+        {
+            Guid.TryParse(guid, out var xguid);
+
+            if (xguid == Guid.Empty || string.IsNullOrEmpty(guid))
+                    return false;
+            
+            return true;
+        }
+        private string GenerateViewDataToken(string kid, string audience, string subject, ViewDataMockModel viewData)
+        {
+            ViewDataTokenManager _tokenManager = new ViewDataTokenManager(kid, audience, subject, viewData);
+            return _tokenManager.GenerateToken();
+        }
+
     }
 }

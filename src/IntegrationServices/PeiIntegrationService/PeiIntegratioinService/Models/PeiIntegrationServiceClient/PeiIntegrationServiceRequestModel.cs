@@ -2,8 +2,8 @@
 {
     public class PeiIntegrationServiceRequestModel
     {
-        public required string RequestId { get; set; }
+        public string? RequestId { get; set; }
 
-        public required string PeisId { get; set; }
+        public string? PeisId { get; set; }
     }
 }

@@ -49,7 +49,7 @@ namespace PeiIntegrationService.UnitTests
                 PeisId = "cd0e4fdc-8586-4483-9899-17dd85af9074",
             };
 
-            AddOtherHeaders("https://maps.com", "askdj902139012ekasdlasdj");
+            AddOtherHeaders("https://maps.com", "5a608b97-d738-4da7-b07d-f81861b5d60e");
 
             _iCDAPiesServiceClient.Setup(x => x.GetPiesAsync(It.IsAny<CdaPiesServiceRequestModel>()))
                 .Returns(Task.FromResult<CdaPiesServiceResponseModel?>(new CdaPiesServiceResponseModel
@@ -86,7 +86,7 @@ namespace PeiIntegrationService.UnitTests
         {
             //Arrange
             var wwwAuthenticateHeader = GetWwwAuthenticateResopnseHeader();
-            AddOtherHeaders("https://maps.com", "askdj902139012ekasdlasdj");
+            AddOtherHeaders("https://maps.com", "5a608b97-d738-4da7-b07d-f81861b5d60e");
 
             var request = new PeiIntegrationServiceRequestModel
             {
@@ -150,7 +150,7 @@ namespace PeiIntegrationService.UnitTests
                 RequestId = "qwertyuoip",
                 PeisId = string.Empty,
             };
-            AddOtherHeaders("https://maps.com", "askdj902139012ekasdlasdj");
+            AddOtherHeaders("https://maps.com", "5a608b97-d738-4da7-b07d-f81861b5d60e");
 
             // Act
             var result = await _controller.GetAsync(request);
@@ -163,7 +163,7 @@ namespace PeiIntegrationService.UnitTests
         public async void WhenControllerIsCalled_WithCorrectHeaders_InCorrectBody_ThenItShouldReturn_Bad_Request400Response()
         {
             //Arrange
-            AddOtherHeaders("https://maps.com", "askdj902139012ekasdlasdj");
+            AddOtherHeaders("https://maps.com", "5a608b97-d738-4da7-b07d-f81861b5d60e");
             var request = new PeiIntegrationServiceRequestModel
             {
                 RequestId = string.Empty,
@@ -182,7 +182,7 @@ namespace PeiIntegrationService.UnitTests
         public async void WhenControllerIsCalled_WithAuthHeaders_InCorrect_Iss_CorrectBody_ThenItShouldReturn_Bad_Request400Response()
         {
             //Arrange
-            AddOtherHeaders(string.Empty, "askdj902139012ekasdlasdj");
+            AddOtherHeaders(string.Empty, "5a608b97-d738-4da7-b07d-f81861b5d60e");
             var request = new PeiIntegrationServiceRequestModel
             {
                 RequestId = "qwertyuoip",

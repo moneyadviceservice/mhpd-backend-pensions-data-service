@@ -73,18 +73,18 @@ namespace PeiIntegratioinService.Controllers
         private bool ValidateMapsPeisServiceHeadersAndBody (PeiIntegrationServiceRequestModel request)
         {
 
-            Request.Headers.TryGetValue("iss", out var iss);
+            Request.Headers.TryGetValue("iss", out var xiss);
             Request.Headers.TryGetValue("userSessionId", out var userSessionId);
 
             if (string.IsNullOrEmpty(request.RequestId) ||
                 string.IsNullOrEmpty(request.PeisId) ||
-                string.IsNullOrEmpty(iss) || 
+                string.IsNullOrEmpty(xiss) || 
                 string.IsNullOrEmpty(userSessionId))
             {
                 return false;
             }
 
-            if (!ValidateGuid(request.RequestId) || !ValidateGuid(request.PeisId))
+            if (!ValidateGuid(request.RequestId) || !ValidateGuid(request.PeisId) || !ValidateGuid(userSessionId!))
             {
                 return false;
             }

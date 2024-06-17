@@ -10,9 +10,9 @@ namespace CDAPeIsServiceApiTests.Support
     {
         public static string localHostEndpoint = "http://localhost:5089/peis/1111-2222-3333-4444";
 
-        public static string AuthorisationCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJ";
+        public static string AuthorisationCode = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI";
 
-        public static string xRequestID = "1111-2222-3333-4444";
+        public static string xRequestID = "b7301d11-f166-499a-9bf1-0598c2f1af52";
 
         public static string xVersion = "1.0";
 
@@ -24,9 +24,11 @@ namespace CDAPeIsServiceApiTests.Support
 
         public static string azureCdaEmulatorPeiUrl = "cdaserviceemulator.azurewebsites.net/peis/cd0e4fdc-8586-4483-9899-17dd85af9074";
 
+        public static string azureCdaEmulatorPeiUrlWithoutPeisId = "cdaserviceemulator.azurewebsites.net/peis/";
+
         public static string azureCdaEmulatorHolderNameConfigurationsUrl = "cdaserviceemulator.azurewebsites.net/holdername-configurations";
 
-        public static string azureBaseUrl = "cdaserviceemulator.azurewebsites.net";
+        public static string cdaServiceEmulatorBaseUrl = "cdaserviceemulator.azurewebsites.net/";
 
         public static string firstElementGuid = "7075aa11-10ad-4b2f-a9f5-1068e79119bf";
 

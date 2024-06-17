@@ -75,16 +75,16 @@ namespace CDAServiceApiTests.Features
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Get Request with Valid inputs")]
+        [NUnit.Framework.DescriptionAttribute("Get Request With RPT Authorization with Valid inputs")]
         [NUnit.Framework.CategoryAttribute("smoke")]
         [NUnit.Framework.CategoryAttribute("cdapei")]
-        public virtual void GetRequestWithValidInputs()
+        public virtual void GetRequestWithRPTAuthorizationWithValidInputs()
         {
             string[] tagsOfScenario = new string[] {
                     "smoke",
                     "cdapei"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request With RPT Authorization with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 5
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -116,20 +116,17 @@ this.ScenarioInitialize(scenarioInfo);
         }
         
         [NUnit.Framework.TestAttribute()]
-        [NUnit.Framework.DescriptionAttribute("Get Request with various invalid inputs")]
+        [NUnit.Framework.DescriptionAttribute("Get Request With RPT Authorization with various invalid inputs")]
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("cdapei")]
-        [NUnit.Framework.TestCaseAttribute("uma_protection", "1111-2222-3333-4444", "1.0", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("owner", "2222-2222-3333-4444", "1.0", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("Invalid", "3333-2222-3333-4444", "1.0", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("", "0000-2222-3333-4444", "1.0", "11111111-1111-1111-1111-111111111111", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("uma_protection", "4444-2222-3333-4444", "1.0", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("owner", "5555-2222-3333-4444", "1.0", "11111111-1111-1111-1111-111111111111", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("uma_protection", "6666-2222-3333-4444", "1.0", "!\"£$%^&-*()-2345-6789-012345678901", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("owner", "7777-2222-3333-4444", "1", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("uma_protection", "8888-2222-3333-4444", "1.0", "", "NotFound", null)]
-        [NUnit.Framework.TestCaseAttribute("owner", "9999-2222-3333-4444", "", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "BadRequest", null)]
-        public virtual void GetRequestWithVariousInvalidInputs(string scope, string x_Request_ID, string x_Version, string gUID, string statusCode, string[] exampleTags)
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af51x", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af2", "0cbe2fcf-4332-4018-a42b-ad2488a810b6", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("", "11111111-1111-1111-1111-111111111111", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af55", "", "NotFound", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af54", "11111111-1111-1111-1111-1111111111112", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af55", "0cbe2fcf-4332-4018-a42b-ad2488a810", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af57", "!\"£$%^&-*()-2345-6789-012345678901", "BadRequest", null)]
+        public virtual void GetRequestWithRPTAuthorizationWithVariousInvalidInputs(string x_Request_ID, string pEISID, string statusCode, string[] exampleTags)
         {
             string[] @__tags = new string[] {
                     "regression",
@@ -140,12 +137,10 @@ this.ScenarioInitialize(scenarioInfo);
             }
             string[] tagsOfScenario = @__tags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("scope", scope);
             argumentsOfScenario.Add("X-Request-ID", x_Request_ID);
-            argumentsOfScenario.Add("X-Version", x_Version);
-            argumentsOfScenario.Add("GUID", gUID);
+            argumentsOfScenario.Add("PEISID", pEISID);
             argumentsOfScenario.Add("StatusCode", statusCode);
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with various invalid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request With RPT Authorization with various invalid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 10
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -167,11 +162,95 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 11
- testRunner.Given(string.Format("user sends request to \'Azure QA Environment\' endpoint \'with\' RPT authorization as" +
-                            " per \'{0}\' with request as \'{1}\' and version as \'{2}\' with guid as \'{3}\'", scope, x_Request_ID, x_Version, gUID), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given(string.Format("user sends request to \'Azure QA Environment\' endpoint \'with\' RPT authorization wi" +
+                            "th request as \'{0}\' with peisid as \'{1}\'", x_Request_ID, pEISID), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 12
  testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request With RPT Authorization with XRequestId missing in inputs")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("cdapei")]
+        public virtual void GetRequestWithRPTAuthorizationWithXRequestIdMissingInInputs()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "regression",
+                    "cdapei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request With RPT Authorization with XRequestId missing in inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 25
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 26
+ testRunner.Given("user sends request to \'Azure QA Environment\' endpoint \'with\' RPT authorization bu" +
+                        "t missing XRequestId", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 27
+ testRunner.Then("response is all ok with response code as \'BadRequest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request With RPT Authorization with PeisId missing in inputs")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("cdapei")]
+        public virtual void GetRequestWithRPTAuthorizationWithPeisIdMissingInInputs()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "regression",
+                    "cdapei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request With RPT Authorization with PeisId missing in inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 30
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 31
+ testRunner.Given("user sends request to \'Azure QA Environment\' endpoint \'with\' RPT authorization bu" +
+                        "t missing PeisId", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 32
+ testRunner.Then("response is all ok with response code as \'NotFound\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

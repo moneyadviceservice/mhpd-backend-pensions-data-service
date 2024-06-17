@@ -13,10 +13,10 @@ Scenario Outline: Get Request with various invalid inputs
 	Then response is all ok with response code as '<StatusCode>'
 
 Examples:
-	| X-Request-ID           | StatusCode |
-	| 1111-2222-3333-4444    | OK         |
-	|                        | BadRequest |
-	| 2222-2222-3333-4444xxx | BadRequest |
+	| X-Request-ID                            | StatusCode |
+	| b7301d11-f166-499a-9bf1-0598c2f1af54    | OK         |
+	|                                         | BadRequest |
+	| b7301d11-f166-499a-9bf1-0598c2f1af54xxx | OK         |
 
 @regression @holdernameconfigurations
 Scenario: Get Request with missing inputs

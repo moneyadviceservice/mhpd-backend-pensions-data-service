@@ -1,6 +1,7 @@
 using CDAPeIsServiceApiTests.Support;
 using CDAServiceApiTests.Support;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Newtonsoft.Json;
 using NUnit.Framework;
@@ -8,6 +9,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection.PortableExecutable;
 using System.Text.RegularExpressions;
 using static CDAServiceApiTests.Support.ResponseDataModel;
 
@@ -81,12 +83,34 @@ namespace CDAServiceApiTests.StepDefinitions
             {
                 uriBuilder = new UriBuilder("https", Parameters.azureCdaEmulatorPeiUrl);
             }
-            uriBuilder.Query = "scope=uma_protection";
+            //uriBuilder.Query = "scope=uma_protection";
             httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
-            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);
-            httpRequestMessage.Headers.Add("X-Version", Parameters.xVersion);
+            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);            
+            //httpRequestMessage.Headers.Add("X-Version", Parameters.xVersion);
+            if (authorisationCondition.Equals("with")) {
+                //httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
+                httpRequestMessage.Headers.Add("Authorization", $"Bearer {Parameters.AuthorisationCode}");
+            }
+            return httpRequestMessage;
+        }
+
+        HttpRequestMessage buildCdaPeiEndpointWithoutPeisId(string hostedOn, string authorisationCondition)
+        {
+            UriBuilder uriBuilder;
+            if (hostedOn.Equals("localhost"))
+            {
+                uriBuilder = new UriBuilder("http", "localhost", 5089, "peis/");
+            }
+            else
+            {
+                uriBuilder = new UriBuilder("https", Parameters.azureCdaEmulatorPeiUrlWithoutPeisId);
+            }            
+            httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uriBuilder.ToString());
+            httpRequestMessage.Headers.Add("X-Request-ID", Parameters.xRequestID);            
             if (authorisationCondition.Equals("with"))
-                httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
+            {                
+                httpRequestMessage.Headers.Add("Authorization", $"Bearer {Parameters.AuthorisationCode}");
+            }
             return httpRequestMessage;
         }
 
@@ -94,6 +118,23 @@ namespace CDAServiceApiTests.StepDefinitions
         public async Task GivenUserSendsRequestToEndpointRPTAuthorization(string hostedOn, string authorisationCondition)
         {
             httpRequestMessage = buildCdaPeiEndpoint(hostedOn, authorisationCondition);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization but missing XRequestId")]
+        public async Task GivenUserSendsRequestToEndpointRPTAuthorizationButMissingXRequestId(string hostedOn, string authorisationCondition)
+        {
+            httpRequestMessage = buildCdaPeiEndpoint(hostedOn, authorisationCondition);            
+            httpRequestMessage.Headers.Remove("X-Request-ID");
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization but missing PeisId")]
+        public async Task GivenUserSendsRequestToEndpointRPTAuthorizationButMissingPeisId(string hostedOn, string authorisationCondition)
+        {
+            httpRequestMessage = buildCdaPeiEndpointWithoutPeisId(hostedOn, authorisationCondition);            
             httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
             _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
         }
@@ -135,29 +176,25 @@ namespace CDAServiceApiTests.StepDefinitions
             }
         }
 
-        QueryRequest buildUrl(string hostedOn, string expectedGuid, string expectedVersion, string expectedRequestId, string expectedScope)
+        QueryRequest buildUrl(string hostedOn, string expectedPeisid, string expectedRequestId)
         {
             string? pathValue = null;
             string? queryScope = string.Empty;
             string? baseUrl = string.Empty;
             UriBuilder uriBuilder = new UriBuilder();
             queryRequest = new QueryRequest(uriBuilder);
-            if (expectedGuid.Equals(string.Empty))
+            if (expectedPeisid.Equals(string.Empty))
             {
-                pathValue = "peis/" + expectedGuid;
-                baseUrl = Parameters.azureBaseUrl;
+                pathValue = "peis/" + expectedPeisid;
+                baseUrl = Parameters.cdaServiceEmulatorBaseUrl + pathValue;
             }
             else
             {
-                pathValue = "/peis/" + expectedGuid;
-                baseUrl = Parameters.azureBaseUrl + pathValue;
-            }
-            if (!(expectedVersion.Equals(null)))
-                queryRequest.xVersion = expectedVersion;
+                pathValue = "/peis/" + expectedPeisid;
+                baseUrl = Parameters.cdaServiceEmulatorBaseUrl + pathValue;
+            }            
             if (!(expectedRequestId.Equals(null)))
-                queryRequest.xRequestID = expectedRequestId;
-            if (!(expectedScope.Equals(string.Empty)))
-                queryScope = "scope=" + expectedScope;
+                queryRequest.xRequestID = expectedRequestId;            
             else
                 queryScope = "";
             if (hostedOn.Equals("localhost"))
@@ -168,16 +205,18 @@ namespace CDAServiceApiTests.StepDefinitions
             return queryRequest;
         }
 
-        [StepDefinition(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization as per '([^']*)' with request as '([^']*)' and version as '([^']*)' with guid as '([^']*)'")]
-        public async Task GivenUserSendsRequestToEndpointRPTAuthorizationAsPerOwnerWithRequestAsAndVersionAsWithGuidAs
-            (string hostedOn, string authorisationCondition, string expectedScope, string expectedRequestId, string expectedVersion, string expectedGuid)
-        {            
-            queryRequest = buildUrl(hostedOn, expectedGuid, expectedVersion, expectedRequestId, expectedScope);
+        [Given(@"user sends request to '([^']*)' endpoint '([^']*)' RPT authorization with request as '([^']*)' with peisid as '([^']*)'")]
+        public async Task GivenUserSendsRequestToEndpointRPTAuthorizationWithRequestAsWithPeisidAs(string hostedOn, string authorisationCondition, string expectedRequestId, string expectedPeisid)
+        {           
+            queryRequest = buildUrl(hostedOn, expectedPeisid, expectedRequestId);
             httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, queryRequest.uriBuilder.ToString());
             httpRequestMessage.Headers.Add("X-Request-ID", queryRequest.xRequestID);
-            httpRequestMessage.Headers.Add("X-Version", queryRequest.xVersion);
+            //httpRequestMessage.Headers.Add("X-Version", queryRequest.xVersion);
             if (authorisationCondition.Equals("with"))
-                httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
+            {
+                //httpRequestMessage.Headers.Add("Authorisation", Parameters.AuthorisationCode);
+                httpRequestMessage.Headers.Add("Authorization", $"Bearer {Parameters.AuthorisationCode}");
+            }
             httpResponseMessage = await httpClient.SendAsync(httpRequestMessage);
             _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
         }

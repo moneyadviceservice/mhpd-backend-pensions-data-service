@@ -2,24 +2,32 @@
 API Tests with RPT Authorization as per policy on Service Emulator.  To Test on Local use localhost in place of Azure QA Environment.
 
 @smoke @cdapei
-Scenario: Get Request with Valid inputs
+Scenario: Get Request With RPT Authorization with Valid inputs
 	Given user sends request to 'Azure QA Environment' endpoint 'with' RPT authorization
 	Then response is all ok with response code as 'OK'
 
 @regression @cdapei
-Scenario Outline: Get Request with various invalid inputs
-	Given user sends request to 'Azure QA Environment' endpoint 'with' RPT authorization as per '<scope>' with request as '<X-Request-ID>' and version as '<X-Version>' with guid as '<GUID>'
+Scenario Outline: Get Request With RPT Authorization with various invalid inputs
+	Given user sends request to 'Azure QA Environment' endpoint 'with' RPT authorization with request as '<X-Request-ID>' with peisid as '<PEISID>'
 	Then response is all ok with response code as '<StatusCode>'
 
 Examples:
-	| scope          | X-Request-ID        | X-Version | GUID                                 | StatusCode |
-	| uma_protection | 1111-2222-3333-4444 | 1.0       | 0cbe2fcf-4332-4018-a42b-ad2488a810b6 | OK         |
-	| owner          | 2222-2222-3333-4444 | 1.0       | 0cbe2fcf-4332-4018-a42b-ad2488a810b6 | OK         |
-	| Invalid        | 3333-2222-3333-4444 | 1.0       | 0cbe2fcf-4332-4018-a42b-ad2488a810b6 | BadRequest |
-	|                | 0000-2222-3333-4444 | 1.0       | 11111111-1111-1111-1111-111111111111 | OK         |
-	| uma_protection | 4444-2222-3333-4444 | 1.0       | 0cbe2fcf-4332-4018-a42b-ad2488a810b6 | OK         |
-	| owner          | 5555-2222-3333-4444 | 1.0       | 11111111-1111-1111-1111-111111111111 | OK         |
-	| uma_protection | 6666-2222-3333-4444 | 1.0       | !"£$%^&-*()-2345-6789-012345678901   | BadRequest |
-	| owner          | 7777-2222-3333-4444 | 1         | 0cbe2fcf-4332-4018-a42b-ad2488a810b6 | BadRequest |
-	| uma_protection | 8888-2222-3333-4444 | 1.0       |                                      | NotFound   |
-	| owner          | 9999-2222-3333-4444 |           | 0cbe2fcf-4332-4018-a42b-ad2488a810b6 | BadRequest |	
+	| X-Request-ID                          | PEISID                                | StatusCode |
+	| b7301d11-f166-499a-9bf1-0598c2f1af51x | 0cbe2fcf-4332-4018-a42b-ad2488a810b6  | BadRequest |
+	| b7301d11-f166-499a-9bf1-0598c2f1af2   | 0cbe2fcf-4332-4018-a42b-ad2488a810b6  | BadRequest |
+	|                                       | 11111111-1111-1111-1111-111111111111  | BadRequest |
+	| b7301d11-f166-499a-9bf1-0598c2f1af55  |                                       | NotFound   |
+	| b7301d11-f166-499a-9bf1-0598c2f1af54  | 11111111-1111-1111-1111-1111111111112 | BadRequest |
+	| b7301d11-f166-499a-9bf1-0598c2f1af55  | 0cbe2fcf-4332-4018-a42b-ad2488a810    | BadRequest |
+	| b7301d11-f166-499a-9bf1-0598c2f1af57  | !"£$%^&-*()-2345-6789-012345678901    | BadRequest |
+
+@regression @cdapei
+Scenario: Get Request With RPT Authorization with XRequestId missing in inputs
+	Given user sends request to 'Azure QA Environment' endpoint 'with' RPT authorization but missing XRequestId
+	Then response is all ok with response code as 'BadRequest'
+
+@regression @cdapei
+Scenario: Get Request With RPT Authorization with PeisId missing in inputs
+	Given user sends request to 'Azure QA Environment' endpoint 'with' RPT authorization but missing PeisId
+	Then response is all ok with response code as 'NotFound'
+

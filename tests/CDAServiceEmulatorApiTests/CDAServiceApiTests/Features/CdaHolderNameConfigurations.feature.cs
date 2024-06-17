@@ -123,9 +123,9 @@ this.ScenarioInitialize(scenarioInfo);
         [NUnit.Framework.DescriptionAttribute("Get Request with various invalid inputs")]
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("holdernameconfigurations")]
-        [NUnit.Framework.TestCaseAttribute("1111-2222-3333-4444", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af54", "OK", null)]
         [NUnit.Framework.TestCaseAttribute("", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("2222-2222-3333-4444xxx", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("b7301d11-f166-499a-9bf1-0598c2f1af54xxx", "OK", null)]
         public virtual void GetRequestWithVariousInvalidInputs(string x_Request_ID, string statusCode, string[] exampleTags)
         {
             string[] @__tags = new string[] {

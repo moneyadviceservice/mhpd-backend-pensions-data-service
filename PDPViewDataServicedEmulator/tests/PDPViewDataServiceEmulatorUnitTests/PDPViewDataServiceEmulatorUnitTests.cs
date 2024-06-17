@@ -15,6 +15,9 @@ namespace PDPViewDataServiceEmulatorUnitTests
         public static string InValidAsset_Guid = "a39507c2-ce90-4970-9a15-f771f9ac648f";
         public static string EmptyAsset_Guid = string.Empty;      
         public static string EmptyResponseHeaderValue = string.Empty;
+        public const string Scope = "owner";
+        public const string InValidScope = "owner123abc";
+        public static string EmptyScope = string.Empty;
         public PDPViewDataServiceEmulatorUnitTests()
         {
             _httpContext = new DefaultHttpContext();            
@@ -29,14 +32,14 @@ namespace PDPViewDataServiceEmulatorUnitTests
         }
 
         [Fact]
-        public async void WhenControllerIsCalled_WithValidAuthorizationHeader_ValidAsset_Guid_ThenItShouldReturn_200OK()
+        public async void WhenControllerIsCalled_WithValidAuthorizationHeader_ValidAsset_Guid_ValidScope_ThenItShouldReturn_200OK()
         {
             // Arrange
             AddAuthorisationHeader();
             _httpContext.Request.Headers["X-Request-ID"] = "35cfcfb0-d98d-451f-83f1-e59933078555";
 
             // Act
-            var result = await _controller.GetAsync(ValidAsset_Guid!);
+            var result = await _controller.GetAsync(ValidAsset_Guid!, Scope);
             OkObjectResult okResult = (OkObjectResult)result;
             var data = (ViewDataResponseModel)okResult!.Value!;
 
@@ -53,9 +56,9 @@ namespace PDPViewDataServiceEmulatorUnitTests
 
         [Fact]
         public async void WhenControllerIsCalled_WithNoAuthorizationHeader_ThenItShouldReturn_Unauthorised401ResponseAnd_WwwAuthenticateResponseHeader()
-        { 
-            // Act
-            var result = await _controller.GetAsync(InValidAsset_Guid!);
+        {
+            // Act            
+            var result = await _controller.GetAsync(InValidAsset_Guid!, Scope);
             UnauthorizedObjectResult unAuthorizedResult = (UnauthorizedObjectResult)result;
             _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -71,8 +74,8 @@ namespace PDPViewDataServiceEmulatorUnitTests
             // Arrange
             AddAuthorisationHeaderNoToken();
 
-            // Act
-            var result = await _controller.GetAsync(EmptyAsset_Guid!);
+            // Act           
+            var result = await _controller.GetAsync(EmptyAsset_Guid!, Scope);
             UnauthorizedObjectResult unAuthorizedResult = (UnauthorizedObjectResult)result;
             _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -86,8 +89,8 @@ namespace PDPViewDataServiceEmulatorUnitTests
         public async void WhenControllerIsCalled_WithInCorrectAuthorizationHeader_ThenItShouldReturn_Unauthorised401Response_EmptyResponseHeader()
         {
             // Act
-            AddInCorrectAuthorisationHeader();
-            var result = await _controller.GetAsync(ValidAsset_Guid!);
+            AddInCorrectAuthorisationHeader();           
+            var result = await _controller.GetAsync(ValidAsset_Guid!, Scope);
             UnauthorizedObjectResult unAuthorizedResult = (UnauthorizedObjectResult)result;
             _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -103,8 +106,8 @@ namespace PDPViewDataServiceEmulatorUnitTests
             // Arrange
             AddAuthorisationHeader();
 
-            // Act
-            var result = await _controller.GetAsync(InValidAsset_Guid!);
+            // Act           
+            var result = await _controller.GetAsync(InValidAsset_Guid!, Scope);
             BadRequestObjectResult badRequestResult = (BadRequestObjectResult)result;
             _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -121,8 +124,8 @@ namespace PDPViewDataServiceEmulatorUnitTests
             // Arrange
             AddAuthorisationHeader();
 
-            // Act
-            var result = await _controller.GetAsync(EmptyAsset_Guid!);
+            // Act           
+            var result = await _controller.GetAsync(EmptyAsset_Guid!, Scope);
             BadRequestObjectResult badResult = (BadRequestObjectResult)result;
             _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -138,13 +141,47 @@ namespace PDPViewDataServiceEmulatorUnitTests
             AddAuthorisationHeader();
             _httpContext.Request.Headers["X-Request-ID"] = "35cfcfb0-d98d-451f-83f1-e59933078555";
 
-            // Act
-            var result = await _controller.GetAsync(InValidAsset_Guid!);
+            // Act           
+            var result = await _controller.GetAsync(InValidAsset_Guid!, Scope);
             NotFoundObjectResult notFoundResult = (NotFoundObjectResult)result;
 
             // Assert
             Assert.True(result.GetType() == typeof(NotFoundObjectResult));
             Assert.True(notFoundResult.StatusCode == (int)HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_InValidScope_WithAuthorizationHeader_ValidAsset_Guid_ThenItShouldReturn_BadRequest400Response()
+        {
+
+            // Arrange
+            AddAuthorisationHeader();
+
+            // Act           
+            var result = await _controller.GetAsync(ValidAsset_Guid!, InValidScope);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+            _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
+
+            //Assert
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+            Assert.False(wwwAuthenticate == ResponseHeaderValue());
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_EmptyScope_WithAuthorizationHeader_ValidAsset_Guid_ThenItShouldReturn_BadRequest400Response()
+        {
+
+            // Arrange
+            AddAuthorisationHeader();
+
+            // Act           
+            var result = await _controller.GetAsync(ValidAsset_Guid!, EmptyScope);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+            _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
+
+            //Assert
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+            Assert.False(wwwAuthenticate == ResponseHeaderValue());
         }
 
         private void AddAuthorisationHeader()

@@ -10,9 +10,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;
-    logging.RequestHeaders.Add("X-Request-ID");
-    //logging.RequestHeaders.Add("X-Version");
-    //logging.RequestHeaders.Add("Authorisation");
+    logging.RequestHeaders.Add("X-Request-ID");    
     logging.ResponseHeaders.Add("WWW-Authenticate");
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;
@@ -30,6 +28,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAuthorization();
 app.MapControllers();
+app.UseHttpLogging();
 app.Run();
 
 [ExcludeFromCodeCoverage]

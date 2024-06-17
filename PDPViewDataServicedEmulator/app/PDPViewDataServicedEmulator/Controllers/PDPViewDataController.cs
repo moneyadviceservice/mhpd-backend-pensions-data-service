@@ -10,41 +10,41 @@ namespace PDPViewDataServicedEmulator.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class PDPViewDataController : ControllerBase
-    {       
+    {
         private readonly string Kid = "c00b40ea-6da1-408a-a6c9-17b1ff45bb9a";
-        private readonly string Audience = "https://pdpviewdataservice/";       
+        private readonly string Audience = "https://pdp/ig/token";        
         private readonly string Subject = "324bqfw348f9q4398h3";
-        private const string BearerValue = "Bearer";
-
+        private readonly string BearerValue = "Bearer";
+        public readonly string Owner = "owner";
         public PDPViewDataController()
-        {          
+        {
         }
 
         [HttpGet]
         [Route("/view-data/{asset_guid?}")]
-        public async Task<IActionResult> GetAsync([FromRoute] string? asset_guid)
-        {
+        public async Task<IActionResult> GetAsync([FromRoute] string? asset_guid, [FromQuery] string? scope)
+        {            
 
             if (!ValidateAuthHeader())
                 return Unauthorized("Unauthorized");
 
             Request.Headers.TryGetValue("X-Request-ID", out var xRequestId);
 
-            if (!ValidateGuid(xRequestId!) || !ValidateGuid(asset_guid!))
+            if (!ValidateGuid(xRequestId!) || !ValidateGuid(asset_guid!) || string.IsNullOrEmpty(scope) || scope != Owner)
                 return BadRequest("Bad Request");
 
             ViewDataMockModel viewData = new ViewDataMockService().GetViewData(asset_guid!);
-          
+
             if (viewData == null)
                 return NotFound("Not Found");
 
             string viewDataToken = GenerateViewDataToken(Kid, Audience, Subject, viewData);
-            
+
             return Ok(await Task.FromResult(new ViewDataResponseModel { ViewDataToken = viewDataToken }));
         }
 
         private bool ValidateAuthHeader()
-        {         
+        {
             var accessTokenValue = Request.Headers[HeaderNames.Authorization];
             var parameter = string.Empty;
             if (AuthenticationHeaderValue.TryParse(accessTokenValue, out var headerValue))
@@ -55,7 +55,7 @@ namespace PDPViewDataServicedEmulator.Controllers
                     return false;
                 }
                 parameter = headerValue.Parameter;
-            }            
+            }
             if (string.IsNullOrEmpty(parameter))
             {
                 var headers = Response.Headers;
@@ -73,8 +73,8 @@ namespace PDPViewDataServicedEmulator.Controllers
             Guid.TryParse(guid, out var xguid);
 
             if (xguid == Guid.Empty || string.IsNullOrEmpty(guid))
-                    return false;
-            
+                return false;
+
             return true;
         }
         private string GenerateViewDataToken(string kid, string audience, string subject, ViewDataMockModel viewData)
@@ -82,6 +82,6 @@ namespace PDPViewDataServicedEmulator.Controllers
             ViewDataTokenManager _tokenManager = new ViewDataTokenManager(kid, audience, subject, viewData);
             return _tokenManager.GenerateToken();
         }
-
+        
     }
 }

@@ -18,6 +18,9 @@ namespace TokenIntegrationServiceUnitTests
         private const string As_UriValue = "http://localhost:5044";
         private const string InvalidRqpValue = "ABC123InvalidRqpValue";
         private const string InvalidTicketValue = "ZYZ123InvalidTicketValue";
+        private const string SpecialCharAs_UriValue = "http://localhost:1234@#$%^&&&&.net";
+        private const string SpecialCharRqpValue = "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJVadQssw5c@@##$%_+!!**({{^?,,,@";
+        private const string SpecialCharTicketValue = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.ASDFG@@##$%_+!!**({{^?,,,@";
 
         public TokenIntegrationServiceUnitTests()
         {
@@ -276,5 +279,66 @@ namespace TokenIntegrationServiceUnitTests
             Assert.True(data.GetType() == typeof(TokenIntegrationResponseModel));
             Assert.True(okResult.StatusCode == (int)HttpStatusCode.OK);
         }
+
+        [Fact]
+        public async void WhenControllerIsCalled_SpecialCharRqp_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = SpecialCharRqpValue,
+                Ticket = TicketValue,
+                As_Uri = As_UriValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_SpecialCharAs_Uri_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = RqpValue,
+                Ticket = TicketValue,
+                As_Uri = SpecialCharAs_UriValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+
+        [Fact]
+        public async void WhenControllerIsCalled_SpecialCharTicketValue_ThenItShouldReturn_BadRequest400Response()
+        {
+            // Arrange
+            var request = new TokenIntegrationRequestModel
+            {
+                Rqp = RqpValue,
+                Ticket = SpecialCharTicketValue,
+                As_Uri = As_UriValue
+            };
+
+            // Act
+            var result = await _controller.PostAsync(request);
+            BadRequestObjectResult badResult = (BadRequestObjectResult)result;
+
+            // Assert
+            Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+            Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        }
+
     }
 }

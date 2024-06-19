@@ -23,7 +23,7 @@ namespace TokenIntegrationService.Controllers
         [HttpPost]
         [Route("/rpts")]
         public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel requestBody)
-        {
+        {            
             if (!requestBody.Validate())
                 return BadRequest("Bad Request");
 

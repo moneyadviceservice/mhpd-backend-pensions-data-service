@@ -20,57 +20,41 @@ namespace PeiIntegrationServiceApiTests.StepDefinitions
             httpClient = new HttpClient();
             _scenarioContext = scenarioContext;
         }
+        HttpRequestMessage buildPeisEndPoint(string hostedOn)
+        {
+            RequestBodyData requestBodyData = new RequestBodyData();
+            requestBodyData.requestId = Parameters.requestBodyRequestId;
+            requestBodyData.peisId = Parameters.peisId;
+            var data = JsonConvert.SerializeObject(requestBodyData);
+            var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+            UriBuilder uriBuilder = new UriBuilder();
+            if (hostedOn.Equals("localhost"))
+            {
+                uriBuilder = new UriBuilder("http", Parameters.localHostUri, Parameters.portNo, "peis");
+            }
+            else if ((hostedOn.Equals("Azure QA Environment")))
+            {
+                uriBuilder = new UriBuilder("https", Parameters.azureUrl);
+            }            
+            Uri uri = uriBuilder.Uri;
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = uri,
+                Content = contentData
+            };            
+            httpRequestMessage.Headers.Add("iss", Parameters.iss);
+            httpRequestMessage.Headers.Add("userSessionId", Parameters.userSessionId);
+            httpRequestMessage.Headers.Add("rpt", Parameters.AuthorisationCode);
+            return httpRequestMessage;
+        }
 
         [StepDefinition(@"user sends get request to '([^']*)' peis endpoint")]
         public async Task GivenUserSendsGetRequestToPeisEndpoint(string hostedOn)
         {
-            if (hostedOn.Equals("localhost"))
-            {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                requestBodyData.requestId = Parameters.requestBodyRequestId;
-                requestBodyData.peisBaseUrl = Parameters.localHostRequestBodyPeisBaseUrl;
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-
-                UriBuilder uriBuilder = new UriBuilder("http", Parameters.localHostUri, Parameters.portNo, "peis");
-                uriBuilder.Query = "scope=owner";
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = uri,
-                    Content = contentData
-                };
-                httpRequestMessage.Headers.Add("cdaUserGuid", Parameters.guid);
-                httpRequestMessage.Headers.Add("iss", Parameters.iss);
-                httpRequestMessage.Headers.Add("userSessionId", Parameters.userSessionId);
-                httpRequestMessage.Headers.Add("rpt", Parameters.AuthorisationCode);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-            }
-            else if (hostedOn.Equals("Azure QA Environment"))
-            {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                requestBodyData.requestId = Parameters.requestBodyRequestId;
-                requestBodyData.peisBaseUrl = Parameters.azureHostRequestBodyPeisBaseUrl;
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureUrl);
-                uriBuilder.Query = "scope=owner";
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = uri,
-                    Content = contentData
-                };
-                httpRequestMessage.Headers.Add("cdaUserGuid", Parameters.guid);
-                httpRequestMessage.Headers.Add("iss", Parameters.iss);
-                httpRequestMessage.Headers.Add("userSessionId", Parameters.userSessionId);
-                httpRequestMessage.Headers.Add("rpt", Parameters.AuthorisationCode);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
-            }
+            httpRequestMessage = buildPeisEndPoint(hostedOn);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
         }
 
         [StepDefinition(@"response is all ok with response code as '([^']*)'")]
@@ -102,105 +86,119 @@ namespace PeiIntegrationServiceApiTests.StepDefinitions
             var responseData = JsonConvert.DeserializeObject<List<PeiResponses>>(responseContent);
             foreach (var item in responseData)
             {
-                string[] peiIds = item.pei.Split(":");
-                Assert.IsTrue(peiIds[0].Length == 36);
-                Assert.IsTrue(peiIds[1].Length == 36);
-                Assert.IsTrue(item.description.Equals("Pension Bee"));
-                Assert.IsTrue(item.retrievalStatus.Equals("NEW"));
-                Assert.IsTrue(item.retrievalRequestedTimestamp.HasValue);
+                if (item.pei is not null)
+                {
+                    string[] peiIds = item.pei.Split(":");
+                    Assert.IsTrue(peiIds[0].Length == 36);
+                    Assert.IsTrue(peiIds[1].Length == 36);
+                }
+                if (item.description is not null)
+                {
+                    Assert.IsTrue(item.description.Equals("Pension Bee"));
+                }
+                if (item.retrievalStatus is not null)
+                {
+                    Assert.IsTrue(item.retrievalStatus.Equals("NEW"));
+                }
+                if (item.retrievalRequestedTimestamp is not null)
+                {
+                    Assert.IsTrue(item.retrievalRequestedTimestamp.HasValue);
+                }
             }
         }
-
-        [Given(@"get request sent to '([^']*)' with headers as '([^']*)' for guid '([^']*)' for iss '([^']*)' for sessionid '([^']*)' for authorisation with params as '([^']*)' request body having '([^']*)' for request id '([^']*)' for request url")]
-        public async Task GivenGetRequestSentToWithHeadersAsForGuidForIssForSessionidForAuthorisationWithParamsAsRequestBodyHavingForRequestIdForRequestUrl
-            (string hostedOn, string cdaUserGuidValue, string issValue, string userSessionIdValue, string rptValue, string scope, string requestIdValue, string peiBaseUrlValue)
+        HttpRequestMessage buildPeisEndPointWithParameters
+            (string hostedOn, string iss, string userSessionId, string rpt, string requestId, string peisId)
         {
-            string? queryScope = string.Empty;
-            string? baseUrl = string.Empty;
-
+            RequestBodyData requestBodyData = new RequestBodyData();
+            if (!(requestId.Equals(string.Empty)))
+            {
+                requestBodyData.requestId = requestId;
+            }
+            if (!(peisId.Equals(string.Empty)))
+            {
+                requestBodyData.peisId = peisId;
+            }
+            var data = JsonConvert.SerializeObject(requestBodyData);
+            var contentData = new StringContent(data, Encoding.UTF8, "application/json");
+            UriBuilder uriBuilder = new UriBuilder();
             if (hostedOn.Equals("localhost"))
             {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                if (!(requestIdValue.Equals(string.Empty)))
-                    requestBodyData.requestId = requestIdValue;
-                if (peiBaseUrlValue.Equals(string.Empty))
-                    requestBodyData.peisBaseUrl = string.Empty;
-                else if (peiBaseUrlValue.EndsWith('x'))
-                    requestBodyData.peisBaseUrl = Parameters.localHostRequestBodyPeisBaseUrl + "xxx";
-                else
-                    requestBodyData.peisBaseUrl = Parameters.localHostRequestBodyPeisBaseUrl;
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-                UriBuilder uriBuilder = new UriBuilder("http", Parameters.localHostUri, Parameters.portNo, "peis");
-                if (scope.Equals(string.Empty))
-                    uriBuilder.Query = "scope=";
-                else if (scope.Equals("owner"))
-                    uriBuilder.Query = "scope=owner";
-                else
-                {
-                    var queryBuilder = "scope" + scope;
-                    uriBuilder.Query = queryBuilder;
-                }
-
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = uri,
-                    Content = contentData
-                };
-
-                if (!(cdaUserGuidValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("cdaUserGuid", cdaUserGuidValue);
-                if (!(issValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("iss", issValue);
-                if (!(userSessionIdValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("userSessionId", userSessionIdValue);
-                if (!(rptValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("rpt", rptValue);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                uriBuilder = new UriBuilder("http", Parameters.localHostUri, Parameters.portNo, "peis");
             }
-
-            else if (hostedOn.Equals("Azure QA Environment"))
+            else if ((hostedOn.Equals("Azure QA Environment")))
             {
-                RequestBodyData requestBodyData = new RequestBodyData();
-                if (!(requestIdValue.Equals(string.Empty)))
-                    requestBodyData.requestId = requestIdValue;
-                if (!(peiBaseUrlValue.Equals(string.Empty)))
-                    requestBodyData.peisBaseUrl = peiBaseUrlValue;
-                var data = JsonConvert.SerializeObject(requestBodyData);
-                var contentData = new StringContent(data, Encoding.UTF8, "application/json");
-                UriBuilder uriBuilder = new UriBuilder("https", Parameters.azureUrl);
-                if (scope.Equals(string.Empty))
-                    uriBuilder.Query = "scope=";
-                else if (scope.Equals("owner"))
-                    uriBuilder.Query = "scope=owner";
-                else
-                {
-                    var queryBuilder = "scope" + scope;
-                    uriBuilder.Query = queryBuilder;
-                }
-
-                Uri uri = uriBuilder.Uri;
-                var httpRequestMessage = new HttpRequestMessage
-                {
-                    Method = HttpMethod.Get,
-                    RequestUri = uri,
-                    Content = contentData
-                };
-
-                if (!(cdaUserGuidValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("cdaUserGuid", cdaUserGuidValue);
-                if (!(issValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("iss", issValue);
-                if (!(userSessionIdValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("userSessionId", userSessionIdValue);
-                if (!(rptValue.Equals(string.Empty)))
-                    httpRequestMessage.Headers.Add("rpt", rptValue);
-                httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
-                _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+                uriBuilder = new UriBuilder("https", Parameters.azureUrl);
+            }            
+            Uri uri = uriBuilder.Uri;
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = uri,
+                Content = contentData
+            };            
+            if (!(iss.Equals(string.Empty)))
+            {
+                httpRequestMessage.Headers.Add("iss", iss);
             }
+            if (!(userSessionId.Equals(string.Empty)))
+            {
+                httpRequestMessage.Headers.Add("userSessionId", userSessionId);
+            }
+            if (!(rpt.Equals(string.Empty)))
+            {
+                httpRequestMessage.Headers.Add("rpt", rpt);
+            }
+            return httpRequestMessage;
+        }
+
+        [StepDefinition(@"get request sent to '([^']*)' with headers as '([^']*)' for iss '([^']*)' for sessionid '([^']*)' for authorisation with request body having '([^']*)' for request id '([^']*)' for request peisId")]
+        public async Task GivenGetRequestSentToWithHeadersAsForIssForSessionidForAuthorisationWithRequestBodyHavingForRequestIdForRequestPeisId
+            (string hostedOn, string issValue, string userSessionIdValue, string rptValue, string requestIdValue, string peisId)
+        {
+            httpRequestMessage = buildPeisEndPointWithParameters(hostedOn, issValue, userSessionIdValue, rptValue, requestIdValue, peisId);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();            
+        }
+
+        [StepDefinition(@"user sends get request to '([^']*)' peis endpoint with missing iss")]
+        public async Task GivenUserSendsGetRequestToPeisEndpointWithMissingIss(string hostedOn)
+        {
+            httpRequestMessage = buildPeisEndPointWithParameters(hostedOn, string.Empty, Parameters.userSessionId, Parameters.AuthorisationCode, Parameters.requestBodyRequestId, Parameters.peisId);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends get request to '([^']*)' peis endpoint with missing userSessionId")]
+        public async Task GivenUserSendsGetRequestToPeisEndpointWithMissingUserSessionId(string hostedOn)
+        {
+            httpRequestMessage = buildPeisEndPointWithParameters(hostedOn, Parameters.iss, string.Empty, Parameters.AuthorisationCode, Parameters.requestBodyRequestId, Parameters.peisId);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends get request to '([^']*)' peis endpoint with missing rpt")]
+        public async Task GivenUserSendsGetRequestToPeisEndpointWithMissingRpt(string hostedOn)
+        {
+            httpRequestMessage = buildPeisEndPointWithParameters(hostedOn, Parameters.iss, Parameters.userSessionId, string.Empty, Parameters.requestBodyRequestId, Parameters.peisId);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends get request to '([^']*)' peis endpoint with missing requestId")]
+        public async Task GivenUserSendsGetRequestToPeisEndpointWithMissingRequestId(string hostedOn)
+        {
+            httpRequestMessage = buildPeisEndPointWithParameters(hostedOn, Parameters.iss, Parameters.userSessionId, Parameters.AuthorisationCode, string.Empty, Parameters.peisId);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
+        }
+
+        [StepDefinition(@"user sends get request to '([^']*)' peis endpoint with missing peisId")]
+        public async Task GivenUserSendsGetRequestToPeisEndpointWithMissingPeisId(string hostedOn)
+        {
+            httpRequestMessage = buildPeisEndPointWithParameters(hostedOn, Parameters.iss, Parameters.userSessionId, Parameters.AuthorisationCode, Parameters.requestBodyRequestId, string.Empty);
+            httpResponseMessage = await httpClient.SendAsync(httpRequestMessage).ConfigureAwait(false);
+            _scenarioContext["StatusResponse"] = httpResponseMessage.StatusCode.ToString();
         }
     }
 }
+

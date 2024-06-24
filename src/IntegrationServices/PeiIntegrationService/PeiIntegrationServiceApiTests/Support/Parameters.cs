@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PeiIntegrationServiceApiTests.Support
+﻿namespace PeiIntegrationServiceApiTests.Support
 {
     public class Parameters
     {
@@ -28,15 +22,15 @@ namespace PeiIntegrationServiceApiTests.Support
 
         public static string iss = "https://maps.com";
 
-        public static string userSessionId = "askdj902139012ekasdlasdj";
+        public static string userSessionId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
 
         public static string azureBaseUrl = "https://peiintegratiionservice.azurewebsites.net/peis";
 
         public static string azureUrl = "peiintegratiionservice.azurewebsites.net/peis";
 
-        public static string requestBodyRequestId = "qwertyuoip";
+        public static string requestBodyRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
 
-        public static string localHostRequestBodyPeisBaseUrl = "http://localhost:5089";
+        public static string peisId = "cd0e4fdc-8586-4483-9899-17dd85af9074";
 
         public static string azureHostRequestBodyPeisBaseUrl = "https://cdaserviceemulator.azurewebsites.net";
     }

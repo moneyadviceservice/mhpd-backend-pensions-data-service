@@ -77,13 +77,11 @@ namespace PeiIntegrationServiceApiTests.Features
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Get Request with Valid inputs")]
         [NUnit.Framework.CategoryAttribute("smoke")]
-        [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("pei")]
         public virtual void GetRequestWithValidInputs()
         {
             string[] tagsOfScenario = new string[] {
                     "smoke",
-                    "regression",
                     "pei"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
@@ -126,44 +124,31 @@ this.ScenarioInitialize(scenarioInfo);
         
         [NUnit.Framework.TestAttribute()]
         [NUnit.Framework.DescriptionAttribute("Get Request with various invalid inputs")]
-        [NUnit.Framework.CategoryAttribute("smoke")]
         [NUnit.Framework.CategoryAttribute("regression")]
         [NUnit.Framework.CategoryAttribute("pei")]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9071", "https://maps.com", "askdj902139012ekasdlasda", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9072", "https://maps.com", "askdj902139012ekasdlasdb", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.netxxx", "InternalServerError", null)]
-        [NUnit.Framework.TestCaseAttribute("11111111-1111-1111-1111-111111111173", "https://maps.com", "askdj902139012ekasdlasdc", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("11111111-1111-1111-1111-111111111174", "https://maps.com", "askdj902139012ekasdlasdd", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoipxxx", "https://cdaserviceemulator.azurewebsites.net", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9075", "https://maps.com", "askdj902139012ekasdlasde", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "", "https://cdaserviceemulator.azurewebsites.net", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9076", "https://maps.com", "askdj902139012ekasdlasda", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9077", "https://maps.com", "askdj902139012ekasdlasda", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "ownerxxx", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9078", "https://maps.com", "askdj902139012ekasdlasda", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "uma_protection", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "BadRequest", null)]
-        [NUnit.Framework.TestCaseAttribute("11111111-1111-1111-1111-111111111179", "https://maps.com", "askdj902139012ekasdlasdf", "", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "Unauthorized", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9080", "https://maps.com", "askdj902139012ekasdlasdm", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHIxxx", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9081", "https://maps.com", "", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "Unauthorized", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9082", "https://maps.com", "askdj902139012ekasdlasdxxx", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9083", "", "askdj902139012ekasdlasdi", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "Unauthorized", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9084", "https://maps.comxxx", "askdj902139012ekasdlasdh", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "OK", null)]
-        [NUnit.Framework.TestCaseAttribute("", "https://maps.com", "askdj902139012ekasdlasdj", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "Unauthorized", null)]
-        [NUnit.Framework.TestCaseAttribute("cd0e4fdc-8586-4483-9899-17dd85af9086xxx", "https://maps.com", "askdj902139012ekasdlasdk", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
-            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "owner", "qwertyuoip", "https://cdaserviceemulator.azurewebsites.net", "Unauthorized", null)]
-        public virtual void GetRequestWithVariousInvalidInputs(string cdaUserGuid, string iss, string userSessionId, string rpt, string scope, string requestId, string peiBaseUrl, string statusCode, string[] exampleTags)
+        [NUnit.Framework.TestCaseAttribute("", "29bf8cc0-b874-4725-bf3e-408486047acb", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af52", "cd0e4fdc-8586-4483-9899-17dd85af9072", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af55", "cd0e4fdc-8586-4483-9899-17dd85af9075", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047acfxxx", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af56", "cd0e4fdc-8586-4483-9899-17dd85af9076", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047ag", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af56", "cd0e4fdc-8586-4483-9899-17dd85af9076", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047aci", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyH", "b7301d11-f166-499a-9bf1-0598c2f1af59", "cd0e4fdc-8586-4483-9899-17dd85af9079", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047acj", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af60xxx", "cd0e4fdc-8586-4483-9899-17dd85af9080", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047ack", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "", "cd0e4fdc-8586-4483-9899-17dd85af9081", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047acl", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af62", "", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047acm", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af63", "cd0e4fdc-8586-4483-9899-17dd85af9083xxx", "BadRequest", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047acm", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af63", "cd0e4fdc-8586-4483-9899-17dd85af984", "BadRequest", null)]
+        public virtual void GetRequestWithVariousInvalidInputs(string iss, string userSessionId, string rpt, string requestId, string peisId, string statusCode, string[] exampleTags)
         {
             string[] @__tags = new string[] {
-                    "smoke",
                     "regression",
                     "pei"};
             if ((exampleTags != null))
@@ -172,13 +157,11 @@ this.ScenarioInitialize(scenarioInfo);
             }
             string[] tagsOfScenario = @__tags;
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            argumentsOfScenario.Add("cdaUserGuid", cdaUserGuid);
             argumentsOfScenario.Add("iss", iss);
             argumentsOfScenario.Add("userSessionId", userSessionId);
             argumentsOfScenario.Add("rpt", rpt);
-            argumentsOfScenario.Add("scope", scope);
             argumentsOfScenario.Add("requestId", requestId);
-            argumentsOfScenario.Add("peiBaseUrl", peiBaseUrl);
+            argumentsOfScenario.Add("peisId", peisId);
             argumentsOfScenario.Add("StatusCode", statusCode);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with various invalid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
 #line 14
@@ -202,12 +185,290 @@ this.ScenarioInitialize(scenarioInfo);
             {
                 this.ScenarioStart();
 #line 15
- testRunner.Given(string.Format("get request sent to \'Azure QA Environment\' with headers as \'{0}\' for guid \'{1}\' f" +
-                            "or iss \'{2}\' for sessionid \'{3}\' for authorisation with params as \'{4}\' request " +
-                            "body having \'{5}\' for request id \'{6}\' for request url", cdaUserGuid, iss, userSessionId, rpt, scope, requestId, peiBaseUrl), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+ testRunner.Given(string.Format("get request sent to \'Azure QA Environment\' with headers as \'{0}\' for iss \'{1}\' fo" +
+                            "r sessionid \'{2}\' for authorisation with request body having \'{3}\' for request i" +
+                            "d \'{4}\' for request peisId", iss, userSessionId, rpt, requestId, peisId), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
 #line 16
  testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request with various valid inputs")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("pei")]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "29bf8cc0-b874-4725-bf3e-408486047aca", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af51", "cd0e4fdc-8586-4483-9899-17dd85af9071", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.comxxx", "29bf8cc0-b874-4725-bf3e-408486047acc", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af53", "cd0e4fdc-8586-4483-9899-17dd85af9073", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("http://maps.co.uk", "29bf8cc0-b874-4725-bf3e-408486047acd", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI", "b7301d11-f166-499a-9bf1-0598c2f1af54", "cd0e4fdc-8586-4483-9899-17dd85af9074", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "6ee2ec99-70a6-4781-b2d2-da2cc75fd177", "", "b7301d11-f166-499a-9bf1-0598c2f1af52", "cd0e4fdc-8586-4483-9899-17dd85af9078", "OK", null)]
+        [NUnit.Framework.TestCaseAttribute("https://maps.com", "6ee2ec99-70a6-4781-b2d2-da2cc75fd177", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3" +
+            "Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHIxxx", "b7301d11-f166-499a-9bf1-0598c2f1af52", "cd0e4fdc-8586-4483-9899-17dd85af9078", "OK", null)]
+        public virtual void GetRequestWithVariousValidInputs(string iss, string userSessionId, string rpt, string requestId, string peisId, string statusCode, string[] exampleTags)
+        {
+            string[] @__tags = new string[] {
+                    "regression",
+                    "pei"};
+            if ((exampleTags != null))
+            {
+                @__tags = System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(@__tags, exampleTags));
+            }
+            string[] tagsOfScenario = @__tags;
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            argumentsOfScenario.Add("iss", iss);
+            argumentsOfScenario.Add("userSessionId", userSessionId);
+            argumentsOfScenario.Add("rpt", rpt);
+            argumentsOfScenario.Add("requestId", requestId);
+            argumentsOfScenario.Add("peisId", peisId);
+            argumentsOfScenario.Add("StatusCode", statusCode);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with various valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 32
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 33
+ testRunner.Given(string.Format("get request sent to \'Azure QA Environment\' with headers as \'{0}\' for iss \'{1}\' fo" +
+                            "r sessionid \'{2}\' for authorisation with request body having \'{3}\' for request i" +
+                            "d \'{4}\' for request peisId", iss, userSessionId, rpt, requestId, peisId), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 34
+ testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+#line 35
+ testRunner.And("response header contains rpt", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+#line 36
+ testRunner.And("response body contains pei with description, retrievalStatus, retrievalRequestedT" +
+                        "imestamp", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request with missing iss")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("pei")]
+        public virtual void GetRequestWithMissingIss()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "regression",
+                    "pei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with missing iss", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 47
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 48
+ testRunner.Given("user sends get request to \'Azure QA Environment\' peis endpoint with missing iss", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 49
+ testRunner.Then("response is all ok with response code as \'BadRequest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request with missing userSessionId")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("pei")]
+        public virtual void GetRequestWithMissingUserSessionId()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "regression",
+                    "pei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with missing userSessionId", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 52
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 53
+ testRunner.Given("user sends get request to \'Azure QA Environment\' peis endpoint with missing userS" +
+                        "essionId", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 54
+ testRunner.Then("response is all ok with response code as \'BadRequest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request with missing rpt")]
+        [NUnit.Framework.CategoryAttribute("smoke")]
+        [NUnit.Framework.CategoryAttribute("pei")]
+        public virtual void GetRequestWithMissingRpt()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "smoke",
+                    "pei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with missing rpt", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 57
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 58
+ testRunner.Given("user sends get request to \'Azure QA Environment\' peis endpoint with missing rpt", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 59
+ testRunner.Then("response is all ok with response code as \'OK\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request with missing requestId")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("pei")]
+        public virtual void GetRequestWithMissingRequestId()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "regression",
+                    "pei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with missing requestId", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 62
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 63
+ testRunner.Given("user sends get request to \'Azure QA Environment\' peis endpoint with missing reque" +
+                        "stId", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 64
+ testRunner.Then("response is all ok with response code as \'BadRequest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
+#line hidden
+            }
+            this.ScenarioCleanup();
+        }
+        
+        [NUnit.Framework.TestAttribute()]
+        [NUnit.Framework.DescriptionAttribute("Get Request with missing peisId")]
+        [NUnit.Framework.CategoryAttribute("regression")]
+        [NUnit.Framework.CategoryAttribute("pei")]
+        public virtual void GetRequestWithMissingPeisId()
+        {
+            string[] tagsOfScenario = new string[] {
+                    "regression",
+                    "pei"};
+            System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with missing peisId", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
+#line 67
+this.ScenarioInitialize(scenarioInfo);
+#line hidden
+            bool isScenarioIgnored = default(bool);
+            bool isFeatureIgnored = default(bool);
+            if ((tagsOfScenario != null))
+            {
+                isScenarioIgnored = tagsOfScenario.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((this._featureTags != null))
+            {
+                isFeatureIgnored = this._featureTags.Where(__entry => __entry != null).Where(__entry => String.Equals(__entry, "ignore", StringComparison.CurrentCultureIgnoreCase)).Any();
+            }
+            if ((isScenarioIgnored || isFeatureIgnored))
+            {
+                testRunner.SkipScenario();
+            }
+            else
+            {
+                this.ScenarioStart();
+#line 68
+ testRunner.Given("user sends get request to \'Azure QA Environment\' peis endpoint with missing peisI" +
+                        "d", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
+#line hidden
+#line 69
+ testRunner.Then("response is all ok with response code as \'BadRequest\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

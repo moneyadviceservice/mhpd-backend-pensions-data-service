@@ -7,7 +7,7 @@ namespace PeiIntegrationServiceApiTests.Support
         public class PeiResponseBody
         {
             [JsonProperty("PeiResponses")]
-            public PeiResponses PeiResponses { get; set; }
+            public PeiResponses? PeiResponses { get; set; }
         }
 
         public class PeiResponses

@@ -6,7 +6,7 @@
             "value": "PensionRequestFunction"
         },
         "storageAccountName": {
-            "value": "stgpensionrequestfunctiondev"
+            "value": "stgpensionrequestfuncdev"
         },
         "storageAccountType": {
             "value": "Standard_LRS"

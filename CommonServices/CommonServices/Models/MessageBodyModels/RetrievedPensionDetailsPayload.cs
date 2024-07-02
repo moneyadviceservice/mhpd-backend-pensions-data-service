@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CommonServices.Models
+namespace CommonServices.Models.MessageBodyModels
 {
-    public class RetrievedPensionDataModel
+    public class RetrievedPensionDetailsPayload
     {
         [JsonPropertyName("pensionRetrievalRecordId")]
         public string? PensionRetrievalRecordId { get; set; }
@@ -10,7 +10,7 @@ namespace CommonServices.Models
         [JsonPropertyName("pei")]
         public string? Pei { get; set; }
 
-        [JsonPropertyName("pensionArrangement")]
+        [JsonPropertyName("pensionArrangements")]
         public List<PensionArrangement>? PensionArrangements { get; set; }
 
     }

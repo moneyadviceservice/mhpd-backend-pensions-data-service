@@ -42,7 +42,6 @@
     },
     "variables": {
       "appServicePlan_externalId": "[resourceId(parameters('infrastructureResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-      "applicationInsightsName": "[parameters('functionAppName')]",
       "functionWorkerRuntime": "dotnet"
     },
     "resources": [
@@ -67,7 +66,6 @@
             "location": "[resourceGroup().location]",
             "kind": "functionapp,linux",
             "dependsOn": [
-                "[resourceId('Microsoft.Insights/components', variables('applicationInsightsName'))]",
                 "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
             ],
             "properties": {
@@ -76,10 +74,6 @@
             "siteConfig": {
                 "linuxFxVersion": "[parameters('linuxFxVersion')]",
                 "appSettings": [
-                        {
-                            "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
-                            "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').ConnectionString]"
-                        },
                         {
                             "name": "AzureWebJobsStorage",
                             "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-09-01').keys[0].value)]"
@@ -103,19 +97,6 @@
                     ]
                 }
             }
-        },
-        {
-            "type": "Microsoft.Insights/components",
-            "apiVersion": "2020-02-02",
-            "name": "[variables('applicationInsightsName')]",
-            "location": "[resourceGroup().location]",
-            "tags": {
-                "[format('hidden-link:{0}', resourceId('Microsoft.Web/sites', parameters('functionAppName')))]": "Resource"
-            },
-            "properties": {
-                "Application_Type": "web"
-            },
-            "kind": "web"
         }
     ]
 }

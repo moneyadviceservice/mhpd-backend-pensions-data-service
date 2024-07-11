@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
+using PDPViewDataServicedEmulator.CosmosRepository;
 using PDPViewDataServicedEmulator.Mocks;
 using PDPViewDataServicedEmulator.Models;
-using System.Net.Http.Headers;
 using static PDPViewDataServicedEmulator.Utils.ViewDataTokenUtils;
 
 namespace PDPViewDataServicedEmulator.Controllers
@@ -11,20 +12,23 @@ namespace PDPViewDataServicedEmulator.Controllers
     [ApiController]
     public class PDPViewDataController : ControllerBase
     {
-        private readonly string Kid = "c00b40ea-6da1-408a-a6c9-17b1ff45bb9a";
-        private readonly string Audience = "https://pdp/ig/token";        
-        private readonly string Subject = "324bqfw348f9q4398h3";
-        private readonly string BearerValue = "Bearer";
         public readonly string Owner = "owner";
-        public PDPViewDataController()
+        private readonly string BearerValue = "Bearer";
+        private readonly string Subject = "324bqfw348f9q4398h3";
+        private readonly IViewDataRepository _viewDataRepository;
+        private readonly string Audience = "https://pdp/ig/token";
+        private readonly string Kid = "c00b40ea-6da1-408a-a6c9-17b1ff45bb9a";
+        private readonly string Issuer = "Provider1-75b68255-444e-4d5f-bbfe-249c26d69963";
+
+        public PDPViewDataController(IViewDataRepository viewDataRepository)
         {
+            _viewDataRepository = viewDataRepository;
         }
 
         [HttpGet]
         [Route("/view-data/{asset_guid?}")]
         public async Task<IActionResult> GetAsync([FromRoute] string? asset_guid, [FromQuery] string? scope)
-        {            
-
+        {
             if (!ValidateAuthHeader())
                 return Unauthorized("Unauthorized");
 
@@ -33,12 +37,12 @@ namespace PDPViewDataServicedEmulator.Controllers
             if (!ValidateGuid(xRequestId!) || !ValidateGuid(asset_guid!) || string.IsNullOrEmpty(scope) || scope != Owner)
                 return BadRequest("Bad Request");
 
-            ViewDataMockModel viewData = new ViewDataMockService().GetViewData(asset_guid!);
+            var viewData =  _viewDataRepository.GetViewData(asset_guid!);
 
             if (viewData == null)
                 return NotFound("Not Found");
 
-            string viewDataToken = GenerateViewDataToken(Kid, Audience, Subject, viewData);
+            string viewDataToken = GenerateViewDataToken(Kid, Audience, Subject, viewData, Issuer);
 
             return Ok(await Task.FromResult(new ViewDataResponseModel { ViewDataToken = viewDataToken }));
         }
@@ -77,11 +81,10 @@ namespace PDPViewDataServicedEmulator.Controllers
 
             return true;
         }
-        private string GenerateViewDataToken(string kid, string audience, string subject, ViewDataMockModel viewData)
+        private string GenerateViewDataToken(string kid, string audience, string subject, ViewDataPayload viewData, string issuer)
         {
-            ViewDataTokenManager _tokenManager = new ViewDataTokenManager(kid, audience, subject, viewData);
+            ViewDataTokenManager _tokenManager = new ViewDataTokenManager(kid, audience, subject, viewData, issuer);
             return _tokenManager.GenerateToken();
         }
-        
     }
 }

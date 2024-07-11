@@ -16,11 +16,11 @@ namespace PDPViewDataServicedEmulator.Utils
             private string _subject = string.Empty;
             private string _viewData = string.Empty;
 
-            public ViewDataTokenManager(string kid, string audience, string subject, ViewDataMockModel viewData)
+            public ViewDataTokenManager(string kid, string audience, string subject, ViewDataPayload viewData, string issuer)
             {
                 _kid = kid!;
                 _audience = audience!;  
-                _issuer = viewData.Iss!;
+                _issuer = issuer;
                 _subject = subject!;
                 _viewData = viewData.ViewData!;
             }

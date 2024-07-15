@@ -7,11 +7,15 @@ namespace PensionRequestFunction.Transformer
 {
     public class ViewDataToPensionArrangementTransformer
     {
-        public string Transform(string externalAssetId, string viewDataPayload)
+        public string Transform(string externalAssetId, string pdpPensionArrangements)
         {
+            if (string.IsNullOrEmpty(pdpPensionArrangements))
+            {
+                throw new Exception("No arrangements present");
+            }
 
-            JsonDocument viewDataPayloadDocument = JsonDocument.Parse(viewDataPayload);
-            JsonElement viewDataPayloadRoot = viewDataPayloadDocument.RootElement;
+            JsonDocument pdpPensionArrangementsDocument = JsonDocument.Parse(pdpPensionArrangements);
+            JsonElement pdpPensionArrangementsRoot = pdpPensionArrangementsDocument.RootElement;
 
             // source root element
             JsonObject retrievedPensionDetailsPayload = new JsonObject();
@@ -20,16 +24,9 @@ namespace PensionRequestFunction.Transformer
             JsonArray pensionArrangements = new JsonArray();
             retrievedPensionDetailsPayload.Add("pensionArrangements", pensionArrangements);
 
-            JsonElement viewDataElement;
-
-            if (!viewDataPayloadRoot.TryGetProperty("view_data", out viewDataElement))
-            {
-                throw new Exception("No view_data present");
-            }
-
             JsonElement pdpArrangementsElement;
 
-            if (!viewDataElement.TryGetProperty("arrangements", out pdpArrangementsElement))
+            if (!pdpPensionArrangementsRoot.TryGetProperty("arrangements", out pdpArrangementsElement))
             {
                 throw new Exception("No arrangements present");
             }

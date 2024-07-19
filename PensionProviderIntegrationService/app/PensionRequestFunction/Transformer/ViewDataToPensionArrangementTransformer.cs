@@ -16,10 +16,7 @@ namespace PensionRequestFunction.Transformer
 
             JsonDocument pdpPensionArrangementsDocument = JsonDocument.Parse(pdpPensionArrangements);
             JsonElement pdpPensionArrangementsRoot = pdpPensionArrangementsDocument.RootElement;
-            // source root element
             JsonObject retrievedPensionDetailsPayload = new JsonObject();
-
-            // target root element
             JsonArray pensionArrangements = new JsonArray();
             retrievedPensionDetailsPayload.Add("pensionArrangements", pensionArrangements);
 
@@ -36,25 +33,23 @@ namespace PensionRequestFunction.Transformer
             }
 
             var arrayEnumerator = pdpArrangementsElement.EnumerateArray();
-
             foreach (var currentPDPArrangement in arrayEnumerator)
             {
                 JsonElement currentPDPArrangementJsonElement = currentPDPArrangement;
                 JsonObject currentPensionArrangement = GetPensionArrangement(externalAssetId, ref currentPDPArrangementJsonElement);
-
                 pensionArrangements.Add(currentPensionArrangement);
-
                 // alternate scheme names
                 AddAlternateSchemeNames(ref currentPDPArrangementJsonElement, ref currentPensionArrangement);
-
-                // alternate benefits
+                // benefitIllustrations
                 AddBenefitIllustrations(ref currentPDPArrangementJsonElement, ref currentPensionArrangement);
+                //pensionAdministrator
                 AddPensionAdministrator(ref currentPDPArrangementJsonElement, ref currentPensionArrangement);
+                //additionalDataSources
                 AddAdditionalDataSources(ref currentPDPArrangementJsonElement, ref currentPensionArrangement);
+                //employmentMembershipPeriods
+                AddemploymentMembershipPeriods(ref currentPDPArrangementJsonElement, ref currentPensionArrangement);
             }
-
             var result = ConvertRetrievedPensionDetailsPayload(retrievedPensionDetailsPayload);
-
             return result;
         }
 
@@ -90,31 +85,101 @@ namespace PensionRequestFunction.Transformer
 
             throw new Exception("MatchType not found");
         }
-
-        private bool GetRetirementDate(JsonElement arrangement, out JsonElement statePensionDate)
+        // pensionAdministrator
+        private void AddPensionAdministrator(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
         {
-            var statePensionExists = arrangement.TryGetProperty("statePensionDate", out statePensionDate);
-
-            if ( (statePensionExists == true) && !(statePensionDate.ValueKind == JsonValueKind.Undefined))
+            JsonNode pdpPensionAdministratorJsonNode = JsonNode.Parse(pdpArrangement.GetProperty("pensionAdministrator").GetRawText())!;
+            pensionArrangement.Add("pensionAdministrator", pdpPensionAdministratorJsonNode);
+        }
+        //alternateSchemeNames
+        private void AddAlternateSchemeNames(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
+        {
+            JsonArray alternateSchemeNames = new JsonArray();
+            JsonElement pdpAlternateSchemeName;
+            if (pdpArrangement.TryGetProperty("alternateSchemeName", out pdpAlternateSchemeName))
             {
-                return true;
+                alternateSchemeNames.Add(pdpAlternateSchemeName);
+                pensionArrangement.Add("alternateSchemeNames", alternateSchemeNames);
             }
 
-            return false;
+            return;
+        }
+        //employmentMembershipPeriods
+        private void AddemploymentMembershipPeriods(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
+        {
+            JsonArray employmentMembershipPeriods = new JsonArray();
+            JsonElement pdpEmploymentMembershipPeriods;
+            var tokenExists = pdpArrangement.TryGetProperty("employmentMembershipPeriods", out pdpEmploymentMembershipPeriods);
+            if (tokenExists == true && !(pdpEmploymentMembershipPeriods.ValueKind == JsonValueKind.Undefined))
+            {
+                employmentMembershipPeriods.Add(pdpEmploymentMembershipPeriods);
+                pensionArrangement.Add("employmentMembershipPeriods", employmentMembershipPeriods);
+            }
+
+            return;
+        }
+        //benefitIllustrations
+        private void AddBenefitIllustrations(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
+        {
+            JsonArray benefitIllustrations = new JsonArray();
+            JsonElement pdpBenefitIllustrations;
+            var tokenExists = pdpArrangement.TryGetProperty("benefitIllustrations", out pdpBenefitIllustrations);
+            if (tokenExists == true && !(pdpBenefitIllustrations.ValueKind == JsonValueKind.Undefined))
+            {
+                benefitIllustrations.Add(pdpBenefitIllustrations);
+                pensionArrangement.Add("benefitIllustrations", benefitIllustrations);
+            }
+
+            return;
         }
 
+        // additionalDataSources
+        private void AddAdditionalDataSources(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
+        {
+            JsonArray additionalDataSources = new JsonArray();
+            JsonElement pdpAdditionalDataSources;
+            if (pdpArrangement.TryGetProperty("additionalDataSources", out pdpAdditionalDataSources))
+            {
+                additionalDataSources.Add(pdpAdditionalDataSources);
+                pensionArrangement.Add("additionalDataSources", additionalDataSources);
+            }
+
+            return;
+        }
+        private string GetRetirementDateFromStatePensionDate(JsonElement arrangement)
+        {
+            JsonElement statePensionDate, retirementDate;
+
+            if (arrangement.TryGetProperty("statePensionDate", out statePensionDate)) 
+            {
+                if (!string.IsNullOrEmpty(statePensionDate.ToString()))
+                {
+                    return statePensionDate.ToString();
+                }
+            }
+            if (arrangement.TryGetProperty("retirementDate", out retirementDate))
+            {
+                if (!string.IsNullOrEmpty(retirementDate.ToString()))
+                {
+                    return retirementDate.ToString();
+                }
+            }
+
+            return statePensionDate.ToString();
+        }
+        
         private bool GetPensionType(JsonElement arrangement, out JsonElement pensionType)
-        {            
+        {
             var statePensionTypeExists = arrangement.TryGetProperty("pensionType", out pensionType);
 
             if ((statePensionTypeExists == true) && !(pensionType.ValueKind == JsonValueKind.Undefined))
             {
                 return true;
             }
-
+            
             return false;
         }
-
+        
         private bool GetStatePensionMessageEng(JsonElement arrangement, out JsonElement statePensionMessageEng)
         {
             var statePensionMessageEngExists = arrangement.TryGetProperty("statePensionMessageEng", out statePensionMessageEng);
@@ -126,7 +191,7 @@ namespace PensionRequestFunction.Transformer
 
             return false;            
         }
-
+        
         private bool GetStatePensionMessageWelsh(JsonElement arrangement, out JsonElement statePensionMessageWelsh)
         {
             var StatePensionMessageWelshExists = arrangement.TryGetProperty("statePensionMessageWelsh", out statePensionMessageWelsh);
@@ -139,89 +204,148 @@ namespace PensionRequestFunction.Transformer
             return false;
         }
 
-        // pensionAdministrator
-        private void AddPensionAdministrator(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
+        private bool GetPensionOrigin(JsonElement arrangement, out JsonElement pensionOrigin)
         {
-            JsonNode pdpPensionAdministratorJsonNode = JsonNode.Parse(pdpArrangement.GetProperty("pensionAdministrator").GetRawText())!;
-            pensionArrangement.Add("pensionAdministrator", pdpPensionAdministratorJsonNode);
+            if (arrangement.TryGetProperty("pensionOrigin", out pensionOrigin))
+            {
+                if (pensionOrigin.ToString() == "A" || pensionOrigin.ToString() == "PC" || pensionOrigin.ToString() == "PM" || pensionOrigin.ToString() == "PT" || pensionOrigin.ToString() == "WC" || pensionOrigin.ToString() == "WM" || pensionOrigin.ToString() == "WT")
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        //pensionArrangement
+        private bool GetPensionStatus(JsonElement arrangement, out JsonElement pensionStatus)
+        {
+            if (arrangement.TryGetProperty("pensionStatus", out pensionStatus))
+            {
+                if (pensionStatus.ToString() == "A" || pensionStatus.ToString() == "I" || pensionStatus.ToString() == "IPPF" || pensionStatus.ToString() == "IWU")
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool GetContactReference(JsonElement arrangement, out JsonElement possibleMatchReference)
+        {
+            var possibleMatchReferenceExists = arrangement.TryGetProperty("possibleMatchReference", out possibleMatchReference);
+            if ((possibleMatchReferenceExists == true) && !(possibleMatchReference.ValueKind == JsonValueKind.Undefined))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool GetStartDate(JsonElement arrangement, out JsonElement pensionStartDate)
+        {
+            var pensionStartDateExists = arrangement.TryGetProperty("pensionStartDate", out pensionStartDate);
+            if ((pensionStartDateExists == true) && !(pensionStartDate.ValueKind == JsonValueKind.Undefined))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool GetMembershipStartDate(JsonElement arrangement, out JsonElement employmentStartDate)
+        {
+            var employmentStartDateExists = arrangement.TryGetProperty("employmentStartDate", out employmentStartDate);
+            if ((employmentStartDateExists == true) && !(employmentStartDate.ValueKind == JsonValueKind.Undefined))
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool GetEmployerStatus(JsonElement arrangement, out JsonElement employerStatus)
+        {
+            if (arrangement.TryGetProperty("employerStatus", out employerStatus))
+            {
+                if (employerStatus.ToString() == "C" || employerStatus.ToString() == "H")
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool GetDateOfBirth(JsonElement arrangement, out JsonElement dateOfBirth)
+        {
+            var dateOfBirthExists = arrangement.TryGetProperty("dateOfBirth", out dateOfBirth);
+
+            if ((dateOfBirthExists == true) && !(dateOfBirth.ValueKind == JsonValueKind.Undefined))
+            {
+                return true;
+            }
+
+            return false;
+        }
+    
         private JsonObject GetPensionArrangement(string externalAssetId, ref JsonElement pdpArrangement)
         {
 
             JsonObject pensionArrangement = new JsonObject();
-            pensionArrangement!.Add("matchType", GetMatchType(pdpArrangement));
-            pensionArrangement!.Add("schemeName", pdpArrangement.GetProperty("pensionProviderSchemeName").GetString());
             pensionArrangement!.Add("externalAssetId", externalAssetId);
-
-            if (GetRetirementDate(pdpArrangement, out JsonElement statePensionDate))
+            pensionArrangement!.Add("schemeName", pdpArrangement.GetProperty("pensionProviderSchemeName").GetString());
+            pensionArrangement!.Add("matchType", GetMatchType(pdpArrangement));
+            pensionArrangement!.Add("retirementDate", GetRetirementDateFromStatePensionDate(pdpArrangement));
+           
+            if (GetDateOfBirth(pdpArrangement, out JsonElement dateOfBirth))
             {
-                pensionArrangement!.Add("retirementDate", statePensionDate.ToString());
+                pensionArrangement!.Add("dateOfBirth", dateOfBirth.ToString());
             }
-            if (GetPensionType(pdpArrangement, out JsonElement pensionType))
+
+            var pensionTypeExists = GetPensionType(pdpArrangement, out JsonElement pensionType);
+            if (pensionTypeExists != false && pensionType.ValueKind != JsonValueKind.Undefined)
             {
                 pensionArrangement!.Add("pensionType", pensionType.ToString());
             }
-            if (GetStatePensionMessageEng(pdpArrangement, out JsonElement statePensionMessageEng))
+           
+            var pensionOriginExists = GetPensionOrigin(pdpArrangement, out JsonElement pensionOrigin);
+            if (pensionOriginExists != false && pensionOrigin.ValueKind != JsonValueKind.Undefined)
+            {
+                pensionArrangement!.Add("pensionOrigin", pensionOrigin.ToString());
+            }
+            
+            var pensionStatusExists = GetPensionOrigin(pdpArrangement, out JsonElement pensionStatus);
+            if (pensionStatusExists != false && pensionStatus.ValueKind != JsonValueKind.Undefined)
+            {
+                pensionArrangement!.Add("pensionStatus", pensionStatus.ToString());
+            }
+            var statePensionMessageEngExists = GetStatePensionMessageEng(pdpArrangement, out JsonElement statePensionMessageEng);
+            if (statePensionMessageEngExists != false && statePensionMessageEng.ValueKind != JsonValueKind.Undefined)
             {
                 pensionArrangement!.Add("statePensionMessageEng", statePensionMessageEng.ToString());
             }
-            if (GetStatePensionMessageWelsh(pdpArrangement, out JsonElement statePensionMessageWelsh))
+            var StatePensionMessageWelshExists = GetStatePensionMessageWelsh(pdpArrangement, out JsonElement statePensionMessageWelsh);
+            if (StatePensionMessageWelshExists != false && statePensionMessageWelsh.ValueKind != JsonValueKind.Undefined)
             {
                 pensionArrangement!.Add("statePensionMessageWelsh", statePensionMessageWelsh.ToString());
             }
+
+            if (GetContactReference(pdpArrangement, out JsonElement possibleMatchReference))
+            {
+                pensionArrangement!.Add("contactReference", possibleMatchReference.ToString());
+            }
+           
+            if (GetStartDate(pdpArrangement, out JsonElement pensionStartDate))
+            {
+                pensionArrangement!.Add("startDate", pensionStartDate.ToString());
+            }
+      
+            var employerStatusExists = GetPensionOrigin(pdpArrangement, out JsonElement employerStatus);
+            if (employerStatusExists != false && employerStatus.ValueKind != JsonValueKind.Undefined)
+            {
+                pensionArrangement!.Add("employerStatus", employerStatus.ToString());
+            }
+           
+            if (GetMembershipStartDate(pdpArrangement, out JsonElement employmentStartDate))
+            {
+                pensionArrangement!.Add("membershipStartDate", employmentStartDate.ToString());
+            }
             return pensionArrangement;
         }
-
-        // alternateSchemeNames
-        private void AddAlternateSchemeNames(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
-        {
-
-            JsonArray alternateSchemeNames = new JsonArray();
-            JsonElement pdpAlternateSchemeName;
-            if (pdpArrangement.TryGetProperty("alternateSchemeName", out pdpAlternateSchemeName))
-            {
-                alternateSchemeNames.Add(pdpAlternateSchemeName);
-                pensionArrangement.Add("alternateSchemeNames", alternateSchemeNames);
-            }
-
-            return;
-        }
-
-        // additionalDataSources
-        private void AddAdditionalDataSources(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
-        {
-
-            JsonArray additionalDataSources = new JsonArray();
-
-            JsonElement pdpAdditionalDataSources;
-            if (pdpArrangement.TryGetProperty("additionalDataSources", out pdpAdditionalDataSources))
-            {
-                additionalDataSources.Add(pdpAdditionalDataSources);
-                pensionArrangement.Add("additionalDataSources", additionalDataSources);
-            }
-
-            return;
-        }
-
-        // benefitIllustrations
-        private void AddBenefitIllustrations(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
-        {
-
-            JsonArray benefitIllustrations = new JsonArray();
-            JsonElement pdpBenefitIllustrations;
-
-            var tokenExists = pdpArrangement.TryGetProperty("benefitIllustrations", out pdpBenefitIllustrations);
-
-            if (tokenExists == true && !(pdpBenefitIllustrations.ValueKind == JsonValueKind.Undefined))
-            {
-                pensionArrangement.Add("benefitIllustrations", pdpBenefitIllustrations.ToString());
-
-            }
-
-            return;
-        }
-
     }
 }

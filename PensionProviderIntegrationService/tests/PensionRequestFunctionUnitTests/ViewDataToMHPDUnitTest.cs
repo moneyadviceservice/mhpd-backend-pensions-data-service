@@ -1,9 +1,6 @@
-using System;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using CommonServices.Models;
-using Xunit;
 
 namespace PensionRequestFunctionUnitTests
 {
@@ -81,11 +78,6 @@ namespace PensionRequestFunctionUnitTests
             Assert.Equal("No arrangements present", ex.Message);
         }
 
-        private string GetEmptyViewDataPayload()
-        {
-            return "{\r\n\t\"arrangements\": []\r\n}";
-        }      
-
         [Fact]
         public void WhenViewDataEmptyArrangementsPresent_ThenThrowError()
         {
@@ -104,10 +96,13 @@ namespace PensionRequestFunctionUnitTests
         [Fact]
         public void WhenViewDataWithOutPossibleMatch_ThenThrowError()
         {
+            // Assign            
             var externalAssetId = "7f0763a9-ac18-43c3-b2e7-723a74eba292";           
             var viewDataPayload = GetViewDataPayloadWithOutPossibleMatch();
             JsonObject requestJson = JsonSerializer.Deserialize<JsonObject>(viewDataPayload)!;               
             var newViewDataPayload = JsonSerializer.Serialize<JsonObject>(requestJson)!;
+
+            // Act
             var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var exMatchType = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, newViewDataPayload));
             var exRetirementDate = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, newViewDataPayload));
@@ -528,6 +523,11 @@ namespace PensionRequestFunctionUnitTests
         private string GetViewDataPayloadWithEmptyStatePensionDateAndPensionType()
         {
             return "{\r\n\t\"arrangements\": [{\"pensionProviderSchemeName\":\"State Pension\",\"pensionType\":\"\",\"possibleMatch\":false,\"statePensionDate\":\"\",\"pensionAdministrator\":{\"name\":\"DWP\",\"contactMethods\":[{\"preferred\":false,\"contactMethodDetails\":{\"postalName\":\"Freepost DWP\",\"line1\":\"Pensions Service 3\",\"countryCode\":\"GB\"}},{\"preferred\":true,\"contactMethodDetails\":{\"url\":\"https://www.gov.uk/future-pension-centre\"}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 8007310175\",\"usage\":[\"M\",\"W\"]}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 8007310176\",\"usage\":[\"M\"]}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 8007310456\",\"usage\":[\"W\"]}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 1912182051\",\"usage\":[\"N\"]}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 1912183600\",\"usage\":[\"N\"]}}]},\"benefitIllustrations\":[{\"illustrationComponents\":[{\"illustrationType\":\"ERI\",\"calculationMethod\":\"BS\",\"payableDetails\":{\"payableDate\":\"2042-02-23\",\"annualAmount\":11502,\"monthlyAmount\":958.5,\"amountType\":\"INC\",\"increasing\":true}},{\"illustrationType\":\"AP\",\"calculationMethod\":\"BS\",\"payableDetails\":{\"payableDate\":\"2042-02-23\",\"annualAmount\":11502,\"monthlyAmount\":958.5,\"amountType\":\"INC\",\"increasing\":true}}],\"illustrationDate\":\"2024-08-24\"}],\"additionalDataSources\":[{\"url\":\"https://www.gov.uk/check-state-pension\",\"informationType\":\"SP\"}],\"statePensionMessageEng\":\"State pension message in English.\",\"statePensionMessageWelsh\":\"Neges pensiwn gwladol yn Saesneg.\"}]\r\n}";
+        }
+
+        private string GetEmptyViewDataPayload()
+        {
+            return "{\r\n\t\"arrangements\": []\r\n}";
         }
     }
 }

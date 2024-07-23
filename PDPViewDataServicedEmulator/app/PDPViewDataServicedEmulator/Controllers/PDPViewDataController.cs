@@ -15,14 +15,14 @@ namespace PDPViewDataServicedEmulator.Controllers
         public readonly string Owner = "owner";
         private readonly string BearerValue = "Bearer";
         private readonly string Subject = "324bqfw348f9q4398h3";
-        private readonly IViewDataRepository _viewDataRepository;
         private readonly string Audience = "https://pdp/ig/token";
         private readonly string Kid = "c00b40ea-6da1-408a-a6c9-17b1ff45bb9a";
+        private readonly ICosmosDbRepository<ViewDataPayload> _cosmosDbRepository;
         private readonly string Issuer = "Provider1-75b68255-444e-4d5f-bbfe-249c26d69963";
 
-        public PDPViewDataController(IViewDataRepository viewDataRepository)
+        public PDPViewDataController(ICosmosDbRepository<ViewDataPayload> cosmosDbRepository)
         {
-            _viewDataRepository = viewDataRepository;
+            _cosmosDbRepository = cosmosDbRepository;
         }
 
         [HttpGet]
@@ -37,12 +37,15 @@ namespace PDPViewDataServicedEmulator.Controllers
             if (!ValidateGuid(xRequestId!) || !ValidateGuid(asset_guid!) || string.IsNullOrEmpty(scope) || scope != Owner)
                 return BadRequest("Bad Request");
 
-            var viewData =  _viewDataRepository.GetViewData(asset_guid!);
+            var viewData = await _cosmosDbRepository.GetByIdAsync(asset_guid, asset_guid);
 
             if (viewData == null)
                 return NotFound("Not Found");
 
-            string viewDataToken = GenerateViewDataToken(Kid, Audience, Subject, viewData, Issuer);
+            string viewDataToken = GenerateViewDataToken(Kid, Audience, Subject, 
+                new ViewDataPayload { AssetGuid = viewData!.AssetGuid, 
+                                    ViewData = viewData.ViewData },
+                Issuer);
 
             return Ok(await Task.FromResult(new ViewDataResponseModel { ViewDataToken = viewDataToken }));
         }

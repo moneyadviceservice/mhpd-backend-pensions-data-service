@@ -1,9 +1,31 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Azure.Cosmos;
+using PDPViewDataServicedEmulator.CosmosRepository;
+using PDPViewDataServicedEmulator.Mocks;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddSingleton<ICosmosDbRepository<ViewDataPayload>>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+    var account = configuration["AzureCosmosDb:Account"];
+    var key = configuration["AzureCosmosDb:Key"];
+    var databaseName = configuration["AzureCosmosDb:DatabaseName"];
+    var containerName = configuration["AzureCosmosDb:ContainerName"];
+
+    var cosmosClient = new CosmosClient(account, key);
+    // Once Managed identity work un comment this and comment line 20
+    //CosmosClient cosmosClient = new(
+    //    accountEndpoint: configuration["AzureCosmosDb:Account"],
+    //    tokenCredential: new DefaultAzureCredential()
+    //    );
+
+    return new CosmosDbRepository<ViewDataPayload>(cosmosClient, databaseName!, containerName!);
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

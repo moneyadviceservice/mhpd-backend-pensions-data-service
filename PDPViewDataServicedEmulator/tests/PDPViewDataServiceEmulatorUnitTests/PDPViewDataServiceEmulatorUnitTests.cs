@@ -1,6 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using PDPViewDataServicedEmulator.Controllers;
@@ -19,15 +20,15 @@ namespace PDPViewDataServiceEmulatorUnitTests
         private readonly PDPViewDataController _controller;
         public static string EmptyAsset_Guid = string.Empty;
         public static string EmptyResponseHeaderValue = string.Empty;
-        private readonly Mock<IViewDataRepository> mockviewDataRepository;
+        private readonly Mock<ICosmosDbRepository<ViewDataPayload>> mockcosmosDbRepository;
         public static string ValidAsset_Guid = "1ba03e25-659a-43b8-ae77-b956df168969";
         public static string InValidAsset_Guid = "a39507c2-ce90-4970-9a15-f771f9ac648f";
 
-       public PDPViewDataServiceEmulatorUnitTests()
+        public PDPViewDataServiceEmulatorUnitTests()
         {
-            mockviewDataRepository = new Mock<IViewDataRepository>();
+            mockcosmosDbRepository = new Mock<ICosmosDbRepository<ViewDataPayload>>();
             _httpContext = new DefaultHttpContext();
-            _controller = new PDPViewDataController(mockviewDataRepository.Object)
+            _controller = new PDPViewDataController(mockcosmosDbRepository.Object)
             {
                 ControllerContext = new ControllerContext()
                 {
@@ -35,23 +36,23 @@ namespace PDPViewDataServiceEmulatorUnitTests
                 }
             };
 
-            mockviewDataRepository.Setup(x => x.GetViewData(ValidAsset_Guid)).Returns(
-                new ViewDataPayload
+            mockcosmosDbRepository.Setup(x => x.GetByIdAsync(ValidAsset_Guid, ValidAsset_Guid)).ReturnsAsync(
+                new ViewDataPayload 
                 {
-                    AssetGuid = "1ba03e25-659a-43b8-ae77-b956df168969",
+                    AssetGuid= "1ba03e25-659a-43b8-ae77-b956df168969",
                     ViewData = "{\r\n\t\"arrangements\": [\r\n\t\t{\r\n\t\t\t\"pensionProviderSchemeName\": \"My Company Direct Contribution Scheme\",\r\n\t\t\t\"alternateSchemeName\": {\r\n\t\t\t\t\"name\": \"Converted from My Old Direct Contribution Scheme\",\r\n\t\t\t\t\"alternateNameType\": \"FOR\"\r\n\t\t\t},\r\n\t\t\t\"possibleMatch\": true,\r\n\t\t\t\"possibleMatchReference\": \"Q12345\",\r\n\t\t\t\"pensionAdministrator\": {\r\n\t\t\t\t\"name\": \"Pension Company 1\",\r\n\t\t\t\t\"contactMethods\": [\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\t\"preferred\": false,\r\n\t\t\t\t\t\t\"contactMethodDetails\": {\r\n\t\t\t\t\t\t\t\"email\": \"example@examplemyline.com\"\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t},\r\n\t\t\t\t\t{\r\n\t\t\t\t\t\t\"preferred\": true,\r\n\t\t\t\t\t\t\"contactMethodDetails\": {\r\n\t\t\t\t\t\t\t\"number\": \"+123 1111111111\",\r\n\t\t\t\t\t\t\t\"usage\": [\r\n\t\t\t\t\t\t\t\t\"A\",\r\n\t\t\t\t\t\t\t\t\"M\"\r\n\t\t\t\t\t\t\t]\r\n\t\t\t\t\t\t}\r\n\t\t\t\t\t}\r\n\t\t\t\t]\r\n\t\t\t}\r\n\t\t}\r\n\t]\r\n}"
-                });
-        }
+                });                
+            }
 
         [Fact]
         public async void WhenControllerIsCalled_WithValidAuthorizationHeader_ValidAsset_Guid_ValidScope_ThenItShouldReturn_200OK()
         {
             // Arrange
-            AddAuthorisationHeader();
+             AddAuthorisationHeader();
             _httpContext.Request.Headers["X-Request-ID"] = "35cfcfb0-d98d-451f-83f1-e59933078555";
 
             // Act
-            var result = await _controller.GetAsync(ValidAsset_Guid!, Scope);
+            var result = await _controller.GetAsync(ValidAsset_Guid!,Scope);
             OkObjectResult okResult = (OkObjectResult)result;
             var data = (ViewDataResponseModel)okResult!.Value!;
 
@@ -202,10 +203,10 @@ namespace PDPViewDataServiceEmulatorUnitTests
             // Arrange
             AddAuthorisationHeader();
             _httpContext.Request.Headers["X-Request-ID"] = "35cfcfb0-d98d-451f-83f1-e59933078555";
-            mockviewDataRepository.Setup(x => x.GetViewData(ValidAsset_Guid));
-
+            mockcosmosDbRepository.Setup(x => x.GetByIdAsync(InValidAsset_Guid, Scope));
+            
             // Act           
-            var result = await _controller.GetAsync(ValidAsset_Guid!, Scope);
+            var result = await _controller.GetAsync(InValidAsset_Guid!,Scope);
             NotFoundObjectResult notFoundResult = (NotFoundObjectResult)result;
 
             // Assert
@@ -234,5 +235,62 @@ namespace PDPViewDataServiceEmulatorUnitTests
                 "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
         }
 
+    }
+
+    public class CosmosRepositoryUnitTests
+    {
+        private readonly Mock<CosmosClient> _cosmosClient;
+        private readonly Mock<Database> _database;
+        private readonly Mock<Container> _container;
+        private readonly Mock<ItemResponse<ViewDataPayload>> _databasemockItemResponse;
+
+        public CosmosRepositoryUnitTests()
+        {
+            _cosmosClient = new Mock<CosmosClient>();
+            _database = new Mock<Database>();
+            _container = new Mock<Container>();
+
+            var response = new ViewDataPayload { AssetGuid = "1ba03e25-659a-43b8-ae77-b956df168969", ViewData = "View Data Payload" };
+
+            _databasemockItemResponse = new Mock<ItemResponse<ViewDataPayload>>();
+            _databasemockItemResponse.Setup(x => x.Resource).Returns(response);
+            _container.Setup(x => x.ReadItemAsync<ViewDataPayload>(It.IsAny<string>(), It.IsAny<PartitionKey>(), It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_databasemockItemResponse.Object);
+
+            _database.Setup(x => x.GetContainer(It.IsAny<string>())).Returns(_container.Object);
+            _cosmosClient.Setup(x => x.GetDatabase(It.IsAny<string>())).Returns(_database.Object!);
+
+            _databasemockItemResponse.Setup(x => x.Equals(It.IsAny<ViewDataPayload>())).Returns(true);
+            _databasemockItemResponse.Setup(x => x.Resource).Returns(response);
+            _container.Setup(x => x.ReadItemAsync<ViewDataPayload>(It.IsAny<string>(), It.IsAny<PartitionKey>(), It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_databasemockItemResponse.Object);
+        }
+
+
+        [Fact]
+        public async void WhenGetByIdAsyncIsCalled_WithValidAsset_Guid_ThenItShouldReturn_ViewDataPayload()
+        {
+            // Arrange
+            var cosmosDbRepository = new CosmosDbRepository<ViewDataPayload>(_cosmosClient.Object, "databaseName", "containerName");
+
+            // Act
+            var result = await cosmosDbRepository.GetByIdAsync("1ba03e25-659a-43b8-ae77-b956df168969", "1ba03e25-659a-43b8-ae77-b956df168969");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result!.AssetGuid == "1ba03e25-659a-43b8-ae77-b956df168969");
+        }
+
+        [Fact]
+        public async void WhenGetByIdAsyncIsCalled_WithInValidAsset_Guid_ThenItShouldReturn_Null()
+        {
+            // Arrange
+            _databasemockItemResponse.Setup(x => x.Resource).Returns<ViewDataPayload>(null!);
+            var cosmosDbRepository = new CosmosDbRepository<ViewDataPayload>(_cosmosClient.Object, "databaseName", "containerName");
+
+            // Act
+            var result = await cosmosDbRepository.GetByIdAsync("a39507c2-ce90-4970-9a15-f771f9ac648f", "a39507c2-ce90-4970-9a15-f771f9ac648f");
+
+            // Assert
+            Assert.Null(result);
+        }
     }
 }

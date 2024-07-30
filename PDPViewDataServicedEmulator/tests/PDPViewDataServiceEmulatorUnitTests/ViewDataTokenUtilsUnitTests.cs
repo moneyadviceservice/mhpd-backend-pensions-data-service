@@ -9,7 +9,7 @@ namespace PDPViewDataServiceEmulatorUnitTests
         private const string _audience = "https://pdp/ig/token";       
         private const string _subject = "324bqfw348f9q4398h3";   
         private readonly ViewDataTokenManager _tokenManager;
-        private readonly string _issuer = "Provider1-75b68255-444e-4d5f-bbfe-249c26d69963";
+        private readonly string _issuer = "DATA_PROVIDER_1fd1da88-9fb3-461c-a48a-3dba21bfba17";
 
         ViewDataPayload viewDataModelObject = new ViewDataPayload
         {

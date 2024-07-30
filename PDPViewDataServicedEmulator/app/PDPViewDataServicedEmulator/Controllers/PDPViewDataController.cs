@@ -13,13 +13,12 @@ namespace PDPViewDataServicedEmulator.Controllers
     public class PDPViewDataController : ControllerBase
     {
         public readonly string Owner = "owner";
-        private readonly string BearerValue = "Bearer";
-        private readonly string Subject = "324bqfw348f9q4398h3";
+        private readonly string BearerValue = "Bearer";      
+        private readonly string Subject =   "324bqfw348f9q4398h3";       
         private readonly string Audience = "https://pdp/ig/token";
         private readonly string Kid = "c00b40ea-6da1-408a-a6c9-17b1ff45bb9a";
         private readonly ICosmosDbRepository<ViewDataPayload> _cosmosDbRepository;
-        private readonly string Issuer = "Provider1-75b68255-444e-4d5f-bbfe-249c26d69963";
-
+        private readonly string Issuer = "DATA_PROVIDER_1fd1da88-9fb3-461c-a48a-3dba21bfba17";
         public PDPViewDataController(ICosmosDbRepository<ViewDataPayload> cosmosDbRepository)
         {
             _cosmosDbRepository = cosmosDbRepository;

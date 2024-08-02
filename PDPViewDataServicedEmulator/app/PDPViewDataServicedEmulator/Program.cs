@@ -12,15 +12,17 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<ICosmosDbRepository<ViewDataPayload>>(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-    var account = configuration["AzureCosmosDb:Account"];
-    var key = configuration["AzureCosmosDb:Key"];
-    var databaseName = configuration["AzureCosmosDb:DatabaseName"];
+
+    var account = configuration.GetSection("AzureCosmosDb")["Account"];
+    var key = configuration.GetSection("AzureCosmosDb")["Key"];
+    var databaseName = configuration.GetSection("AzureCosmosDb")["DatabaseName"];
     var containerName = configuration["AzureCosmosDb:ContainerName"];
 
     var cosmosClient = new CosmosClient(account, key);
-    // Once Managed identity work un comment this and comment line 20
+    
+    // Once Managed identity works uncomment this block and comment line 21
     //CosmosClient cosmosClient = new(
-    //    accountEndpoint: configuration["AzureCosmosDb:Account"],
+    //    accountEndpoint: configuration.GetSection("AzureCosmosDb")["Account"],
     //    tokenCredential: new DefaultAzureCredential()
     //    );
 

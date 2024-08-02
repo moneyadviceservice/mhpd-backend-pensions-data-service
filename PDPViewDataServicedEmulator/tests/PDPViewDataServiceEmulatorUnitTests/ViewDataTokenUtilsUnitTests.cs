@@ -1,4 +1,5 @@
 ﻿using PDPViewDataServicedEmulator.Mocks;
+using PDPViewDataServicedEmulator.Models;
 using static PDPViewDataServicedEmulator.Utils.ViewDataTokenUtils;
 
 namespace PDPViewDataServiceEmulatorUnitTests
@@ -29,6 +30,24 @@ namespace PDPViewDataServiceEmulatorUnitTests
 
             // Assert
             Assert.True(!string.IsNullOrEmpty(token));
+        }
+
+        [Fact]
+        public void GivenATokenManager_WhenTokenIsGeneratedAndValidated_ThenItValidatesTheToken()
+        {
+            // Act
+            var token = _tokenManager.GenerateToken();
+            var result = _tokenManager.ValidateToken(token, out TokenModel tokenModel);
+            
+            // Assert
+            Assert.True(!string.IsNullOrEmpty(token));
+            Assert.True(result == true);
+            Assert.True(!(tokenModel == null));
+            Assert.True(tokenModel.Subject ==_subject);
+            Assert.True(tokenModel.Issuer ==_issuer);
+            Assert.True(!string.IsNullOrEmpty(tokenModel.Audience));
+            Assert.True(tokenModel.Audience == _audience);
+            Assert.True(Convert.ToInt64(tokenModel.Expiry) - Convert.ToInt64(tokenModel.IssuedAt) == 60);
         }
 
     }

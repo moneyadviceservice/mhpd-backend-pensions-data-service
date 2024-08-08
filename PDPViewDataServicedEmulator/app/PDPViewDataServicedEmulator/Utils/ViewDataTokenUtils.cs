@@ -50,7 +50,7 @@ namespace PDPViewDataServicedEmulator.Utils
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Aud, _audience),
                         new Claim(JwtRegisteredClaimNames.Iss, _issuer),
-                        new Claim("ViewData", _viewData),
+                        new Claim("view_data", _viewData),
                        }),
 
                     IssuedAt = DateTime.UtcNow,

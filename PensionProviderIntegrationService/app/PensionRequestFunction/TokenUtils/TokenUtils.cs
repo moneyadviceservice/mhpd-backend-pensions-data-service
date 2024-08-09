@@ -1,13 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IdentityModel.Tokens.Jwt;
+﻿using System.IdentityModel.Tokens.Jwt;
 
 namespace PensionRequestFunction.TokenUtils
 {
     public class TokenDecoder()
     {
-        public string? RetrieveClaim(string token, string requiredClaimName, out string claimValue)
+        public string? RetrieveClaim(string token, string requiredClaimName)
         {
-            claimValue = string.Empty;
             var handler = new JwtSecurityTokenHandler();
             try
             {

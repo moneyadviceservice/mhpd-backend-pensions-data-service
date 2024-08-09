@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using PensionRequestFunction.Models.CdaPeisServiceClient;
 
 namespace PensionRequestFunction.HttpClient
 {
@@ -11,7 +12,7 @@ namespace PensionRequestFunction.HttpClient
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<string> GetPDPViewDataAsync(string assetGuid, string viewDataUrl, string rpt)
+        public async Task<PDPServiceResponseModel> GetPDPViewDataAsync(string assetGuid, string viewDataUrl, string rpt)       
         {
             var scope = "owner";
             var client = _httpClientFactory.CreateClient("PDPViewData");
@@ -20,13 +21,37 @@ namespace PensionRequestFunction.HttpClient
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", rpt);
 
             var response = await client.GetAsync($"{viewDataUrl}{assetGuid}?scope={scope}");
+            
+            return CreateResponse(response).Result;
+        }
 
-            if (!response.IsSuccessStatusCode)
+        private async Task<PDPServiceResponseModel> CreateResponse(HttpResponseMessage? response)
+        {
+            if (response!.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                throw new Exception($"Failed to get PDP view data for item {assetGuid}");
+                var result = await response!.Content.ReadAsStringAsync();
+
+
+                return new PDPServiceResponseModel
+                {
+                    ViewDataToken = result,
+                    ResponseMessage = new ResponseMessage
+                    {
+                        ResponseStatusCode = "200"
+                    }
+                };
             }
 
-            return await response.Content.ReadAsStringAsync();
+            return new PDPServiceResponseModel
+            {
+                ViewDataToken = null,
+                ResponseMessage = new ResponseMessage
+                {
+                    ResponseStatusCode = response!.StatusCode.ToString(),
+                    WWWAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
+                }
+            };
+
         }
     }
 }

@@ -4,6 +4,8 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PensionRequestFunction.HttpClient;
+using PensionRequestFunction.HttpClient.Implementation;
+using PensionRequestFunction.HttpClient.Interfaces;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -17,6 +19,8 @@ var host = new HostBuilder()
             builder.AddServiceBusClient(Environment.GetEnvironmentVariable("connectionstring"));
         });
         services.AddSingleton<IPDPViewDataClient, PDPViewDataClient>();
+        services.AddSingleton<IMapsRqpServiceClient, MapsCdaServiceClient>();
+        services.AddSingleton<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();        
     })
     .Build();
 

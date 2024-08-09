@@ -1,7 +1,9 @@
-﻿namespace PensionRequestFunction.HttpClient
+﻿using PensionRequestFunction.Models.CdaPeisServiceClient;
+
+namespace PensionRequestFunction.HttpClient
 {
     public interface IPDPViewDataClient
     {
-        Task<string> GetPDPViewDataAsync(string assetGuid, string viewDataUrl, string rpt);
+       Task<PDPServiceResponseModel> GetPDPViewDataAsync(string assetGuid, string viewDataUrl, string rpt);
     }
 }

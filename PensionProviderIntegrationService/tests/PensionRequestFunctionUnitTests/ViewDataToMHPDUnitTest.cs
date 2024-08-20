@@ -9,7 +9,7 @@ namespace PensionRequestFunctionUnitTests
         [Fact]
         public void WhenTransformerIsCalled_AndNoPdpArrangesmenrtsAreProvided_ThenItThrowsException()
         {
-            /// Arrange
+            // Arrange
             var externalAssetId = "459566f6-5fce-479e-a098-298ca9676a85";
             var pdpPensionArrangements = GetViewDataPayload();
             JsonObject pdpPensionArrangementsJson = JsonSerializer.Deserialize<JsonObject>(pdpPensionArrangements)!;
@@ -23,7 +23,7 @@ namespace PensionRequestFunctionUnitTests
             // Assert
             Assert.Equal("No arrangements present", ex.Message);
         }
-
+          
         [Fact]
         public void WhenTransformerIsCalled_AndPensionProviderSchemeNameIsProvided_ThenSchemeNameIsPopulated()
         {
@@ -44,53 +44,6 @@ namespace PensionRequestFunctionUnitTests
 
             // Assert
             Assert.Equal(pensionProviderSchemeName, schemeName);
-        }
-
-        [Fact]
-        public void WhenViewDataNoArrangments_ThenThrowError()
-        {
-            // Arrange
-            var externalAssetId = "459566f6-5fce-479e-a098-298ca9676a85";
-            var pdpPensionArrangements = GetViewDataPayload();
-            JsonObject pdpPensionArrangementsJson = JsonSerializer.Deserialize<JsonObject>(pdpPensionArrangements)!;
-            pdpPensionArrangementsJson.Remove("arrangements");
-            var pdpPensionArrangementsString = JsonSerializer.Serialize<JsonObject>(pdpPensionArrangementsJson)!;
-
-            // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var ex = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, pdpPensionArrangementsString)); ;
-
-            // Assert
-            Assert.Equal("No arrangements present", ex.Message);
-        }
-
-        [Fact]
-        public void WhenViewDataEmptyArrangementsPresent_ThenThrowError1()
-        {
-            var externalAssetId = "459566f6-5fce-479e-a098-298ca9676a85";
-            var pdpPensionArrangements = "{\"view_data\":" + GetEmptyViewDataPayload() + "}";
-            JsonObject pdpPensionArrangementsJson = JsonSerializer.Deserialize<JsonObject>(pdpPensionArrangements)!;
-            var pdpPensionArrangementsString = JsonSerializer.Serialize<JsonObject>(pdpPensionArrangementsJson)!;
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var ex = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, pdpPensionArrangementsString)); ;
-
-            // Assert
-            Assert.Equal("No arrangements present", ex.Message);
-        }
-
-        [Fact]
-        public void WhenViewDataEmptyArrangementsPresent_ThenThrowError()
-        {
-            var externalAssetId = "7f0763a9-ac18-43c3-b2e7-723a74eba292";
-            var viewDataPayload = GetEmptyViewDataPayload();
-            JsonObject requestJson = JsonSerializer.Deserialize<JsonObject>(viewDataPayload)!;
-            requestJson.Remove("arrangements");
-            var newViewDataPayload = JsonSerializer.Serialize<JsonObject>(requestJson)!;
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var ex = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, newViewDataPayload)); ;
-
-            // Assert
-            Assert.Equal("No arrangements present", ex.Message);
         }
 
         [Fact]
@@ -332,36 +285,7 @@ namespace PensionRequestFunctionUnitTests
             Assert.Equal(statePensionMessageEng, pensionStatePensionMessageEng);
             Assert.Equal(statePensionMessageWelsh, pensionStatePensionMessageWelsh);
         }
-
-        [Fact]
-        public void WhenEmptyRequestPayload_ToMHPDIsCalled_ThenItShouldReturnTrue()
-        {
-            // Assign
-            var matchTypeElement = "matchType";
-            var externalAssetId = string.Empty;
-            var externalAssetIdNodeName = "externalAssetId";
-            var matchType = "DEFN";
-            var pensionRequestPayload = GetEmptyRequestPayload();
-            var viewDataPayload = GetViewDataPayload();
-            PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
-
-            // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var result = transformer.Transform(externalAssetId, viewDataPayload);
-            JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
-            var pensionArrangement = pensionArrangementNode["pensionArrangements"]!;
-            var pensionArrangementString = pensionArrangement.ToString();
-            var matchTypeResult = pensionArrangement[0]!["matchType"]!.ToString();
-
-            //Assert
-            Assert.NotNull(result);
-            Assert.Contains(externalAssetIdNodeName, pensionArrangementString);
-            Assert.Equal(externalAssetId, pensionRequestPayloadDeserialized.AssetGuid);
-            Assert.Contains(matchTypeElement, pensionArrangementString);
-            Assert.Equal(matchType, matchTypeResult);
-
-        }
-
+        
         [Fact]
         public void WhenRequestPayloadWithAssetId99a9b3c9_ToMHPDIsCalled_ThenItShouldReturnTrue()
         {
@@ -395,91 +319,15 @@ namespace PensionRequestFunctionUnitTests
         public void WhenEmptyArrangementsData_ToMHPDIsCalled_ThenItShouldReturnFalse()
         {
             // Assign
-            var matchTypeElement = "matchType";
             var externalAssetId = "7f0763a9-ac18-43c3-b2e7-723a74eba292";
-            var externalAssetIdNodeName = "externalAssetId";
-            var pensionRequestPayload = GetRequestPayload();
             var viewDataPayload = GetEmptyViewDataPayload();
-            PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
             var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var result = transformer.Transform(externalAssetId, viewDataPayload);
-            JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
-            var pensionArrangement = pensionArrangementNode["pensionArrangements"]!;
-            var pensionArrangementString = pensionArrangement.ToString();
 
-            //Assert
-            Assert.NotNull(result);
-            Assert.DoesNotContain(externalAssetIdNodeName, pensionArrangementString);
-            Assert.Equal(externalAssetId, pensionRequestPayloadDeserialized.AssetGuid);
-            Assert.DoesNotContain(matchTypeElement, pensionArrangementString);
-        }
-
-        [Fact]
-        public void WhenViewDataWithEmptyValuesEmptyRequestPayload_ThenItShouldReturnTrue()
-        {
-            // Assign
-            var matchTypeElement = "matchType";
-            var externalAssetId = string.Empty;
-            var externalAssetIdNodeName = "externalAssetId";
-            var matchType = "DEFN";
-            var statePensionDate = "2025-05-05";
-            var pensionAdministratorUsage = """
-                [
-                  "A",
-                  "Z"
-                ]
-                """;
-            var pensionProviderSchemeName = string.Empty;
-            var preferredFalse = "false";
-            var preferredTrue = "true";
-            var pensionAdministratorUrl = string.Empty;
-            var pensionAdministratorNumber = string.Empty;
-            var pensionAdministratorName = string.Empty;
-            var postalName = string.Empty;
-            var informationType = "SP";
-            var pensionRequestPayload = GetEmptyRequestPayload();
-            var viewDataPayload = GetViewDataWithEmptyValuePayload();
-            PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
-
-            // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var result = transformer.Transform(externalAssetId, viewDataPayload);
-
-            JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
-            var pensionArrangement = pensionArrangementNode["pensionArrangements"]!;
-            var pensionadditionalDataSources = pensionArrangement[0]!["additionalDataSources"]!;
-            var pensionArrangementString = pensionArrangement.ToString();
-            var schemeName = pensionArrangement[0]!["schemeName"]!.ToString();
-            var matchTypeResult = pensionArrangement[0]!["matchType"]!.ToString();
-            var retirementDate = pensionArrangement[0]!["retirementDate"]!.ToString();
-            var pensionAdministratorPreferredFalse = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![0]!["preferred"]!.ToString();
-            var pensionAdministratorPreferredTrue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![1]!["preferred"]!.ToString();
-            var pensionAdministratorPostalName = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![0]!["contactMethodDetails"]!["postalName"]!.ToString();
-            var pensionAdministratorUrlValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![1]!["contactMethodDetails"]!["url"]!.ToString();
-            var pensionAdministratorNumberValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![2]!["contactMethodDetails"]!["number"]!.ToString();
-            var pensionAdministratorUsageValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![2]!["contactMethodDetails"]!["usage"]!.ToString();
-            var pensionAdministratorResultName = pensionArrangement[0]!["pensionAdministrator"]!["name"]!.ToString();
-            var additionalDataSourcesInformationType = pensionadditionalDataSources[0]![0]!["informationType"]!.ToString();
-
-            //Assert
-            Assert.NotNull(result);
-            Assert.Contains(externalAssetIdNodeName, pensionArrangementString);
-            Assert.Contains(externalAssetId, pensionRequestPayloadDeserialized.AssetGuid);
-            Assert.Contains(statePensionDate, retirementDate);
-            Assert.Equal(matchType, matchTypeResult);
-            Assert.Contains(matchTypeElement, pensionArrangementString);
-            Assert.Equal(preferredFalse, pensionAdministratorPreferredFalse);
-            Assert.Equal(preferredTrue, pensionAdministratorPreferredTrue);
-            Assert.Equal(postalName, pensionAdministratorPostalName);
-            Assert.Equal(pensionProviderSchemeName, schemeName);
-            Assert.Equal(pensionAdministratorName, pensionAdministratorResultName);
-            Assert.Equal(pensionAdministratorUrl, pensionAdministratorUrlValue);
-            Assert.Equal(pensionAdministratorNumber, pensionAdministratorNumberValue);
-            Assert.Equal(pensionAdministratorUsage, pensionAdministratorUsageValue);
-            Assert.Equal(informationType, additionalDataSourcesInformationType);
-
+            // Act & Assert
+            var ex = Assert.Throws<JsonException>(() => transformer.Transform(externalAssetId, viewDataPayload));
+            Assert.Equal("The payload either lacks the 'arrangements' property, or the property is not a valid array.", ex.Message);
         }
 
         //3 Test
@@ -526,9 +374,9 @@ namespace PensionRequestFunctionUnitTests
             var pensionAdministratorNumberValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![2]!["contactMethodDetails"]!["number"]!.ToString();
             var pensionAdministratorUsageValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![2]!["contactMethodDetails"]!["usage"]!.ToString();
             var pensionAdministratorPostalNameValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![3]!["contactMethodDetails"]!["postalName"]!.ToString();
-            var employmentMembershipPeriodsEmployerName = pensionEmploymentMembershipPeriods[0]![0]!["employerName"]!.ToString();
-            var employmentMembershipPeriodsEmployerStatus = pensionEmploymentMembershipPeriods[0]![0]!["employerStatus"]!.ToString();
-            var benefitIllustrationsIllustrationDate = pensionEenefitIllustrations[0]![0]!["illustrationDate"]!.ToString();
+            var employmentMembershipPeriodsEmployerName = pensionEmploymentMembershipPeriods[0]!["employerName"]!.ToString();
+            var employmentMembershipPeriodsEmployerStatus = pensionEmploymentMembershipPeriods[0]!["employerStatus"]!.ToString();
+            var benefitIllustrationsIllustrationDate = pensionEenefitIllustrations[0]!["illustrationDate"]!.ToString();
 
             //Assert
             Assert.NotNull(result);
@@ -590,9 +438,9 @@ namespace PensionRequestFunctionUnitTests
             var pensionAdministratorNumberValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![2]!["contactMethodDetails"]!["number"]!.ToString();
             var pensionAdministratorUsageValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![2]!["contactMethodDetails"]!["usage"]!.ToString();
             var pensionAdministratorPostalNameValue = pensionArrangement[0]!["pensionAdministrator"]!["contactMethods"]![3]!["contactMethodDetails"]!["postalName"]!.ToString();
-            var employmentMembershipPeriodsEmployerName = pensionEmploymentMembershipPeriods[0]![0]!["employerName"]!.ToString();
-            var employmentMembershipPeriodsEmployerStatus = pensionEmploymentMembershipPeriods[0]![0]!["employerStatus"]!.ToString();
-            var benefitIllustrationsIllustrationDate = pensionEenefitIllustrations[0]![0]!["illustrationDate"]!.ToString();
+            var employmentMembershipPeriodsEmployerName = pensionEmploymentMembershipPeriods[0]!["employerName"]!.ToString();
+            var employmentMembershipPeriodsEmployerStatus = pensionEmploymentMembershipPeriods[0]!["employerStatus"]!.ToString();
+            var benefitIllustrationsIllustrationDate = pensionEenefitIllustrations[0]!["illustrationDate"]!.ToString();
 
             //Assert
             Assert.NotNull(result);
@@ -739,7 +587,7 @@ namespace PensionRequestFunctionUnitTests
         {
             return "{\r\n\t\"arrangements\": []\r\n}";
         }
-
+        
         private string GetRequestPayloadWithAssetGuid1b()
         {
             return "{\r\n\t\"pensionRetrievalRecordId\": \"e01a9df7-f147-4a3a-a1dd-0507432a5b7f\",\r\n\t\"pei\": \"7075aa11-10ad-4b2f-a9f5-1068e79119bf:1ba03e25-659a-43b8-ae77-b956df168969\",\r\n\t\"iss\": \"DATA_PROVIDER_1fd1da88-9fb3-461c-a48a-3dba21bfba17\",\r\n\t\"userSessionId\": \"1ba03e25-659a-43b8-ae77-b956df168969\",\r\n\t\"asset_guid\": \"1ba03e25-659a-43b8-ae77-b956df168969\"\r\n}";

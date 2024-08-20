@@ -2,7 +2,7 @@
 
 namespace PensionRequestFunction.TokenUtils
 {
-    public class TokenDecoder()
+    public class TokenDecoder
     {
         public string? RetrieveClaim(string token, string requiredClaimName)
         {

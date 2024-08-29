@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "PensionProviderIntegrationService.FunctionApp": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7002",
-      "launchBrowser": false
-    }
-  }
-}

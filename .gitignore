@@ -363,3 +363,9 @@ FodyWeavers.xsd
 /PDPViewDataServicedEmulator/app/PDPViewDataServicedEmulator/appsettings.Development.json
 /CDAService/app/CDAService/CDAService/appsettings.Development.json
 /src/IntegrationServices/PeIIntegrationService/PeiIntegratioinService/appsettings.Development.json
+
+# macOS
+.DS_Store
+
+# JetBrains IDEs (like IntelliJ, Rider, PyCharm, etc.)
+.idea/

@@ -85,8 +85,8 @@ namespace PDPViewDataServicedEmulator.Controllers
         }
         private string GenerateViewDataToken(string kid, string audience, string subject, ViewDataPayload viewData, string issuer)
         {
-            ViewDataTokenManager _tokenManager = new ViewDataTokenManager(kid, audience, subject, viewData, issuer);
-            return _tokenManager.GenerateToken();
+            var tokenManager = new ViewDataTokenManager(kid, audience, subject, issuer);
+            return tokenManager.GenerateToken();
         }
     }
 }

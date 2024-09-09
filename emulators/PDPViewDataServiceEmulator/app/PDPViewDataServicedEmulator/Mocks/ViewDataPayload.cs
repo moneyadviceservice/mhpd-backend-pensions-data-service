@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace PDPViewDataServicedEmulator.Mocks
 {
@@ -7,7 +8,7 @@ namespace PDPViewDataServicedEmulator.Mocks
         [JsonProperty(PropertyName = "assetGuid")]
         public string? AssetGuid { get; set; }
 
-        [JsonProperty(PropertyName = "viewData")]
-        public string? ViewData { get; set; }
+        [JsonProperty(PropertyName = "view_data")]
+        public JObject? ViewData { get; set; }
     }
 }

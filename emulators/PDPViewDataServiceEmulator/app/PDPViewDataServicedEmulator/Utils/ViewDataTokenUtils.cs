@@ -2,7 +2,6 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
-using PDPViewDataServicedEmulator.Mocks;
 using PDPViewDataServicedEmulator.Models;
 
 namespace PDPViewDataServicedEmulator.Utils
@@ -15,15 +14,15 @@ namespace PDPViewDataServicedEmulator.Utils
             private string _audience = string.Empty;
             private string _issuer = string.Empty;
             private string _subject = string.Empty;
-            private string _viewData = string.Empty;
+            // private JObject _viewData = string.Empty;
 
-            public ViewDataTokenManager(string kid, string audience, string subject, ViewDataPayload viewData, string issuer)
+            public ViewDataTokenManager(string kid, string audience, string subject, string issuer)
             {
                 _kid = kid!;
                 _audience = audience!;
                 _issuer = issuer;
                 _subject = subject!;
-                _viewData = viewData.ViewData!;
+                // _viewData = viewData.ViewData!; Why was this used?
             }
 
             public string GenerateToken()
@@ -50,8 +49,8 @@ namespace PDPViewDataServicedEmulator.Utils
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                         new Claim(JwtRegisteredClaimNames.Aud, _audience),
                         new Claim(JwtRegisteredClaimNames.Iss, _issuer),
-                        new Claim("view_data", _viewData),
-                       }),
+                        // new Claim("view_data", _viewData),
+                    }),
 
                     IssuedAt = DateTime.UtcNow,
                     Expires = DateTime.UtcNow.AddSeconds(60),

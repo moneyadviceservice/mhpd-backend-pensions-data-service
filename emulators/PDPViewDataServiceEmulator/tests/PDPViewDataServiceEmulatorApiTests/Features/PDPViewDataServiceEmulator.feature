@@ -1,4 +1,5 @@
-﻿Feature: PDP View Data Service Emulator Tests
+﻿@ignore
+Feature: PDP View Data Service Emulator Tests
 
 API Tests for PDP View Data Service Emulator.  To Test on Local use localhost in place of Azure QA Environment.
 

@@ -1,16 +1,15 @@
 ﻿using System.Text.Json;
-using PeIsServiceEmulator.Models.Peis;
+using CDAServiceEmulator.Models.Peis;
 
-namespace PeIsServiceEmulator.Mocks
+namespace CDAServiceEmulator.Mocks;
+
+public static class PiesMockService
 {
-    public static class PiesMockService
+    public static async Task<PeiModel[]> GetPeisJsonMock()
     {
-        public static async Task<PeiModel[]> GetPeisJsonMock()
-        {
-            string allText = await File.ReadAllTextAsync(@"./Mocks/peis-200-Ok.json");
-            var peis = JsonSerializer.Deserialize<List<PeiModel>>(allText);
+        string allText = await File.ReadAllTextAsync(@"./Mocks/peis-200-Ok.json");
+        var peis = JsonSerializer.Deserialize<List<PeiModel>>(allText);
 
-            return peis!.ToArray();
-        }
+        return peis!.ToArray();
     }
 }

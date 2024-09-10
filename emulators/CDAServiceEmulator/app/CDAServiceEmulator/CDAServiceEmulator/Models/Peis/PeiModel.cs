@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace PeIsServiceEmulator.Models.Peis
+namespace CDAServiceEmulator.Models.Peis
 {
     public class PeiModel
     {

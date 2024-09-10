@@ -1,6 +1,7 @@
-﻿using System.Text.Json.Serialization;
+﻿using CommonServices.Models;
+using System.Text.Json.Serialization;
 
-namespace CommonServices.Models.MessageBodyModels
+namespace MAPS.Core.Models.MessageBodyModels
 {
     public class RetrievedPensionDetailsPayload
     {
@@ -10,7 +11,7 @@ namespace CommonServices.Models.MessageBodyModels
         [JsonPropertyName("pei")]
         public string? Pei { get; set; }
 
-        [JsonPropertyName("pensionArrangements")]
+        [JsonPropertyName("retrievedPensionArrangements")]
         public List<PensionArrangement>? PensionArrangements { get; set; }
 
     }

@@ -1,7 +1,6 @@
-﻿using System.ComponentModel;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace CommonServices.Models
+namespace MAPS.Core.Models.MHPDModels
 {
     public class ContactMethods
     {

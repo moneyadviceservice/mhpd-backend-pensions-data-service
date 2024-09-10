@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using MAPS.Core.Models.MHPDModels;
+using System.Text.Json.Serialization;
 
 namespace CommonServices.Models
 {

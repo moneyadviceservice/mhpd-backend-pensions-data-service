@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
-namespace CommonServices.Models.MessageBodyModels
+namespace MAPS.Core.Models.MessageBodyModels
 {
     public class PensionRequestPayload
     {

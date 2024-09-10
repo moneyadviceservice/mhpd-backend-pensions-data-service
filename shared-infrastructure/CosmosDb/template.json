@@ -44,6 +44,13 @@
         "description": "The name for the container"
       }
     },
+    "cdaPeisEmulatorTestInstanceDataContainerName": {
+      "type": "string",
+      "defaultValue": "cdaPeisEmulatorTestInstanceData",
+      "metadata": {
+        "description": "The name for the container"
+      }
+    },
     "containerName": {
       "type": "string",
       "defaultValue": "myContainerName",
@@ -58,6 +65,13 @@
       "maxValue": 1000000,
       "metadata": {
         "description": "The throughput for the container"
+      }
+    },
+    "ttl": {
+      "type": "int",
+      "defaultValue": 3600,
+      "metadata": {
+        "description": "The default time-to-live (TTL) for the container"
       }
     }
   },
@@ -148,6 +162,47 @@
               {
                 "paths": [
                   "/peisIdStartCode"
+                ]
+              }
+            ]
+          },
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": []
+          }
+        },
+        "options": {
+          "throughput": "[parameters('throughput')]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), parameters('databaseName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-04-15",
+      "name": "[concat(parameters('cosmosDbAccountName'), '/', parameters('databaseName'), '/', parameters('cdaPeisEmulatorTestInstanceDataContainerName'))]",
+      "properties": {
+        "resource": {
+          "id": "[parameters('cdaPeisEmulatorTestInstanceDataContainerName')]",
+          "defaultTtl": "[parameters('ttl')]",
+          "partitionKey": {
+            "paths": [
+              "/peisId"
+            ],
+            "kind": "Hash"
+          },
+          "uniqueKeyPolicy": {
+            "uniqueKeys": [
+              {
+                "paths": [
+                  "/peisId"
                 ]
               }
             ]

@@ -14,8 +14,14 @@
         "peisContainerName": {
             "value": "cdaPeisEmulatorScenarioModels"
         },
+        "cdaPeisEmulatorTestInstanceDataContainerName": {
+            "value": "cdaPeisEmulatorTestInstanceData"
+        },
         "throughput": {
             "value": 400
+        },
+        "ttl": {
+            "value": 3600
         }
     }
 }

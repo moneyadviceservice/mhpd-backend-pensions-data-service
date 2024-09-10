@@ -1,6 +1,6 @@
 ﻿using Microsoft.Azure.Cosmos;
 
-namespace MAPS.Core.Repository;
+namespace MhpdCommon.Repository;
 
 public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
 {
@@ -12,7 +12,7 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
         _container = database.GetContainer(containerName);
     }
 
-    public async Task<T?> GetByIdAsync(string? id, string? partitionKey)
+    public async Task<T?> GetByIdAsync(string id, string partitionKey)
     {
         try
         {

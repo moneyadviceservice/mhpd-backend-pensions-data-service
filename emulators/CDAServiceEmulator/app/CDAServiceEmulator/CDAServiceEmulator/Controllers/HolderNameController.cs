@@ -1,4 +1,5 @@
 ﻿using CDAServiceEmulator.Mocks;
+using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CDAServiceEmulator.Controllers
@@ -7,38 +8,46 @@ namespace CDAServiceEmulator.Controllers
     [ApiController]
     public class HolderNameController : ControllerBase
     {
-        private const int PeiLength = 73;
-
-        public HolderNameController()
+        private readonly IIdValidator _idValidator;
+        public HolderNameController(IIdValidator idValidator)
         {
+            _idValidator = idValidator;
         }
 
         [HttpGet]
         [Route("/holdername-configurations")]
-        public async Task<IActionResult> GetAsync([FromQuery] string? pei)
+        public async Task<IActionResult> GetAsync([FromHeader(Name = "X-Request-ID")] string? requestId, [FromQuery] string? holdername_guid)
         {
-            if (Validate(pei!) == false)
+            // Validate the input
+            if (!_idValidator.IsValidGuid(requestId))
             {
-                return BadRequest("Bad Request");
+                return BadRequest("Invalid X-Request-ID header");
             }
 
-            return Ok(await HolderConfigurationMock.GetHolderConfiguration());
-        }
-
-        private bool Validate(string pei)
-        {
-            Request.Headers.TryGetValue("X-Request-ID", out var xRequestId);
-
-            if (string.IsNullOrEmpty(xRequestId))
-                return false;
-
-            if (!(string.IsNullOrEmpty(pei)))
+            // Scenario 1: No holdername_guid provided
+            if (holdername_guid == null)
             {
-                if (pei.Length != PeiLength)
-                    return false;
+                var allConfigurations = await HolderConfigurationMock.GetHolderConfiguration();
+                return Ok(new { holder_view_configurations = allConfigurations });
             }
 
-            return true;
+            // Scenario 3: Invalid holdername_guid format
+            if (!_idValidator.IsValidGuid(holdername_guid))
+            {
+                return BadRequest("Invalid holdername_guid format");
+            }
+
+            // Filter based on holdername_guid
+            var filteredConfigurations = HolderConfigurationMock.FilterConfigurations(holdername_guid);
+
+            // Scenario 4: Unknown holdername_guid
+            if (filteredConfigurations.Count == 0)
+            {
+                return NotFound("Unknown holdername_guid");
+            }
+
+            // Scenario 2: Known holdername_guid
+            return Ok(new { holder_view_configurations = filteredConfigurations });
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using MhpdCommon.Models.MessageBodyModels;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using RetrievedPensionsRecordFunction.Models;
@@ -28,6 +29,8 @@ public  class PensionRecordRepositoryTests
         var client = new Mock<CosmosClient>();
         _response = new Mock<ItemResponse<RetrievedPensionRecord>>();
 
+        var loggerMock = new Mock<ILogger<PensionRecordRepository>>();
+
         client.Setup(mock => mock.GetDatabase(configuration.DatabaseId))
             .Returns(database.Object);
 
@@ -40,7 +43,7 @@ public  class PensionRecordRepositoryTests
             .Returns(Task.FromResult(_response.Object));
 
         var options = Options.Create(configuration);
-        _repository = new PensionRecordRepository(client.Object, options);
+        _repository = new PensionRecordRepository(client.Object, options, loggerMock.Object);
     }
 
     [Fact]

@@ -12,6 +12,8 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
         _container = database.GetContainer(containerName);
     }
 
+    protected Container Container { get { return _container; } }
+
     public async Task<T?> GetByIdAsync(string id, string partitionKey)
     {
         try

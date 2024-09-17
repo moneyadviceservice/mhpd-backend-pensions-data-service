@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "PensionsRetrievalService": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7123"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "DockerfileRunArguments": "--init",
+      "httpPort": 31148,
+      "useSSL": false
+    }
+  }
+}

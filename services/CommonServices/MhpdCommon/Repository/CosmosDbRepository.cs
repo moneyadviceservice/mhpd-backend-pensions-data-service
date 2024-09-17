@@ -24,4 +24,19 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
             return default;
         }
     }
+    
+    public async Task InsertItemAsync(T item, string partitionKey)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+        ArgumentNullException.ThrowIfNull(partitionKey);
+
+        try
+        {
+            await _container.UpsertItemAsync(item, new PartitionKey(partitionKey));
+        }
+        catch (CosmosException ex)
+        {
+            throw new Exception("Failed to upsert item.", ex);
+        }
+    }
 }

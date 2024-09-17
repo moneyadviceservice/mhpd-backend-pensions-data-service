@@ -1,6 +1,6 @@
 using MhpdCommon.Utils;
 
-namespace MhpdCommon.Tests.Utils;
+namespace MhpdCommonTests.Utils;
 
 public class IdValidatorTests
 {

@@ -1,9 +1,9 @@
-﻿using MhpdCommon.Repository;
+﻿using System.Net;
+using MhpdCommon.Repository;
 using Microsoft.Azure.Cosmos;
 using Moq;
-using System.Net;
 
-namespace MhpdCommon.Tests.Repository;
+namespace MhpdCommonTests.Repository;
 
 public class CosmosDbRepositoryTests
 {
@@ -62,6 +62,68 @@ public class CosmosDbRepositoryTests
 
         // Assert
         Assert.Null(result);
+    }
+    
+    [Fact]
+    public async Task InsetItemAsync_CallsUpsertItemAsync_WithCorrectParameters()
+    {
+        // Arrange
+        var item = new TestEntity { Id = "test-id" };
+        var partitionKey = "test-id";
+
+        // Create a mock ItemResponse
+        var mockItemResponse = new Mock<ItemResponse<TestEntity>>();
+        _mockContainer.Setup(container =>
+                container.UpsertItemAsync(item, new PartitionKey(partitionKey), null, default))
+            .ReturnsAsync(mockItemResponse.Object)
+            .Verifiable();
+
+        // Act
+        await _repository.InsertItemAsync(item, partitionKey);
+
+        // Assert
+        _mockContainer.Verify(container =>
+                container.UpsertItemAsync(item, new PartitionKey(partitionKey), null, default),
+            Times.Once);
+    }
+    
+    [Fact]
+    public async Task InsertItemAsync_ThrowsArgumentNullException_WhenItemIsNull()
+    {
+        // Arrange
+        TestEntity? item = null;
+        var partitionKey = "test-id";
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _repository.InsertItemAsync(item!, partitionKey));
+    }
+
+    [Fact]
+    public async Task InsertItemAsync_ThrowsArgumentNullException_WhenPartitionKeyIsNull()
+    {
+        // Arrange
+        var item = new TestEntity { Id = "test-id" };
+        string? partitionKey = null;
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentNullException>(() => _repository.InsertItemAsync(item, partitionKey!));
+    }
+
+    [Fact]
+    public async Task InsertItemAsync_ThrowsException_WhenUpsertFails()
+    {
+        // Arrange
+        var item = new TestEntity { Id = "test-id" };
+        var partitionKey = "test-id";
+
+        // Simulate a failure in UpsertItemAsync by throwing a CosmosException
+        _mockContainer.Setup(container =>
+                container.UpsertItemAsync(item, new PartitionKey(partitionKey), null, default))
+            .ThrowsAsync(new CosmosException("Some error", System.Net.HttpStatusCode.InternalServerError, 0, "", 0));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<Exception>(() => _repository.InsertItemAsync(item, partitionKey));
+        Assert.Equal("Failed to upsert item.", exception.Message);
     }
 }
 

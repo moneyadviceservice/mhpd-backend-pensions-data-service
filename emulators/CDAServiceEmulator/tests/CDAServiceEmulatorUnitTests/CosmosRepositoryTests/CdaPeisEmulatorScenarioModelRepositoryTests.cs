@@ -39,7 +39,12 @@ public class CdaPeisEmulatorScenarioModelRepositoryTests
         {
             Id = "1",
             PeisIdStartCode = "PEIS123",
-            DataPoints = new JArray { "DataPoint1", "DataPoint2" }
+            DataPoints = new List<DataPoint>
+            {
+                new() { AvailableAt = 0, ResponsePayload = new ResponsePayload() },
+                new() { AvailableAt = 3, ResponsePayload = new ResponsePayload() }
+            }
+            
         };
 
         var response = new Mock<ItemResponse<CdaPeisEmulatorScenarioModel>>();

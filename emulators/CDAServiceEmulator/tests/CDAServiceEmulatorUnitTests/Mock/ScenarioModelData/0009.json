@@ -1,0 +1,12 @@
+{
+  "id": "0009",
+  "peisIdStartCode": "0009",
+  "dataPoints": [
+    {
+      "availableAt": 0,
+      "responsePayload": {
+        "peiList": []
+      }
+    }
+  ]
+}

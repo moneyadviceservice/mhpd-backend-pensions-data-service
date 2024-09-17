@@ -17,6 +17,7 @@ public class IdValidatorTests
     [InlineData("{1761DC7D-9FD5-47B4-BC77-E3B54AEF0F07}", true)]
     [InlineData("53E30A9D-DB28-4273-8C3D-EDE691C3511A", true)]
     [InlineData("00000000-0000-0000-0000-000000000000", false)]
+    [InlineData("?><>(*)&&-8586-4483-9899-17dd85af9074", false)]
     [InlineData(null, false)]
     public void WhenAGuidStringIsValidated_ReturnsCorrectResult(string? idString, bool expectedResult)
     {

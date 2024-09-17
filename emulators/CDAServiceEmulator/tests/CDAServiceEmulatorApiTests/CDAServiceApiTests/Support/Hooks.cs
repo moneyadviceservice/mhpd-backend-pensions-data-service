@@ -17,7 +17,7 @@ namespace CDAPeIsServiceApiTests.Support
         [AfterScenario]
         public static void DeleteUser()
         {
-            BaseClass.httpClient.Dispose();
+            httpClient?.Dispose();
         }
     }
 }

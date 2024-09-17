@@ -10,6 +10,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Mock\ScenarioModelData\0002.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Mock\ScenarioModelData\0002.json" />
+    <EmbeddedResource Include="Mock\ScenarioModelData\0003.json" />
+    <EmbeddedResource Include="Mock\ScenarioModelData\0004.json" />
+    <EmbeddedResource Include="Mock\ScenarioModelData\0009.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MhpdCommon" Version="1.0.9" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit" Version="2.4.2" />

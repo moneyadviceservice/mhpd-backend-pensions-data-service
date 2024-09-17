@@ -1,16 +1,57 @@
-using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using CDAServiceEmulator.Configuration;
+using CDAServiceEmulator.CosmosRepository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Configuration
+IConfiguration configuration = builder.Configuration;
+configuration = new ConfigurationBuilder()
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .Build();
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddTransient<IIdValidator, IdValidator>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<CosmosClient>(_ =>
+{
+    var connString = configuration.GetConnectionString("CosmosDBConnectionString");
+    var options = new CosmosClientOptions
+    {
+        SerializerOptions = new CosmosSerializationOptions { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase },
+    };
+    return new CosmosClient(connString, options);
+});
+
+builder.Services.Configure<MhpdCosmosConfiguration>(builder.Configuration.GetSection("MhpdCosmosConfiguration"));
+
+// Register CdaPeisEmulatorScenarioModelRepository
+builder.Services.AddSingleton<CdaPeisEmulatorScenarioModelRepository>(provider =>
+{
+    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    
+    return new CdaPeisEmulatorScenarioModelRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorScenarioModelContainerName);
+});
+
+// Register CdaPeisEmulatorTestInstanceDataRepository
+builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provider =>
+{
+    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    
+    return new CdaPeisEmulatorTestInstanceDataRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorTestInstanceDataContainerName);
+});
 
 builder.Services.AddHttpLogging(logging =>
 {

@@ -38,8 +38,7 @@ public  class PensionRecordRepositoryTests
             .Returns(container.Object);
 
         container.Setup(mock => mock.UpsertItemAsync(
-            It.IsAny<RetrievedPensionRecord>(), It.IsAny<PartitionKey>(),
-            It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>()))
+            It.IsAny<RetrievedPensionRecord>(), null, null, default))
             .Returns(Task.FromResult(_response.Object));
 
         var options = Options.Create(configuration);

@@ -32,7 +32,12 @@ var host = new HostBuilder()
         services.AddTransient<IPensionRecordValidator, PensionRecordValidator>();
         services.AddTransient<IPensionRecordRepository, PensionRecordRepository>();
 
-        services.Configure<MhpdCosmosConfiguration>(hostContext.Configuration.GetSection("MhpdCosmosConfiguration"));
+        services.AddOptions<MhpdCosmosConfiguration>().Configure(option =>
+        {
+            option.DatabaseId = Environment.GetEnvironmentVariable(MhpdCosmosConfiguration.DatabaseVariable);
+            option.ContainerId = Environment.GetEnvironmentVariable(MhpdCosmosConfiguration.ContainerVariable);
+            option.ContainerPartitionKey = Environment.GetEnvironmentVariable(MhpdCosmosConfiguration.PartitionVariable);
+        }).ValidateOnStart();
     })
     .Build();
 

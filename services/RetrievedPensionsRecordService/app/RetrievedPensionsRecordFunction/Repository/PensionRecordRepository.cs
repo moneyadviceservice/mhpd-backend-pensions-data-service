@@ -8,7 +8,8 @@ using System.Net;
 
 namespace RetrievedPensionsRecordFunction.Repository;
 
-public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCosmosConfiguration> config, ILogger<PensionRecordRepository> logger) : IPensionRecordRepository
+public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCosmosConfiguration> config, ILogger<PensionRecordRepository> logger) 
+    : IPensionRecordRepository
 {
     private readonly CosmosClient _cosmosClient = cosmosClient;
     private readonly ILogger<PensionRecordRepository> _logger = logger;
@@ -35,8 +36,7 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCos
 
         Container container = database.GetContainer(_mhpdConfiguration.ContainerId);
 
-        var response = await container.UpsertItemAsync(record, 
-            new PartitionKey(_mhpdConfiguration.ContainerPartitionKey), null, default);
+        var response = await container.UpsertItemAsync(record, null, null, default);
 
         string? logMessage;
 

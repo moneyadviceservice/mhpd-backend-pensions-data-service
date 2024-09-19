@@ -13,11 +13,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Schemas\pensionsRetrievalPayload.json" />
+    <None Remove="Schemas\pensionsRetrievalRecord.json" />
     <None Remove="Schemas\RetrievedPensionPayload.json" />
     <None Remove="Schemas\RetrievedPensionRecord.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Schemas\PensionsRetrievalPayload.json" />
+    <EmbeddedResource Include="Schemas\PensionsRetrievalRecord.json" />
     <EmbeddedResource Include="Schemas\RetrievedPensionRecord.json" />
     <EmbeddedResource Include="Schemas\RetrievedPensionPayload.json" />
   </ItemGroup>

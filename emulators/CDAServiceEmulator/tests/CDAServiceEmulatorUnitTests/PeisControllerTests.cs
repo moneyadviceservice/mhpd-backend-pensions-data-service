@@ -29,9 +29,7 @@ public class PeisControllerTests
         {
             DatabaseName = "TestDatabase",
             CdaPeisEmulatorScenarioModelContainerName = "ScenarioModelContainer",
-            CdaPeisEmulatorScenarioModelContainerPartitionKey = "ScenarioModelPartition",
             CdaPeisEmulatorTestInstanceDataContainerName = "TestInstanceContainer",
-            CdaPeisEmulatorTestInstanceDataContainerPartitionKey = "TestInstancePartition",
         };
 
         Mock<CosmosClient> mockCosmosClient = new();
@@ -71,8 +69,7 @@ public class PeisControllerTests
         _httpContext = new DefaultHttpContext();
 
         // Inject mocks into the controller
-        _controller = new PeisController(mockScenarioModelRepository.Object, mockTestInstanceRepository.Object, 
-            mockCosmosConfigOptions.Object, mockIdValidatorMock.Object)
+        _controller = new PeisController(mockScenarioModelRepository.Object, mockTestInstanceRepository.Object, mockIdValidatorMock.Object)
         {
             ControllerContext = new ControllerContext()
             {

@@ -39,8 +39,6 @@ builder.Services.AddSingleton<CdaPeisEmulatorScenarioModelRepository>(provider =
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
     var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
     
-    Console.WriteLine("CdaPeisEmulatorScenarioModelContainerName {0} {1}", config.CdaPeisEmulatorScenarioModelContainerName, config.DatabaseName);
-
     return new CdaPeisEmulatorScenarioModelRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorScenarioModelContainerName);
 });
 
@@ -49,8 +47,6 @@ builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provide
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
     var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
-    
-    Console.WriteLine("CdaPeisEmulatorTestInstanceDataContainerName {0} {1}", config.CdaPeisEmulatorTestInstanceDataContainerName, config.DatabaseName);
     
     return new CdaPeisEmulatorTestInstanceDataRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorTestInstanceDataContainerName);
 });

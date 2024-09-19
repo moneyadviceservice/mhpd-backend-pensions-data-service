@@ -1,10 +1,8 @@
 ﻿using System.Net.Http.Headers;
-using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace CDAServiceEmulator.Controllers;
@@ -15,17 +13,14 @@ public class PeisController : ControllerBase
 {
     private readonly CdaPeisEmulatorScenarioModelRepository _cdaPeisEmulatorScenarioModelRepository;
     private readonly CdaPeisEmulatorTestInstanceDataRepository _cdaPeisEmulatorTestInstanceDataRepository;
-    private readonly MhpdCosmosConfiguration _cosmosConfigOptions;
     private const string BadRequestResponse = "Bad Request";
     private readonly IIdValidator _idValidator;
 
     public PeisController(CdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
-        CdaPeisEmulatorTestInstanceDataRepository cdaPeisEmulatorTestInstanceDataRepository,
-        IOptions<MhpdCosmosConfiguration> cosmosConfigOptions, IIdValidator idValidator)
+        CdaPeisEmulatorTestInstanceDataRepository cdaPeisEmulatorTestInstanceDataRepository, IIdValidator idValidator)
     {
         _cdaPeisEmulatorScenarioModelRepository = cdaPeisEmulatorScenarioModelRepository;
         _cdaPeisEmulatorTestInstanceDataRepository = cdaPeisEmulatorTestInstanceDataRepository;
-        _cosmosConfigOptions = cosmosConfigOptions.Value;
         _idValidator = idValidator;
     }
 
@@ -53,7 +48,7 @@ public class PeisController : ControllerBase
         // Extract first 4 characters from the Peis_id
         var peisStartCode = GetPeisStartCode(peis_id);
         
-        var scenarioModelData = await _cdaPeisEmulatorScenarioModelRepository.GetByIdAsync(peisStartCode, _cosmosConfigOptions.CdaPeisEmulatorScenarioModelContainerPartitionKey);
+        var scenarioModelData = await _cdaPeisEmulatorScenarioModelRepository.GetByIdAsync(peisStartCode, peisStartCode);
 
         if (scenarioModelData?.DataPoints == null)
         {
@@ -64,15 +59,15 @@ public class PeisController : ControllerBase
         var result = scenarioModelData.DataPoints?[0].ResponsePayload;
         
         // Check if the record exists in the cdaPeisEmulatorTestInstanceData container
-        var testInstanceData = await _cdaPeisEmulatorTestInstanceDataRepository.GetByIdAsync(peisStartCode, _cosmosConfigOptions.CdaPeisEmulatorTestInstanceDataContainerPartitionKey);
+        var testInstanceData = await _cdaPeisEmulatorTestInstanceDataRepository.GetByIdAsync(peisStartCode, peis_id);
         if (testInstanceData == null)
         {
             await _cdaPeisEmulatorTestInstanceDataRepository.InsertItemAsync(new CdaPeisEmulatorTestInstanceDataModel
             {
-                Id = peis_id,
+                Id = peisStartCode,
                 PeisId = peis_id,
                 InitialCallTimestamp = DateTimeOffset.UtcNow
-            }, _cosmosConfigOptions.CdaPeisEmulatorTestInstanceDataContainerPartitionKey);
+            }, peis_id);
         }
         else
         {

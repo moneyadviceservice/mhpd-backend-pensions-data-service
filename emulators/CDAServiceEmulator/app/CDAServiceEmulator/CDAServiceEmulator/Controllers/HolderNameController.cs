@@ -15,7 +15,7 @@ namespace CDAServiceEmulator.Controllers
         }
 
         [HttpGet]
-        [Route("/holdername-configurations")]
+        [Route("/holdername-view-configurations")]
         public async Task<IActionResult> GetAsync([FromHeader(Name = "X-Request-ID")] string? requestId, [FromQuery] string? holdername_guid)
         {
             // Validate the input

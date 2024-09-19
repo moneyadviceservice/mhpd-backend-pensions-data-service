@@ -40,11 +40,13 @@ public class PeisController : ControllerBase
         
         if (string.IsNullOrEmpty(requestHeader.XRequestId) || !_idValidator.IsValidGuid(requestHeader.XRequestId))
         {
+            Console.WriteLine("Invalid XRequestID {0}", requestHeader.XRequestId);
             return BadRequest(BadRequestResponse);
         }
         
         if (!_idValidator.IsValidGuid(peis_id))
         {
+            Console.WriteLine("Invalid peis_id {0}", peis_id);
             return BadRequest(BadRequestResponse);
         }
         
@@ -55,6 +57,7 @@ public class PeisController : ControllerBase
 
         if (scenarioModelData?.DataPoints == null)
         {
+            Console.WriteLine("No ScenarioModelData found {0}", peisStartCode);
             return BadRequest(BadRequestResponse);
         }
 
@@ -87,6 +90,7 @@ public class PeisController : ControllerBase
 
             if (result == null)
             {
+                Console.WriteLine("No response payload data found {0}", result);
                 return BadRequest(BadRequestResponse);
             }
         }

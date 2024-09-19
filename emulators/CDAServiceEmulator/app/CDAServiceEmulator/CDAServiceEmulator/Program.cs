@@ -8,13 +8,6 @@ using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// // Configure Configuration
-// IConfiguration configuration = builder.Configuration;
-// configuration = new ConfigurationBuilder()
-//     .SetBasePath(Directory.GetCurrentDirectory())
-//     .AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true)
-//     .Build();
-
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddTransient<IIdValidator, IdValidator>();
@@ -30,7 +23,6 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
     {
         throw new ArgumentNullException(nameof(connString), "CosmosDBConnectionString is missing from the configuration.");
     }
-    Console.WriteLine("ConnString {0}", connString);
     
     var options = new CosmosClientOptions
     {

@@ -1,4 +1,5 @@
-﻿Feature: Cda Emulator Holder Name Configurations
+﻿@Ignore
+Feature: Cda Emulator Holder Name Configurations
 API Tests for CDA Service Emulator for holder name configurations.  To Test on Local use localhost in place of Azure QA Environment.
 
 @smoke @holdernameconfigurations

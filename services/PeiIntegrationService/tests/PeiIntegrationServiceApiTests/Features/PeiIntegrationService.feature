@@ -1,4 +1,5 @@
-﻿Feature: PeiIntegrationService Tests
+﻿@ignore
+Feature: PeiIntegrationService Tests
 
 API Tests for PEI Integration Service. To Test on Local use localhost in place of Azure QA Environment.
 

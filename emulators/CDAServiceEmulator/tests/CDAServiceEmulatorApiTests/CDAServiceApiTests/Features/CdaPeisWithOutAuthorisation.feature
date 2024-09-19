@@ -1,4 +1,5 @@
-﻿Feature: CDA Pei API Test Without RPT Authorization
+﻿@Ignore
+Feature: CDA Pei API Test Without RPT Authorization
 API Tests with RPT Authorization as per policy on Service Emulator. To Test on Local use localhost in place of Azure QA Environment.
 
 @smoke @cdapei

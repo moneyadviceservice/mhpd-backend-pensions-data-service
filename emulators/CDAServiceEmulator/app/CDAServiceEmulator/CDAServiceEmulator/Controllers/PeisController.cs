@@ -13,7 +13,7 @@ public class PeisController : ControllerBase
 {
     private readonly CdaPeisEmulatorScenarioModelRepository _cdaPeisEmulatorScenarioModelRepository;
     private readonly CdaPeisEmulatorTestInstanceDataRepository _cdaPeisEmulatorTestInstanceDataRepository;
-    private const string BadRequestPeisIdInvalidResponse = "Invalid pies_id";
+    private const string BadRequestPeisIdInvalidResponse = "Invalid peis_id";
     private const string BadRequestXRequestIdInvalidResponse = "Invalid X-Request-Id";
     private const string BadRequestUnknownTestScenarioResponse = "Unknown test scenario";
     private const string UnauthorisedResponse = "Unauthorized";

@@ -96,7 +96,7 @@ public class PeisControllerTests
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-        Assert.True((string)badResult.Value! == "Invalid pies_id");
+        Assert.True((string)badResult.Value! == "Invalid peis_id");
 
     }
 

@@ -13,7 +13,10 @@ public class PeisController : ControllerBase
 {
     private readonly CdaPeisEmulatorScenarioModelRepository _cdaPeisEmulatorScenarioModelRepository;
     private readonly CdaPeisEmulatorTestInstanceDataRepository _cdaPeisEmulatorTestInstanceDataRepository;
-    private const string BadRequestResponse = "Bad Request";
+    private const string BadRequestPeisIdInvalidResponse = "Invalid pies_id";
+    private const string BadRequestXRequestIdInvalidResponse = "Invalid X-Request-Id";
+    private const string BadRequestUnknownTestScenarioResponse = "Unknown test scenario";
+    private const string UnauthorisedResponse = "Unauthorized";
     private readonly IIdValidator _idValidator;
 
     public PeisController(CdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
@@ -30,19 +33,17 @@ public class PeisController : ControllerBase
     {
         if (!ValidateAuthHeader())
         {
-            return Unauthorized("Unauthorized");
+            return Unauthorized(UnauthorisedResponse);
         }
         
         if (string.IsNullOrEmpty(requestHeader.XRequestId) || !_idValidator.IsValidGuid(requestHeader.XRequestId))
         {
-            Console.WriteLine("Invalid XRequestID {0}", requestHeader.XRequestId);
-            return BadRequest(BadRequestResponse);
+            return BadRequest(BadRequestXRequestIdInvalidResponse);
         }
         
-        if (!_idValidator.IsValidGuid(peis_id))
+        if (string.IsNullOrEmpty(peis_id) || !_idValidator.IsValidGuid(peis_id))
         {
-            Console.WriteLine("Invalid peis_id {0}", peis_id);
-            return BadRequest(BadRequestResponse);
+            return BadRequest(BadRequestPeisIdInvalidResponse);
         }
         
         // Extract first 4 characters from the Peis_id
@@ -52,8 +53,7 @@ public class PeisController : ControllerBase
 
         if (scenarioModelData?.DataPoints == null)
         {
-            Console.WriteLine("No ScenarioModelData found {0}", peisStartCode);
-            return BadRequest(BadRequestResponse);
+            return BadRequest(BadRequestUnknownTestScenarioResponse);
         }
 
         var result = scenarioModelData.DataPoints?[0].ResponsePayload;
@@ -85,8 +85,7 @@ public class PeisController : ControllerBase
 
             if (result == null)
             {
-                Console.WriteLine("No response payload data found {0}", result);
-                return BadRequest(BadRequestResponse);
+                return BadRequest();
             }
         }
         

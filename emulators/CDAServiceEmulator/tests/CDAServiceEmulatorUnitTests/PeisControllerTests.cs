@@ -90,12 +90,14 @@ public class PeisControllerTests
         mockIdValidatorMock.Setup(x => x.IsValidGuid(peis_id)).Returns(false);
         
         // Act
-        var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = xRequestId });
-        BadRequestObjectResult okResult = (BadRequestObjectResult)result;
+        var result = await _controller.GetAsync("", new RequestHeaderModel { XRequestId = xRequestId });
+        BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
-        Assert.True(okResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        Assert.True((string)badResult.Value! == "Invalid pies_id");
+
     }
 
     [Fact]
@@ -127,6 +129,7 @@ public class PeisControllerTests
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        Assert.True((string)badResult.Value! == "Invalid X-Request-Id");
     }
 
     [Fact]
@@ -146,6 +149,7 @@ public class PeisControllerTests
         Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
         Assert.True(unAuthorizedResult.StatusCode == (int)HttpStatusCode.Unauthorized);
         Assert.True(wwwAuthenticate == responseHeaderValue);
+        Assert.True((string)unAuthorizedResult.Value! == "Unauthorized");
     }
         
     [Fact]
@@ -168,6 +172,7 @@ public class PeisControllerTests
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+        Assert.True((string)badResult.Value! == "Unknown test scenario");
     }
 
     [Fact]

@@ -8,7 +8,7 @@
       "description": "The unique identifier fro a collection of pensions data tath can be accessed by a Citizen User",
       "format": "uuid",
       "minLength": 36,
-      "maxLength": 23,
+      "maxLength": 36,
       "examples": [
         "193a68e0-eddb-4396-86b4-f9ff6bad5c60"
       ]

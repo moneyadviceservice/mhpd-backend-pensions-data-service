@@ -44,7 +44,7 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
 
         try
         {
-            payload = _messageParser.ToRetrivedPensionRecord(messageBody);
+            payload = _messageParser.ToRetrievedPensionPayload(messageBody);
         }
         catch (AggregateException error)
         {

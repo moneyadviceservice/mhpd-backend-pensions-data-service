@@ -8,12 +8,22 @@ namespace MhpdCommon.Utils;
 
 public class MessageParser : IMessageParser
 {
-    public RetrievedPensionDetailsPayload? ToRetrivedPensionRecord(string message)
+    public RetrievedPensionDetailsPayload? ToRetrievedPensionPayload(string message)
     {
-        var schemaData = ResourceProvider.GetString(FileConstants.RetrievedPensionPayloadSchema);
+        return Parse<RetrievedPensionDetailsPayload>(message, FileConstants.RetrievedPensionPayloadSchema);
+    }
+
+    public PensionRetrievalPayload? ToPensionRetrievalPayload(string message)
+    {
+        return Parse<PensionRetrievalPayload>(message, FileConstants.PensionsRetrievalPayloadSchema);
+    }
+
+    private static TPayload? Parse<TPayload>(string messageContent, string schemaName)
+    {
+        var schemaData = ResourceProvider.GetString(schemaName);
 
         JSchema schema = JSchema.Parse(schemaData);
-        JObject json = JObject.Parse(message);
+        JObject json = JObject.Parse(messageContent);
 
         if (!json.IsValid(schema, out IList<string> errors))
         {
@@ -23,6 +33,6 @@ public class MessageParser : IMessageParser
             }));
         }
 
-        return JsonSerializer.Deserialize<RetrievedPensionDetailsPayload>(message);
+        return JsonSerializer.Deserialize<TPayload>(messageContent);
     }
 }

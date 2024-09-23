@@ -26,6 +26,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="TestData\PensionRetrieval\BadPeisIdPensionRetrievalMessage.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\PensionRetrieval\EmptyIssPensionRetrievalMessage.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\PensionRetrieval\InvalidPensionRetrievalMessage.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\PensionRetrieval\NullSessionPensionRetrievalMessage.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\PensionRetrieval\ValidPensionRetrievalMessage.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestData\RetrievedPensions\EmptyArrangementsPayload.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

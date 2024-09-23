@@ -39,7 +39,7 @@ public class RetrievedPensionFunctionTests
 
         _messageParseMock = new Mock<IMessageParser>();
         var error = new AggregateException(new Exception("Bad Data"));
-        _messageParseMock.Setup(x => x.ToRetrivedPensionRecord(It.IsAny<string>())).Throws(error);
+        _messageParseMock.Setup(x => x.ToRetrievedPensionPayload(It.IsAny<string>())).Throws(error);
 
         _function = new RetrievedPensionsFunction(_loggerMock.Object, _idValidatorMock.Object, _messageParseMock.Object, _recordValidatorMock.Object, _repositoryMock.Object);
 
@@ -100,7 +100,7 @@ public class RetrievedPensionFunctionTests
         const string file = "EmptyGuidRecordIdPayload.json";
         var payload = DataProvider.GetPayload(file);
         _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-        _messageParseMock.Setup(x => x.ToRetrivedPensionRecord(It.IsAny<string>())).Returns(payload);
+        _messageParseMock.Setup(x => x.ToRetrievedPensionPayload(It.IsAny<string>())).Returns(payload);
 
         var content = DataProvider.GetString(file);
         var message = ServiceBusModelFactory.ServiceBusReceivedMessage(
@@ -125,7 +125,7 @@ public class RetrievedPensionFunctionTests
         var payload = DataProvider.GetPayload(file);
 
         _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-        _messageParseMock.Setup(x => x.ToRetrivedPensionRecord(It.IsAny<string>())).Returns(payload);
+        _messageParseMock.Setup(x => x.ToRetrievedPensionPayload(It.IsAny<string>())).Returns(payload);
         _recordValidatorMock.Setup(x => x.ValidateRecord(It.IsAny<RetrievedPensionDetailsPayload>(), out reason)).Returns(true);
         _repositoryMock.Setup(x => x.SaveRetrievedPensionRecordAsync(It.IsAny<string>(), It.IsAny<RetrievedPensionDetailsPayload>())).ReturnsAsync(false);
 
@@ -151,7 +151,7 @@ public class RetrievedPensionFunctionTests
         var payload = DataProvider.GetPayload(file);
         
         _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-        _messageParseMock.Setup(x => x.ToRetrivedPensionRecord(It.IsAny<string>())).Returns(payload);
+        _messageParseMock.Setup(x => x.ToRetrievedPensionPayload(It.IsAny<string>())).Returns(payload);
         _recordValidatorMock.Setup(x => x.ValidateRecord(It.IsAny<RetrievedPensionDetailsPayload>(), out reason)).Returns(true);
         _repositoryMock.Setup(x => x.SaveRetrievedPensionRecordAsync(It.IsAny<string>(), It.IsAny<RetrievedPensionDetailsPayload>())).ReturnsAsync(true);
 

@@ -1,5 +1,4 @@
-using MhpdCommon.Utils;
-using Microsoft.Azure.Cosmos;
+using MhpdCommon.Extensions;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,19 +17,10 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-        services.AddSingleton<CosmosClient>(provider =>
-        {
-            var connString = hostContext.Configuration.GetConnectionString("CosmosDBConnectionString");
-            var options = new CosmosClientOptions
-            {
-                SerializerOptions = new CosmosSerializationOptions { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase },
-            };
-            return new CosmosClient(connString, options);
-        });
-        services.AddTransient<IIdValidator, IdValidator>();
-        services.AddTransient<IMessageParser, MessageParser>();
-        services.AddTransient<IPensionRecordValidator, PensionRecordValidator>();
-        services.AddTransient<IPensionRecordRepository, PensionRecordRepository>();
+        services.AddMhpdCosmosDb();
+        services.AddMhpdUtilities();
+        services.AddScoped<IPensionRecordValidator, PensionRecordValidator>();
+        services.AddScoped<IPensionRecordRepository, PensionRecordRepository>();
 
         services.AddOptions<MhpdCosmosConfiguration>().Configure(option =>
         {

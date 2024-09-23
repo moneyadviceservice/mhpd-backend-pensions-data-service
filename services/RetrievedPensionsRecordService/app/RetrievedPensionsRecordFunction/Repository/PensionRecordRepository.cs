@@ -36,7 +36,7 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCos
 
         Container container = database.GetContainer(_mhpdConfiguration.ContainerId);
 
-        var response = await container.UpsertItemAsync(record, null, null, default);
+        var response = await container.UpsertItemAsync(record, new PartitionKey(record.PensionsRetrievalRecordId), null, default);
 
         string? logMessage;
 

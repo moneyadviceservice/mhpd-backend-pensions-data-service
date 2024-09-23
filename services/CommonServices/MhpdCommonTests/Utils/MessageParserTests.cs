@@ -1,5 +1,4 @@
-﻿using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Utils;
+﻿using MhpdCommon.Utils;
 
 namespace MhpdCommonTests.Utils;
 
@@ -19,11 +18,7 @@ public class MessageParserTests
     {
         var payloadData = File.ReadAllText(payloadFile);
 
-        RetrievedPensionDetailsPayload? act() => _messageParser.ToRetrivedPensionRecord(payloadData);
-
-        var error = Record.Exception((Func<RetrievedPensionDetailsPayload?>)act);
-        Assert.NotNull(error);
-        Assert.IsType<AggregateException>(error);
+        Assert.Throws<AggregateException>(() => _messageParser.ToRetrievedPensionPayload(payloadData));
     }
 
 
@@ -35,7 +30,31 @@ public class MessageParserTests
     {
         var payloadData = File.ReadAllText(payloadFile);
 
-        var payload = _messageParser.ToRetrivedPensionRecord(payloadData);
+        var payload = _messageParser.ToRetrievedPensionPayload(payloadData);
+
+        Assert.NotNull(payload);
+    }
+
+    [Theory]
+    [InlineData(@"TestData/PensionRetrieval/BadPeisIdPensionRetrievalMessage.json")]
+    [InlineData(@"TestData/PensionRetrieval/EmptyIssPensionRetrievalMessage.json")]
+    [InlineData(@"TestData/PensionRetrieval/InvalidPensionRetrievalMessage.json")]
+    [InlineData(@"TestData/PensionRetrieval/NullSessionPensionRetrievalMessage.json")]
+    public void WhenAnInvalidRetrievalPayloadIsParsed_ItThrowsAnException(string payloadFile)
+    {
+        var payloadData = File.ReadAllText(payloadFile);
+
+        Assert.Throws<AggregateException>(() => _messageParser.ToPensionRetrievalPayload(payloadData));
+    }
+
+
+    [Theory]
+    [InlineData(@"TestData/PensionRetrieval/ValidPensionRetrievalMessage.json")]
+    public void WhenAValidRetrievalPayloadIsParsed_ItReturnsARecord(string payloadFile)
+    {
+        var payloadData = File.ReadAllText(payloadFile);
+
+        var payload = _messageParser.ToPensionRetrievalPayload(payloadData);
 
         Assert.NotNull(payload);
     }

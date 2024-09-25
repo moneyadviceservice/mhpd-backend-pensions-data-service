@@ -1,86 +1,61 @@
-﻿using CDATokenServices.Models;
+﻿using CDAServiceEmulator.Models.Peis;
+using CDAServiceEmulator.Models.Token;
+using CDAServiceEmulator.TokenValidation;
+using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
-namespace CDAServiceEmulator.Controllers
+namespace CDAServiceEmulator.Controllers;
+
+[Route("api/[controller]")]   
+[ApiController]
+public class CdaTokenController(
+    ILogger<CdaTokenController> logger,
+    IIdValidator idValidator,
+    TokenRequestValidatorPipeline tokenRequestValidators)
+    : ControllerBase
 {
-    [Route("api/[controller]")]   
-    [ApiController]
-    public class CDATokenController : ControllerBase
+    [Route("token")]     
+    [HttpPost]      
+
+    public Task<IActionResult> GenerateTokenAsync([FromQuery] CdaTokenRequestModel request, [FromHeader]RequestHeaderModel requestHeader)
     {
-        [Route("/token")]     
-        [HttpPost]      
-
-        public async Task<IActionResult> PostAsync([FromQuery] CDATokenRequestModel query)            
+        LogInfoWithJsonObject("Request received: ", request);
+            
+        if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
         {
-           
-            if (ValidateQuery(query, out var message) == false)
-                return BadRequest(message);
-
-            if (!ValidateHeaders())
-            {
-                return Unauthorized("Unauthorized");
-            }
-
-            return Ok(CreateResponse());
-
+            return Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
+        }
+            
+        var validationResult = tokenRequestValidators.Validate(request);
+    
+        if (!validationResult.IsValid)
+        {
+            LogError(validationResult.ErrorMessage);
+            return Task.FromResult<IActionResult>(BadRequest(validationResult.ErrorMessage));
         }
 
-        private CDATokenResponseModel CreateResponse ()
+        return Task.FromResult<IActionResult>(Ok(CreateResponse()));
+    }
+
+    private static CdaTokenResponseModel CreateResponse()
+    {
+        return new CdaTokenResponseModel
         {
-            return new CDATokenResponseModel
-            {
-                AccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI",
-                TokenType = "pension_dashboard_rpt",
-                Upgraded = false,
-                Pct = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
-            };
-        }
+            AccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI",
+            TokenType = "pension_dashboard_rpt",
+            Upgraded = false,
+            Pct = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
+        };
+    }
 
-        private bool ValidateQuery(CDATokenRequestModel query, out string message)
-        {
-            message = string.Empty;
+    private void LogInfoWithJsonObject<T>(string type, T data)
+    {
+        logger.LogInformation("{Type} {Data}", type, JsonConvert.SerializeObject(data));
+    }
 
-            if (!GrantTypeEnum.Validate(query.GrantType!, out var badMessage))
-            {
-                message = badMessage;
-                return false;
-            }
-
-            if (!ScopeEnum.Validate(query.Scope!, out badMessage))
-            {
-                message = badMessage;
-                return false;
-            }
-
-            if (!ClaimTokenFormatEnum.Validate(query.ClaimTokenFormat!, out badMessage))
-            {
-                message = badMessage;
-                return false;
-            }
-            if (string.IsNullOrEmpty(query.Ticket))
-            {
-                message = BadRequestModel.InvalidRequest;
-                return false;
-            }          
-            if (string.IsNullOrEmpty(query.ClaimToken))
-            {
-                message = BadRequestModel.InvalidRequest;
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool ValidateHeaders()
-        {
-            string headerValue = Request.Headers["X-Request-ID"];
-            if (string.IsNullOrEmpty(headerValue))
-            {
-                return false;
-            }
-            return true;
-        }      
-      
-
+    private void LogError(string errorMessage)
+    {
+        logger.LogError("Error: {ErrorMessage}", errorMessage);
     }
 }

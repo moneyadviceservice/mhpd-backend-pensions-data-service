@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;
@@ -9,8 +10,8 @@ using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddTransient<IIdValidator, IdValidator>();
+builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -50,6 +51,16 @@ builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provide
     
     return new CdaPeisEmulatorTestInstanceDataRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorTestInstanceDataContainerName);
 });
+
+builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotUmaTicketValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPensionDashboardRqpValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, ScopeNotOwnerValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, ScopeNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, TicketNotAJwtValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, TicketQueryNotPresentValidator>();
+builder.Services.AddScoped<TokenRequestValidatorPipeline>();
 
 builder.Services.AddHttpLogging(logging =>
 {

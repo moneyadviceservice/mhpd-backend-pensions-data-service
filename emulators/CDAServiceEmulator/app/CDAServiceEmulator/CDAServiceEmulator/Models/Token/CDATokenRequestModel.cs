@@ -1,17 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace CDATokenServices.Models;
+namespace CDAServiceEmulator.Models.Token;
 
-public class CDATokenRequestModel
+public class CdaTokenRequestModel
 {
     [FromQuery(Name = "grant_type")]
     public string? GrantType { get; set; }
+    
     [FromQuery(Name = "ticket")]
     public string? Ticket { get; set; }
-    [FromQuery(Name = "claim_token")]
-    public string? ClaimToken { get; set; }
+    
     [FromQuery(Name = "claim_token_format")]
     public string? ClaimTokenFormat { get; set; }
+    
     [FromQuery(Name = "scope")]
     public string? Scope { get; set; }
 }

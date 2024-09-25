@@ -1,0 +1,106 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "functionAppName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Azure Function App."
+            }
+        },
+        "storageAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the storage account."
+            }
+        },
+        "storageAccountType": {
+            "type": "string",
+            "metadata": {
+                "description": "Type of the storage account."
+            }
+        },
+        "appServicePlanName": {
+          "type": "string",
+          "metadata": {
+              "description": "The name of the app service plan to register the app service under"
+          }
+        },
+        "infrastructureResourceGroup": {
+          "type": "string",
+          "metadata" : {
+              "description": "The name of the resource group in which the common infrastructure used by backend services exists"
+        }
+      },
+        "linuxFxVersion": {
+          "type": "string",
+          "defaultValue": "DOTNETCORE|8.0",
+          "metadata": {
+              "description": "The Runtime stack of current web app"
+          }
+      }
+    },
+    "variables": {
+      "appServicePlan_externalId": "[resourceId(parameters('infrastructureResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
+      "functionWorkerRuntime": "dotnet-isolated"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2022-05-01",
+            "name": "[parameters('storageAccountName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "StorageV2",
+            "sku": {
+            "name": "[parameters('storageAccountType')]"
+            },
+            "properties": {
+                "supportsHttpsTrafficOnly": true,
+                "defaultToOAuthAuthentication": true
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2021-02-01",
+            "name": "[parameters('functionAppName')]",
+            "location": "[resourceGroup().location]",
+            "kind": "functionapp,linux",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+            ],
+            "properties": {
+            "reserved": true,
+            "serverFarmId": "[variables('appServicePlan_externalId')]",
+            "siteConfig": {
+                "linuxFxVersion": "[parameters('linuxFxVersion')]",
+                "appSettings": [
+                        {
+                            "name": "AzureWebJobsStorage",
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-09-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+                            "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};EndpointSuffix={1};AccountKey={2}', parameters('storageAccountName'), environment().suffixes.storage, listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2021-09-01').keys[0].value)]"
+                        },
+                        {
+                            "name": "WEBSITE_CONTENTSHARE",
+                            "value": "[toLower(parameters('functionAppName'))]"
+                        },
+                        {
+                            "name": "FUNCTIONS_EXTENSION_VERSION",
+                            "value": "~4"
+                        },
+                        {
+                            "name": "FUNCTIONS_WORKER_RUNTIME",
+                            "value": "[variables('functionWorkerRuntime')]"
+                        },
+						{
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "1"
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

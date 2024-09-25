@@ -51,13 +51,6 @@
         "description": "The name for the container"
       }
     },
-    "containerName": {
-      "type": "string",
-      "defaultValue": "myContainerName",
-      "metadata": {
-        "description": "The name for the container"
-      }
-    },
     "throughput": {
       "type": "int",
       "defaultValue": 400,

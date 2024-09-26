@@ -51,6 +51,13 @@
         "description": "The name for the container"
       }
     },
+    "tokenEmulatorPiesIdScenarioModelContainerName": {
+      "type": "string",
+      "defaultValue": "tokenEmulatorPiesIdScenarioModels",
+      "metadata": {
+        "description": "The name for the container"
+      }
+    },
     "throughput": {
       "type": "int",
       "defaultValue": 400,
@@ -196,6 +203,46 @@
               {
                 "paths": [
                   "/peisId"
+                ]
+              }
+            ]
+          },
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "includedPaths": [
+              {
+                "path": "/*"
+              }
+            ],
+            "excludedPaths": []
+          }
+        },
+        "options": {
+          "throughput": "[parameters('throughput')]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), parameters('databaseName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-04-15",
+      "name": "[concat(parameters('cosmosDbAccountName'), '/', parameters('databaseName'), '/', parameters('tokenEmulatorPiesIdScenarioModelContainerName'))]",
+      "properties": {
+        "resource": {
+          "id": "[parameters('tokenEmulatorPiesIdScenarioModelContainerName')]",
+          "partitionKey": {
+            "paths": [
+              "/code"
+            ],
+            "kind": "Hash"
+          },
+          "uniqueKeyPolicy": {
+            "uniqueKeys": [
+              {
+                "paths": [
+                  "/code"
                 ]
               }
             ]

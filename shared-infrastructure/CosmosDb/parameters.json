@@ -17,6 +17,9 @@
         "cdaPeisEmulatorTestInstanceDataContainerName": {
             "value": "cdaPeisEmulatorTestInstanceData"
         },
+        "tokenEmulatorPiesIdScenarioModelContainerName": {
+            "value": "tokenEmulatorPiesIdScenarioModels"
+        },
         "throughput": {
             "value": 400
         },

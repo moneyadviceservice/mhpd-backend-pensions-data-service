@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using PeiIntegrationService.HttpClients.Interfaces;
+using PeiIntegrationService.Models;
 using PeiIntegrationService.Models.TokenIntegrationService;
 
 namespace PeiIntegrationService.HttpClients.Implementation
@@ -17,20 +18,19 @@ namespace PeiIntegrationService.HttpClients.Implementation
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
-            _cdaTokenServicesEndpoint = _configuration["CdaTokenServicesEndpoint"]!;
-            _mapsTokenIntegrationServiceEndpoint = _configuration["TokenIntegrationServiceEndpoint"]!;
+            _cdaTokenServicesEndpoint = _configuration[Constants.HttpEndpoints.CdaTokenServicesEndpoint]!;
+            _mapsTokenIntegrationServiceEndpoint = _configuration[Constants.HttpEndpoints.TokenIntegrationServiceEndpoint]!;
         }
         public async Task<TokenIntegrationResponseModel> PostRpt(TokenIntegrationServiceRequestModel request)
         {
-            var client = _httpClientFactory.CreateClient("TokenIntegrationService");
+            var client = _httpClientFactory.CreateClient(Constants.HttpClients.TokenIntegrationService);
             client.BaseAddress = new Uri(_mapsTokenIntegrationServiceEndpoint);
 
             request.As_Uri = _cdaTokenServicesEndpoint; // <<<======== this should come in through via wwwAuthenticate header as_uri
             var payload = JsonSerializer.Serialize(request);
-            var endPoint = $"rpts";
 
             var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            var responseTokenInt = await client!.PostAsync(endPoint, content);
+            var responseTokenInt = await client!.PostAsync(Constants.RequestRoutes.Rpt, content);
             var result = responseTokenInt.Content.ReadFromJsonAsync<TokenIntegrationResponseModel>().Result;
             return result!;
         }

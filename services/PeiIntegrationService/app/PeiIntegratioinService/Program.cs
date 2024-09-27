@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MhpdCommon.Extensions;
 using Microsoft.AspNetCore.HttpLogging;
 using PeiIntegrationService.HttpClients.Implementation;
 using PeiIntegrationService.HttpClients.Interfaces;
@@ -16,6 +17,8 @@ builder.Services.AddHttpClient<MapsCdaServiceClient>("TokenIntegrationService", 
 builder.Services.AddTransient<ICdaPiesServiceClient, CdaPiesServiceClient>();
 builder.Services.AddTransient<IMapsRqpServiceClient, MapsCdaServiceClient>();
 builder.Services.AddTransient<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
+
+builder.Services.AddMhpdUtilities();
 
 builder.Services.AddControllers();
 

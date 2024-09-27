@@ -1,8 +1,10 @@
-﻿namespace PeiIntegrationService.Models.CdaPiesService
+﻿using System.Net;
+
+namespace PeiIntegrationService.Models.CdaPiesService
 {
     public class ResponseMessage
     {
-        public string? ResponseStatusCode { get; set; }
+        public HttpStatusCode ResponseStatusCode { get; set; }
 
         public string? WWWAuthenticateResponseHeader { get; set; }
     }

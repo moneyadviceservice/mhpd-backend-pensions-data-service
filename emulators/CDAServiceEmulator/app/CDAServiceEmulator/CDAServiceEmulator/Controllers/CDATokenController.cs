@@ -35,17 +35,20 @@ public class CdaTokenController(
             return Task.FromResult<IActionResult>(BadRequest(validationResult.ErrorMessage));
         }
 
-        return Task.FromResult<IActionResult>(Ok(CreateResponse()));
+        var response = CreateResponse();
+        LogInfoWithJsonObject("Response: ", response);
+        
+        return Task.FromResult<IActionResult>(Ok(response));
     }
 
     private static CdaTokenResponseModel CreateResponse()
     {
         return new CdaTokenResponseModel
         {
-            AccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI",
-            TokenType = "pension_dashboard_rpt",
+            AccessToken = TokenQueryParams.ValidJwtToken,
+            TokenType = TokenQueryParams.TokenType,
             Upgraded = false,
-            Pct = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
+            Pct = TokenQueryParams.ValidJwtToken
         };
     }
 

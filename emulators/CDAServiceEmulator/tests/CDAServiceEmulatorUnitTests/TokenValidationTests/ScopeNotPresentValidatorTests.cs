@@ -30,5 +30,6 @@ public class ScopeNotPresentValidatorTests
         var result = _validator.Validate(new CdaTokenRequestModel { GrantType = TokenQueryParams.UmaGrantType, Scope = TokenQueryParams.Owner });
 
         Assert.True(result.IsValid);
+        Assert.Equal(3, _validator.Order);
     }
 }

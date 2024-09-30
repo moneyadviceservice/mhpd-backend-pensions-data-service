@@ -5,7 +5,7 @@ namespace CDAServiceEmulator.TokenValidation;
 
 public class TicketNotAJwtValidator(ILogger<TicketNotAJwtValidator> logger) : ITokenRequestValidator
 {
-    public int Order => 8;
+    public int Order => 10;
 
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

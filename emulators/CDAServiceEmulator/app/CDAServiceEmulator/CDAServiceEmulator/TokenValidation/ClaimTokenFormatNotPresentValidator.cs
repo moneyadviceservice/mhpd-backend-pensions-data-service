@@ -5,7 +5,7 @@ namespace CDAServiceEmulator.TokenValidation;
 public class ClaimTokenFormatNotPresentValidator(ILogger<ClaimTokenFormatNotPresentValidator> logger)
     : ITokenRequestValidator
 {
-    public int Order => 5;
+    public int Order => 7;
 
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

@@ -30,5 +30,6 @@ public class GrantTypeNotUmaTicketValidatorTests
         var result = _notUmaTicketValidator.Validate(new CdaTokenRequestModel { GrantType = TokenQueryParams.UmaGrantType });
 
         Assert.True(result.IsValid);
+        Assert.Equal(2, _notUmaTicketValidator.Order);
     }
 }

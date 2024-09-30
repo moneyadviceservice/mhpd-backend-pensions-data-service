@@ -4,7 +4,7 @@ namespace CDAServiceEmulator.TokenValidation;
 
 public class TicketQueryNotPresentValidator(ILogger<TicketQueryNotPresentValidator> logger) : ITokenRequestValidator
 {
-    public int Order => 7;
+    public int Order => 9;
     
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

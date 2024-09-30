@@ -5,14 +5,14 @@ using Moq;
 
 namespace CDAServiceEmulatorUnitTests.TokenValidationTests;
 
-public class TicketNotAJwtValidatorTests
+public class ClaimTokenNotJwtValidatorTests
 {
-    private readonly TicketNotAJwtValidator _validator;
+    private readonly ClaimTokenNotJwtValidator _validator;
 
-    public TicketNotAJwtValidatorTests()
+    public ClaimTokenNotJwtValidatorTests()
     {
-        Mock<ILogger<TicketNotAJwtValidator>> loggerMock = new();
-        _validator = new TicketNotAJwtValidator(loggerMock.Object);
+        Mock<ILogger<ClaimTokenNotJwtValidator>> loggerMock = new();
+        _validator = new ClaimTokenNotJwtValidator(loggerMock.Object);
     }
 
     [Fact]
@@ -21,7 +21,7 @@ public class TicketNotAJwtValidatorTests
         // Arrange
         var request = new CdaTokenRequestModel
         {
-            Ticket = "invalid.jwt.token", // Invalid JWT format
+            ClaimToken = "invalid.jwt.token", // Invalid JWT format
             GrantType = TokenQueryParams.UmaGrantType
         };
 
@@ -30,7 +30,7 @@ public class TicketNotAJwtValidatorTests
 
         // Assert
         Assert.False(result.IsValid); // Validation should fail
-        Assert.Equal(TokenValidationMessages.InvalidTicketQueryFormat, result.ErrorMessage);
+        Assert.Equal(TokenValidationMessages.InvalidClaimToken, result.ErrorMessage);
     }
 
     [Fact]
@@ -39,7 +39,7 @@ public class TicketNotAJwtValidatorTests
         // Arrange
         var request = new CdaTokenRequestModel
         {
-            Ticket = TokenQueryParams.ValidJwtToken,
+            ClaimToken = TokenQueryParams.ValidJwtToken,
             GrantType = TokenQueryParams.UmaGrantType
         };
 
@@ -48,6 +48,6 @@ public class TicketNotAJwtValidatorTests
 
         // Assert
         Assert.True(result.IsValid); // Validation should succeed
-        Assert.Equal(10, _validator.Order);
+        Assert.Equal(6, _validator.Order);
     }
 }

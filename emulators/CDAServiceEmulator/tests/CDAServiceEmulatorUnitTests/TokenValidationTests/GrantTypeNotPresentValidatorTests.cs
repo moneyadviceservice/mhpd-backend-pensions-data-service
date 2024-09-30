@@ -30,5 +30,6 @@ public class GrantTypeNotPresentValidatorTests
         var result = _notPresentValidator.Validate(new CdaTokenRequestModel { GrantType = "valid_grant_type" });
 
         Assert.True(result.IsValid);
+        Assert.Equal(1, _notPresentValidator.Order);
     }
 }

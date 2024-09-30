@@ -13,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTransient<IIdValidator, IdValidator>();
 builder.Services.AddControllers();
 
+builder.Services.AddApplicationInsightsTelemetry();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -54,6 +56,8 @@ builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provide
 
 builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotUmaTicketValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotPresentValidation>();
 builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPensionDashboardRqpValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, ScopeNotOwnerValidator>();

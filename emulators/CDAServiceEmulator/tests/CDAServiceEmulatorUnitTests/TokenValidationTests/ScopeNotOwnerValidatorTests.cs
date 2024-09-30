@@ -30,5 +30,6 @@ public class ScopeNotOwnerValidatorTests
         var result = _validator.Validate(new CdaTokenRequestModel { GrantType = TokenQueryParams.UmaGrantType, Scope = TokenQueryParams.Owner });
 
         Assert.True(result.IsValid);
+        Assert.Equal(4, _validator.Order);
     }
 }

@@ -5,7 +5,7 @@ namespace CDAServiceEmulator.TokenValidation;
 public class ClaimTokenFormatNotPensionDashboardRqpValidator(ILogger<ClaimTokenFormatNotPensionDashboardRqpValidator> logger)
     : ITokenRequestValidator
 {
-    public int Order => 6;
+    public int Order => 8;
     
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

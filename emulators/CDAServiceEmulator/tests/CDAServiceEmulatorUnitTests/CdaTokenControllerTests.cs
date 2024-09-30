@@ -101,6 +101,6 @@ public class CdaTokenControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var response = Assert.IsType<CdaTokenResponseModel>(okResult.Value);
         Assert.NotNull(response.AccessToken);
-        Assert.Equal(TokenQueryParams.PensionDashboardRqp, response.TokenType);
+        Assert.Equal(TokenQueryParams.TokenType, response.TokenType);
     }
 }

@@ -31,5 +31,6 @@ public class TicketQueryNotPresentValidatorTests
         var result = _validator.Validate(new CdaTokenRequestModel { GrantType = TokenQueryParams.UmaGrantType, Ticket = TokenQueryParams.ValidJwtToken });
 
         Assert.True(result.IsValid);
+        Assert.Equal(9, _validator.Order);
     }
 }

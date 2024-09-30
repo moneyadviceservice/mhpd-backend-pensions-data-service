@@ -30,5 +30,6 @@ public class ClaimTokenFormatNotPensionDashboardRqpValidatorTests
         var result = _validator.Validate(new CdaTokenRequestModel { GrantType = TokenQueryParams.UmaGrantType, ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp });
 
         Assert.True(result.IsValid);
+        Assert.Equal(8, _validator.Order);
     }
 }

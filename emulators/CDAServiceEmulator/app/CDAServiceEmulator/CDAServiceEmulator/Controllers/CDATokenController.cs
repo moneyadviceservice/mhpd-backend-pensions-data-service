@@ -1,4 +1,5 @@
-﻿using CDAServiceEmulator.Models.Peis;
+﻿using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulator.Models.Token;
 using CDAServiceEmulator.TokenValidation;
 using MhpdCommon.Utils;
@@ -7,48 +8,69 @@ using Newtonsoft.Json;
 
 namespace CDAServiceEmulator.Controllers;
 
-[Route("api/[controller]")]   
+[Route("/")]   
 [ApiController]
 public class CdaTokenController(
     ILogger<CdaTokenController> logger,
     IIdValidator idValidator,
-    TokenRequestValidatorPipeline tokenRequestValidators)
+    TokenRequestValidatorPipeline tokenRequestValidators, 
+    TokenEmulatorPiesIdScenarioModelsRepository tokenEmulatorPiesIdScenarioModelRepository,
+    Utils utils)
     : ControllerBase
 {
-    [Route("token")]     
-    [HttpPost]      
-
-    public Task<IActionResult> GenerateTokenAsync([FromQuery] CdaTokenRequestModel request, [FromHeader]RequestHeaderModel requestHeader)
+    [HttpPost]
+    [Route("token")]
+    public async Task<IActionResult> GenerateTokenAsync([FromQuery] CdaTokenRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {
         LogInfoWithJsonObject("Request received: ", request);
             
         if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
         {
-            return Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
+            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
         }
-            
+        
         var validationResult = tokenRequestValidators.Validate(request);
     
         if (!validationResult.IsValid)
         {
             LogError(validationResult.ErrorMessage);
-            return Task.FromResult<IActionResult>(BadRequest(validationResult.ErrorMessage));
+            return await Task.FromResult<IActionResult>(BadRequest(validationResult.ErrorMessage));
         }
 
-        var response = CreateResponse();
+        CdaTokenResponseModel response;
+        
+        // Validate code when grant_type is authorization_code
+        if (request is { Code: not null, GrantType: TokenQueryParams.AuthorizationCodeGrantType })
+        {
+            var data = await tokenEmulatorPiesIdScenarioModelRepository.GetByIdAsync(request.Code, request.Code);
+            if (data != null && !string.IsNullOrEmpty(data.PeisIdStartCode))
+            {
+               response = CreateResponse(true, data.PeisIdStartCode);
+            }
+            else
+            {
+                return BadRequest(TokenValidationMessages.UnknownAuthorizationCode);
+            }
+        }
+        else
+        {
+            response = CreateResponse();
+        }
+
         LogInfoWithJsonObject("Response: ", response);
         
-        return Task.FromResult<IActionResult>(Ok(response));
+        return await Task.FromResult<IActionResult>(Ok(response));
     }
 
-    private static CdaTokenResponseModel CreateResponse()
+    private CdaTokenResponseModel CreateResponse(bool isAuthorizationCodeGrantType = false, string peisStartCode = "")
     {
         return new CdaTokenResponseModel
         {
             AccessToken = TokenQueryParams.ValidJwtToken,
-            TokenType = TokenQueryParams.TokenType,
+            TokenType = isAuthorizationCodeGrantType ? TokenQueryParams.TokenTypeBearer : TokenQueryParams.TokenTypeRpt,
             Upgraded = false,
-            Pct = TokenQueryParams.ValidJwtToken
+            IdToken = isAuthorizationCodeGrantType ? utils.GenerateJwt(peisStartCode) : null,
+            Pct = !isAuthorizationCodeGrantType ? TokenQueryParams.ValidJwtToken : null
         };
     }
 

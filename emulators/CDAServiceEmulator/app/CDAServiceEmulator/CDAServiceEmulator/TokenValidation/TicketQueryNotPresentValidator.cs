@@ -5,6 +5,8 @@ namespace CDAServiceEmulator.TokenValidation;
 public class TicketQueryNotPresentValidator(ILogger<TicketQueryNotPresentValidator> logger) : ITokenRequestValidator
 {
     public int Order => 9;
+
+    public string GrantType => TokenQueryParams.UmaGrantType;
     
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

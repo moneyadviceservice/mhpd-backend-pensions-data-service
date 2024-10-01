@@ -6,6 +6,8 @@ namespace CDAServiceEmulator.TokenValidation;
 public class TicketNotAJwtValidator(ILogger<TicketNotAJwtValidator> logger) : ITokenRequestValidator
 {
     public int Order => 10;
+    
+    public string GrantType => TokenQueryParams.UmaGrantType;
 
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

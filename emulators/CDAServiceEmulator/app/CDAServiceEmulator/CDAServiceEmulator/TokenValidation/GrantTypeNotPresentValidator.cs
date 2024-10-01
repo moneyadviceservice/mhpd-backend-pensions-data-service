@@ -6,6 +6,8 @@ public class GrantTypeNotPresentValidator(ILogger<GrantTypeNotPresentValidator> 
 {
     public int Order => 1;
     
+    public string GrantType => string.Empty;
+
     public ValidationResult Validate(CdaTokenRequestModel request)
     {
         if (string.IsNullOrEmpty(request.GrantType))

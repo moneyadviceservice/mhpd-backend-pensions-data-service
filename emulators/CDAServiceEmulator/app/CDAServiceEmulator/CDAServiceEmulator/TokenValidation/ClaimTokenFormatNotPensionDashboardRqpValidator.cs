@@ -7,6 +7,8 @@ public class ClaimTokenFormatNotPensionDashboardRqpValidator(ILogger<ClaimTokenF
 {
     public int Order => 8;
     
+    public string GrantType => TokenQueryParams.UmaGrantType;
+
     public ValidationResult Validate(CdaTokenRequestModel request)
     {
         if (request.GrantType == TokenQueryParams.UmaGrantType && request.ClaimTokenFormat != TokenQueryParams.PensionDashboardRqp)

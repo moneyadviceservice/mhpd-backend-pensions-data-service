@@ -18,4 +18,19 @@ public class CdaTokenRequestModel
     
     [FromQuery(Name = "scope")]
     public string? Scope { get; set; }
+    
+    [FromQuery(Name = "client_id")]
+    public string? ClientId { get; set; }
+    
+    [FromQuery(Name = "client_secret")]
+    public string? ClientSecret { get; set; }
+    
+    [FromQuery(Name = "code")]
+    public string? Code { get; set; }
+    
+    [FromQuery(Name = "redirect_uri")]
+    public string? RedirectUri { get; set; }
+    
+    [FromQuery(Name = "code_verifier")]
+    public string? CodeVerifier { get; set; }
 }

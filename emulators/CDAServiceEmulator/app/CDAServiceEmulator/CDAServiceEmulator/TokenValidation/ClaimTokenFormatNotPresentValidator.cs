@@ -7,6 +7,8 @@ public class ClaimTokenFormatNotPresentValidator(ILogger<ClaimTokenFormatNotPres
 {
     public int Order => 7;
 
+    public string GrantType => TokenQueryParams.UmaGrantType;
+
     public ValidationResult Validate(CdaTokenRequestModel request)
     {
         if (request.GrantType == TokenQueryParams.UmaGrantType && string.IsNullOrEmpty(request.ClaimTokenFormat))

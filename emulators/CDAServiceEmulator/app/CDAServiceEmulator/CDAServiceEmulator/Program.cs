@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using CDAServiceEmulator;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.TokenValidation;
@@ -54,17 +55,37 @@ builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provide
     return new CdaPeisEmulatorTestInstanceDataRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorTestInstanceDataContainerName);
 });
 
+// Register TokenEmulatorPiesIdScenarioModelsRepository
+builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provider =>
+{
+    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    
+    return new TokenEmulatorPiesIdScenarioModelsRepository(cosmosClient, config.DatabaseName, config.TokenEmulatorPiesIdScenarioModelsContainerName);
+});
+
 builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotPresentValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotUmaTicketValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, UnsupportedGrantTypeValidation>();
 builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotJwtValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPensionDashboardRqpValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, ScopeNotOwnerValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, ScopeNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, TicketNotAJwtValidator>();
 builder.Services.AddScoped<ITokenRequestValidator, TicketQueryNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator, ClientIdNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, ClientIdInvalidFormatValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, ClientSecretNotGuidValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, ClientSecretNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, CodeNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, CodeInvalidFormatValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, CodeVerifierNotBase64String>();
+builder.Services.AddScoped<ITokenRequestValidator, CodeVerifierNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, RedirectUriNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator, RedirectUriNotValidUrlValidation>();
 builder.Services.AddScoped<TokenRequestValidatorPipeline>();
+builder.Services.AddScoped<Utils>();
 
 builder.Services.AddHttpLogging(logging =>
 {
@@ -76,6 +97,9 @@ builder.Services.AddHttpLogging(logging =>
     logging.ResponseBodyLogLimit = 4096;
     logging.CombineLogs = true;
 });
+
+// Bind JwtSettings
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 var app = builder.Build();
 

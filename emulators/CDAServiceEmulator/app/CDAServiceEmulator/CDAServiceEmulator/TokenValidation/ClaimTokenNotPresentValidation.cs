@@ -6,6 +6,7 @@ public class ClaimTokenNotPresentValidation(ILogger<ClaimTokenNotPresentValidati
     : ITokenRequestValidator
 {
     public int Order => 5;
+    public string GrantType => TokenQueryParams.UmaGrantType;
 
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

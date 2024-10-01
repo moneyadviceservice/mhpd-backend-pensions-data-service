@@ -6,6 +6,7 @@ namespace CDAServiceEmulator.TokenValidation;
 public class ClaimTokenNotJwtValidator(ILogger<ClaimTokenNotJwtValidator> logger) : ITokenRequestValidator
 {
     public int Order => 6;
+    public string GrantType => TokenQueryParams.UmaGrantType;
 
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

@@ -5,6 +5,8 @@ namespace CDAServiceEmulator.TokenValidation;
 public class ScopeNotPresentValidator(ILogger<ScopeNotPresentValidator> logger) : ITokenRequestValidator
 {
     public int Order => 3;
+    
+    public string GrantType => TokenQueryParams.UmaGrantType;
 
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

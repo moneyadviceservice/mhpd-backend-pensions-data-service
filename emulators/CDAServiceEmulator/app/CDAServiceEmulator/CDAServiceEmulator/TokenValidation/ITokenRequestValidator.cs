@@ -5,5 +5,8 @@ namespace CDAServiceEmulator.TokenValidation;
 public interface ITokenRequestValidator
 {
     ValidationResult Validate(CdaTokenRequestModel request);
+    
     int Order { get; }
+    
+    string GrantType { get; }
 }

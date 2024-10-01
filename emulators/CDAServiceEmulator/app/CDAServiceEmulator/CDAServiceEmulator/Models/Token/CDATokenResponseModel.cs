@@ -15,4 +15,7 @@ public class CdaTokenResponseModel
 
     [JsonPropertyName("pct")]
     public string? Pct { get; set; }
+    
+    [JsonPropertyName("id_token")]
+    public string? IdToken { get; set; }
 }

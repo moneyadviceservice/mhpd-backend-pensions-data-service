@@ -53,10 +53,12 @@ public class Utils(IOptions<JwtSettings> jwtSettings)
             new Claim(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
             new Claim(JwtRegisteredClaimNames.Jti, jti.ToString()) // Random 36-character GUID for jti
         };
+        
+        Console.WriteLine("Private key {0}",_jwtSettings.PrivateKey);
 
         // Step 6: Define signing credentials (for example, using HS256 symmetric key)
         var rsa = RSA.Create();
-        rsa.ImportFromPem(_jwtSettings.PrivateKey.ToCharArray());
+        rsa.ImportFromPem(_jwtSettings.PrivateKey);
 
         var credentials = new SigningCredentials(
             new RsaSecurityKey(rsa),

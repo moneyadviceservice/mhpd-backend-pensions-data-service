@@ -14,7 +14,8 @@ public class UtilsTests
     {
         var configuration = new JwtSettings
         {
-            PrivateKey = Helper.GeneratedRsaPrivateKeyPem
+            PrivateKey = Helper.GeneratedRsaPrivateKeyPem,
+            ExpiryInSeconds = 600
         };
 
         Mock<IOptions<JwtSettings>> mockJwtSettingsOptions = new();

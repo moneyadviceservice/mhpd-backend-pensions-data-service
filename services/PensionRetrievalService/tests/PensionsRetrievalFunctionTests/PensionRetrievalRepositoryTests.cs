@@ -46,8 +46,8 @@ public class PensionRetrievalRepositoryTests
 
     [Theory]
     [InlineData(0 , 1, true)]
-    [InlineData(1 , 0, true)]
-    public async Task WhenIsSaved_ReturnsTrue(int recordsFound, int expectedCalls, bool expectedResult)
+    [InlineData(1 , 0, false)]
+    public async Task WhenIsSaved_ReturnsTrue(int recordsFound, int expectedCalls, bool isObjectReturned)
     {
         //Arrange
         _container.Invocations.Clear();
@@ -65,29 +65,8 @@ public class PensionRetrievalRepositoryTests
         var result = await _repository.CreateRecordIfNotExistsAsync(message);
 
         //Assert
-        Assert.Equal(expectedResult, result);
+        Assert.Equal(isObjectReturned, result != null);
         _container.Verify(mock => mock.CreateItemAsync(It.IsAny<PensionsRetrievalRecord>(), It.IsAny<PartitionKey>(),
             It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>()), Times.Exactly(expectedCalls));
-    }
-
-    [Fact]
-    public async Task WhenIsNotSaved_ReturnsFalse()
-    {
-        //Arrange
-        _container.Invocations.Clear();
-        var message = new PensionRetrievalPayload
-        {
-            UserSessionId = "Id",
-            Iss = "iss",
-            PeisId = "PeisId"
-        };
-
-        _readResponse.Setup(mock => mock.Count).Returns(0);
-
-        //Act
-        var result = await _repository.CreateRecordIfNotExistsAsync(message);
-
-        //Assert
-        Assert.False(result);
     }
 }

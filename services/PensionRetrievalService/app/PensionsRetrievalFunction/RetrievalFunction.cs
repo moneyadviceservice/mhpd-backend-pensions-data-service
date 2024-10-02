@@ -3,7 +3,7 @@ using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using PensionsRetrievalFunction.Repository;
+using PensionsRetrievalFunction.Orchestration;
 using System.Text;
 
 namespace PensionsRetrievalFunction;
@@ -11,16 +11,16 @@ namespace PensionsRetrievalFunction;
 public class RetrievalFunction(ILogger<RetrievalFunction> logger,
     IIdValidator idValidator,
     IMessageParser messageParser,
-    IPensionRetrievalRepository retrievalRepository)
+    IPeiIntegrationOrchestrator orchestrator)
 {
     private readonly ILogger<RetrievalFunction> _logger = logger;
     private readonly IIdValidator _idValidator = idValidator;
     private readonly IMessageParser _messageParser = messageParser;
-    private readonly IPensionRetrievalRepository _repository = retrievalRepository;
+    private readonly IPeiIntegrationOrchestrator _orchestrator = orchestrator;
 
     [Function(nameof(RetrievalFunction))]
     public async Task Run(
-        [ServiceBusTrigger("mhpd-pensions-retrieval-job-sb-queue-dev", Connection = "ServiceBusConnectionstring")]
+        [ServiceBusTrigger("pensions-retrieval-job", Connection = "ServiceBusConnectionstring")]
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {
@@ -63,18 +63,10 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
             return;
         }
 
-        bool result = await _repository.CreateRecordIfNotExistsAsync(payload);
+        // Release the lock on the message
+        await messageActions.CompleteMessageAsync(message);
 
-        if (result)
-        {
-            _logger.LogInformation("Pension retrieval message successfully processed for session: {session}", payload.UserSessionId);
-            await messageActions.CompleteMessageAsync(message);
-        }
-        else
-        {
-            _logger.LogCritical("Failed to save pension retrieval record: {sessionId}", payload.UserSessionId);
-            await messageActions.AbandonMessageAsync(message);
-        }
+        await _orchestrator.RunAsync(payload); 
     }
 
     private void LogRequestMesage(ServiceBusReceivedMessage receivedMessage)

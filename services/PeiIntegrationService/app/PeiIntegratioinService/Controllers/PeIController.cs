@@ -1,4 +1,5 @@
-﻿using MhpdCommon.Utils;
+﻿using MhpdCommon.Constants;
+using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models;
@@ -69,7 +70,7 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
     private void CreateSuccessResponseHeaders(CdaPiesServiceRequestModel request)
     {
         var headers = Response.Headers;
-        headers.Append(Constants.Headers.Rpt, request.Rpt);
+        headers.Append(HeaderConstants.Rpt, request.Rpt);
     }
 
     private async Task<CdaPiesServiceResponseModel?> PerformAuthorisationDance(CdaPiesServiceResponseModel cdaPiesServiceResponseModel, 

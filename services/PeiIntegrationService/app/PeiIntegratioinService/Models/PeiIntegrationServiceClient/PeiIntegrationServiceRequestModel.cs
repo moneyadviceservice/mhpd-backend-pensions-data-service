@@ -1,18 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MhpdCommon.Constants;
+using Microsoft.AspNetCore.Mvc;
 
 namespace PeiIntegrationService.Models.PeiIntegrationService;
 
 public class PeiIntegrationServiceRequestModel
 {
-    [FromHeader(Name = "rpt")]
+    [FromHeader(Name = HeaderConstants.Rpt)]
     public string? Rpt { get; set; }
 
-    [FromHeader(Name = "iss")]
+    [FromHeader(Name = HeaderConstants.Iss)]
     public string? Iss { get; set; }
 
-    [FromHeader(Name = "userSessionId")]
+    [FromHeader(Name = HeaderConstants.UserSessionId)]
     public string? UserSessionId { get; set; }
 
-    [FromHeader(Name = "peisId")]
+    [FromHeader(Name = HeaderConstants.PeisId)]
     public string? PeisId { get; set; }
 }

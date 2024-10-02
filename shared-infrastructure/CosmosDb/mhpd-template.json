@@ -104,6 +104,7 @@
               ],
               "kind": "Hash"
             },
+			"defaultTtl": 3600,
             "indexingPolicy": {
               "indexingMode": "consistent",
               "includedPaths": [
@@ -139,6 +140,7 @@
               ],
               "kind": "Hash"
             },
+			"defaultTtl": 3600,
             "indexingPolicy": {
               "indexingMode": "consistent",
               "includedPaths": [

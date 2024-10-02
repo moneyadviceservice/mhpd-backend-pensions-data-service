@@ -18,5 +18,4 @@ public class PensionRequestPayload
 
     [JsonPropertyName("asset_guid")]
     public string? AssetGuid { get; set; }
-
 }

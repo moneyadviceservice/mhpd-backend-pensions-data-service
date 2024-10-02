@@ -23,7 +23,6 @@ internal static class Constants
         internal const string AuthenticateTicket = "ticket=";
         internal const string AuthenticateUri = "as_uri=";
         internal const string RequestId = "X-Request-ID";
-        internal const string Rpt = "rpt";
     }
 
     internal static class RequestRoutes

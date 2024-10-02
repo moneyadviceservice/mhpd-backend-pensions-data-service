@@ -6,14 +6,12 @@ using PensionsRetrievalFunction.Models;
 
 namespace PensionsRetrievalFunction.Repository;
 
-public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> options, CosmosClient client) :IPensionRetrievalRepository
+public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> options, CosmosClient client) : IPensionRetrievalRepository
 {
     private readonly CosmosClient _client = client;
     private readonly CommonCosmosConfiguration _configuration = options.Value;
-    public async Task<bool> CreateRecordIfNotExistsAsync(PensionRetrievalPayload payload)
+    public async Task<PensionsRetrievalRecord?> CreateRecordIfNotExistsAsync(PensionRetrievalPayload payload)
     {
-        var record = CreateRecord(payload);
-
         var query = new QueryDefinition("SELECT TOP 1 * FROM c WHERE c.userSessionId = @partitionKey")
                 .WithParameter("@partitionKey", payload.UserSessionId);
 
@@ -23,15 +21,23 @@ public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> opti
         var response = await iterator.ReadNextAsync(default);
         if(response.Count == 0)
         {
+            var record = CreateRecord(payload);
+
             var writeResponse = await container.CreateItemAsync(
                 item: record,
                 partitionKey: new PartitionKey(record.UserSessionId)
             );
 
-            return writeResponse.Resource != null;
+            return writeResponse.Resource;
         }
 
-        return true;
+        return null;
+    }
+
+    public async Task UpdatePensionsRetrievalRecordAsync(PensionsRetrievalRecord record)
+    {
+        var container = _client.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        await container.ReplaceItemAsync(record, record.Id);
     }
 
     private static PensionsRetrievalRecord CreateRecord(PensionRetrievalPayload payload)

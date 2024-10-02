@@ -6,7 +6,7 @@
             "value": "mhpd-cloudservices" 
         },
         "serviceBusQueueName": {
-            "value": "mhpd-pensions-retrieval-job-sb-queue-dev" 
+            "value": "pensions-retrieval-job" 
         }
     }
 }

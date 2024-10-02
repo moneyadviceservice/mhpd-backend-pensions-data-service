@@ -1,8 +1,11 @@
 ﻿using MhpdCommon.Models.MessageBodyModels;
+using PensionsRetrievalFunction.Models;
 
 namespace PensionsRetrievalFunction.Repository;
 
 public interface IPensionRetrievalRepository
 {
-    Task<bool> CreateRecordIfNotExistsAsync(PensionRetrievalPayload payload);
+    Task<PensionsRetrievalRecord?> CreateRecordIfNotExistsAsync(PensionRetrievalPayload payload);
+
+    Task UpdatePensionsRetrievalRecordAsync(PensionsRetrievalRecord record);
 }

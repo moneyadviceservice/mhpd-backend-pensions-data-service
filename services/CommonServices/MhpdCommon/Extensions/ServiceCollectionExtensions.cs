@@ -1,4 +1,5 @@
-﻿using MhpdCommon.Models.Configuration;
+﻿using Azure.Messaging.ServiceBus;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,25 @@ namespace MhpdCommon.Extensions
                 option.ContainerId = Environment.GetEnvironmentVariable(CommonCosmosConfiguration.ContainerVariable);
                 option.ContainerPartitionKey = Environment.GetEnvironmentVariable(CommonCosmosConfiguration.PartitionVariable);
             }).ValidateOnStart();
+
+            return services;
+        }
+
+        public static IServiceCollection AddMhpdServiceBusTools(this IServiceCollection services)
+        {
+            services.AddSingleton(sp =>
+            {
+                var connectionString = Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.ConnectionStringVariable);
+                return new ServiceBusClient(connectionString);
+            });
+
+            services.AddOptions<CommonServiceBusConfiguration>().Configure(option =>
+            {
+                option.InboundQueue = Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.InboundQueueVariable);
+                option.OutboundQueue = Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.OutboundQueueVariable);
+            }).ValidateOnStart();
+
+            services.AddScoped<IMessagingService, MessagingService>();
 
             return services;
         }

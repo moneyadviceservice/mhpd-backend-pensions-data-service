@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Moq;
 using PensionsRetrievalFunction;
-using PensionsRetrievalFunction.Repository;
+using PensionsRetrievalFunction.Orchestration;
 using PensionsRetrievalFunctionTests.Data;
 
 namespace PensionsRetrievalFunctionTests;
@@ -16,7 +16,8 @@ public class RetrievalFunctionTests
     private readonly Mock<IIdValidator> _idValidatorMock;
     private readonly Mock<IMessageParser> _messageParseMock;
     private readonly Mock<ILogger<RetrievalFunction>> _loggerMock;
-    private readonly Mock<IPensionRetrievalRepository> _repositoryMock;
+    private readonly Mock<IPeiIntegrationOrchestrator> _orchestratorMock;
+    private readonly Mock<IPeiIntegrationOrchestrator> _integrationServiceClientMock;
     private readonly RetrievalFunction _function;
 
     public RetrievalFunctionTests()
@@ -31,7 +32,7 @@ public class RetrievalFunctionTests
         _loggerMock = new Mock<ILogger<RetrievalFunction>>();
         _idValidatorMock = new Mock<IIdValidator>();
         _messageParseMock = new Mock<IMessageParser>();
-        _repositoryMock = new Mock<IPensionRetrievalRepository>();
+        _orchestratorMock = new Mock<IPeiIntegrationOrchestrator>();
 
         _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(false);
         _idValidatorMock.Setup(x => x.IsValidPeI(It.IsAny<string>())).Returns(false);
@@ -39,9 +40,12 @@ public class RetrievalFunctionTests
         var error = new AggregateException(new Exception("Bad Data"));
         _messageParseMock.Setup(x => x.ToPensionRetrievalPayload(It.IsAny<string>())).Throws(error);
 
-        _repositoryMock.Setup(mock => mock.CreateRecordIfNotExistsAsync(It.IsAny<PensionRetrievalPayload>())).ReturnsAsync(false);
+        _orchestratorMock.Setup(mock => mock.RunAsync(It.IsAny<PensionRetrievalPayload>())).Verifiable();
 
-        _function = new RetrievalFunction(_loggerMock.Object, _idValidatorMock.Object, _messageParseMock.Object, _repositoryMock.Object);
+        _integrationServiceClientMock = new Mock<IPeiIntegrationOrchestrator>();
+
+        _function = new RetrievalFunction(_loggerMock.Object, _idValidatorMock.Object, 
+            _messageParseMock.Object, _orchestratorMock.Object);
     }
 
     [Fact]
@@ -88,32 +92,6 @@ public class RetrievalFunctionTests
     }
 
     [Fact]
-    public async Task Run_ShouldCallAbandonMessage_OnSaveFail()
-    {
-        ResetInvocations();
-
-        //arrange
-        var reason = string.Empty;
-        const string file = "ValidPensionRetrievalMessage.json";
-        var payload = DataProvider.GetPayload(file);
-
-        _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-        _messageParseMock.Setup(x => x.ToPensionRetrievalPayload(It.IsAny<string>())).Returns(payload);
-        
-
-        var content = DataProvider.GetString(file);
-        var message = ServiceBusModelFactory.ServiceBusReceivedMessage(
-            body: BinaryData.FromString(content), correlationId: Guid.NewGuid().ToString());
-
-        // Act
-        await _function.Run(message, _actionsMock.Object);
-
-        // Assert
-        _actionsMock.Verify(r => r.AbandonMessageAsync(message, null, It.IsAny<CancellationToken>()), Times.Once);
-        _actionsMock.Verify(r => r.CompleteMessageAsync(message, It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
     public async Task Run_ShouldCallCompleteMessage_OnSaveSuccess()
     {
         ResetInvocations();
@@ -125,7 +103,6 @@ public class RetrievalFunctionTests
 
         _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
         _messageParseMock.Setup(x => x.ToPensionRetrievalPayload(It.IsAny<string>())).Returns(payload);
-        _repositoryMock.Setup(mock => mock.CreateRecordIfNotExistsAsync(It.IsAny<PensionRetrievalPayload>())).ReturnsAsync(true);
 
         var content = DataProvider.GetString(file);
         var message = ServiceBusModelFactory.ServiceBusReceivedMessage(

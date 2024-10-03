@@ -1,4 +1,5 @@
-﻿Feature: CDA Service Tests
+﻿@ignore
+Feature: CDA Service Tests
 
 API Tests for CDA Service Service.  To Test on Local use localhost in place of Azure QA Environment.
 

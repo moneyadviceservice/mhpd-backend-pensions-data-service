@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Azure.Identity;
 using MaPSCDAService;
+using MaPSCDAService.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,7 +17,7 @@ builder.Services.AddOptions<UriSettings>()
 
 // Add services to the container.
 builder.Services.AddControllers();
-
+builder.Services.AddTransient<IPkceGenerator, PkceGenerator>();
 builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;

@@ -9,9 +9,19 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 
 namespace CDAServiceEmulator;
 
-public class Utils(IOptions<JwtSettings> jwtSettings)
+public class Utils
 {
-    private readonly JwtSettings _jwtSettings = jwtSettings.Value;
+    private readonly JwtSettings _jwtSettings;
+    
+    private readonly int _expiryInSeconds;
+
+    public Utils(IOptions<JwtSettings> jwtSettings)
+    {
+        _jwtSettings = jwtSettings.Value;
+
+        // Safely try to convert the string to an int else set to a default
+        _expiryInSeconds = int.TryParse(_jwtSettings.ExpiryInSeconds, out var expiry) ? expiry : 600;
+    }
 
     // Method to check if a string matches the pattern
     public static bool IsValidString(string input)
@@ -40,7 +50,7 @@ public class Utils(IOptions<JwtSettings> jwtSettings)
         var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
         // Step 4: Set expiration time (iat + 600 seconds)
-        var exp = iat + _jwtSettings.ExpiryInSeconds;
+        var exp = iat + _expiryInSeconds;
 
         // Step 5: Define JWT claims
         var claims = new[]
@@ -54,8 +64,6 @@ public class Utils(IOptions<JwtSettings> jwtSettings)
             new Claim(JwtRegisteredClaimNames.Jti, jti.ToString()) // Random 36-character GUID for jti
         };
         
-        Console.WriteLine("Private key {0}",_jwtSettings.PrivateKey);
-
         // Step 6: Define signing credentials (for example, using HS256 symmetric key)
         var rsa = RSA.Create();
         rsa.ImportFromPem(_jwtSettings.PrivateKey);

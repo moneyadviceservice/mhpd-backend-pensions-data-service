@@ -35,7 +35,7 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
     return new CosmosClient(connString, options);
 });
 
-builder.Services.Configure<MhpdCosmosConfiguration>(builder.Configuration.GetSection("MhpdCosmosConfigurationCdaPeisEmulatorScenario"));
+builder.Services.Configure<MhpdCosmosConfiguration>(builder.Configuration.GetSection("MhpdCosmosConfiguration"));
 
 // Register CdaPeisEmulatorScenarioModelRepository
 builder.Services.AddSingleton<CdaPeisEmulatorScenarioModelRepository>(provider =>
@@ -85,7 +85,6 @@ builder.Services.AddScoped<ITokenRequestValidator, CodeVerifierNotPresentValidat
 builder.Services.AddScoped<ITokenRequestValidator, RedirectUriNotPresentValidation>();
 builder.Services.AddScoped<ITokenRequestValidator, RedirectUriNotValidUrlValidation>();
 builder.Services.AddScoped<TokenRequestValidatorPipeline>();
-builder.Services.AddScoped<Utils>();
 
 builder.Services.AddHttpLogging(logging =>
 {
@@ -100,6 +99,7 @@ builder.Services.AddHttpLogging(logging =>
 
 // Bind JwtSettings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+builder.Services.AddScoped<Utils>();
 
 var app = builder.Build();
 

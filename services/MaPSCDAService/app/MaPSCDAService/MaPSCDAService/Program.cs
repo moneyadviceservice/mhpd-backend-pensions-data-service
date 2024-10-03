@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Azure.Identity;
+using MaPSCDAService;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,10 @@ builder.Configuration.AddAzureKeyVault(
     new Uri(builder.Configuration.GetSection("KeyVaultConfiguration")["KeyVaultURL"]!), 
     new DefaultAzureCredential()
     );
+builder.Services.AddOptions<UriSettings>()
+    .Bind(builder.Configuration.GetSection("UriSettings"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 // Add services to the container.
 builder.Services.AddControllers();

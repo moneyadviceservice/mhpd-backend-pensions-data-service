@@ -38,6 +38,8 @@ public class PensionRetrievalRepositoryTests
             It.IsAny<string>(), It.IsAny<QueryRequestOptions>())).Returns(iterator.Object);
         _container.Setup(mock => mock.CreateItemAsync(It.IsAny<PensionsRetrievalRecord>(), It.IsAny<PartitionKey>(),
             It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_writeResponse.Object).Verifiable();
+        _container.Setup(mock => mock.ReplaceItemAsync(It.IsAny<PensionsRetrievalRecord>(), It.IsAny<string>(), It.IsAny<PartitionKey>(),
+            It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_writeResponse.Object).Verifiable();
 
         iterator.Setup(mock => mock.ReadNextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_readResponse.Object);
 
@@ -47,7 +49,7 @@ public class PensionRetrievalRepositoryTests
     [Theory]
     [InlineData(0 , 1, true)]
     [InlineData(1 , 0, false)]
-    public async Task WhenIsSaved_ReturnsTrue(int recordsFound, int expectedCalls, bool isObjectReturned)
+    public async Task WhenRecordIsQueried_ReturnsNullOrNew(int recordsFound, int expectedCalls, bool isObjectReturned)
     {
         //Arrange
         _container.Invocations.Clear();
@@ -68,5 +70,38 @@ public class PensionRetrievalRepositoryTests
         Assert.Equal(isObjectReturned, result != null);
         _container.Verify(mock => mock.CreateItemAsync(It.IsAny<PensionsRetrievalRecord>(), It.IsAny<PartitionKey>(),
             It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>()), Times.Exactly(expectedCalls));
+    }
+
+    [Fact]
+    public async Task WhenRecordIsProvided_DatabaseIsUpdated()
+    {
+        //Arrange
+        var record = new PensionsRetrievalRecord();
+
+        //Act
+        await _repository.UpdatePensionsRetrievalRecordAsync(record);
+
+        //Assert
+        _container.Verify(mock => mock.ReplaceItemAsync(It.IsAny<PensionsRetrievalRecord>(), It.IsAny<string>(), It.IsAny<PartitionKey>(),
+            It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WhenRecordIsRequested_DatabaseResultIsCorrect(bool isRecordInDatabase)
+    {
+        //Arrange
+        List<PensionsRetrievalRecord> records = [];
+
+        if(isRecordInDatabase) records.Add(new PensionsRetrievalRecord());
+
+        _readResponse.Setup(mock => mock.GetEnumerator()).Returns(records.GetEnumerator);
+
+        //Act
+        var record = await _repository.GetRetrievalRecordAsync(Guid.NewGuid().ToString());
+
+        //Assert
+        Assert.Equal(isRecordInDatabase, record != null);
     }
 }

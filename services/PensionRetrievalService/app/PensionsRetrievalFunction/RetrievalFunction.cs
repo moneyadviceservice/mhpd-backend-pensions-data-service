@@ -20,7 +20,7 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
 
     [Function(nameof(RetrievalFunction))]
     public async Task Run(
-        [ServiceBusTrigger("pensions-retrieval-job", Connection = "ServiceBusConnectionstring")]
+        [ServiceBusTrigger("%InboundQueue%", Connection = "ServiceBusConnectionstring")]
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {

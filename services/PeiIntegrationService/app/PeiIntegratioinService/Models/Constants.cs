@@ -1,4 +1,6 @@
-﻿namespace PeiIntegrationService.Models;
+﻿using MhpdCommon.Constants;
+
+namespace PeiIntegrationService.Models;
 
 internal static class Constants
 {
@@ -19,10 +21,10 @@ internal static class Constants
 
     internal static class Headers
     {
-        internal const string AuthenticateType = "Bearer";
-        internal const string AuthenticateTicket = "ticket=";
-        internal const string AuthenticateUri = "as_uri=";
-        internal const string RequestId = "X-Request-ID";
+        internal const string AuthenticateType = HeaderConstants.AuthenticateType;
+        internal const string AuthenticateTicket = HeaderConstants.AuthenticateTicket;
+        internal const string AuthenticateUri = HeaderConstants.AuthenticateUri;
+        internal const string RequestId = HeaderConstants.RequestId;
     }
 
     internal static class RequestRoutes

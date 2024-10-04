@@ -1,6 +1,6 @@
 ﻿namespace PensionsRetrievalFunction.Models;
 
-internal static class Constants
+public static class Constants
 {
     internal const string PeiDataEndpoint = "peis";
 
@@ -10,5 +10,10 @@ internal static class Constants
         internal const string Requested = "RETRIEVAL_REQUESTED";
         internal const string Complete = "RETRIEVAL_COMPLETE";
         internal const string Failed = "RETRIEVAL_FAILED";
+    }
+
+    public static class ResponseType
+    {
+        public const string InvalidSessionId = "userSessionId missing or invalid";
     }
 }

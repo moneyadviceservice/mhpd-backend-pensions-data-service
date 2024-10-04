@@ -5,7 +5,7 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PensionsRetrievalFunction", "PensionsRetrievalFunction\PensionsRetrievalFunction.csproj", "{26CE1626-CAF6-447E-93E3-447D9D247B14}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PensionsRetrievalFunctionTests", "..\tests\PensionsRetrievalFunctionTests\PensionsRetrievalFunctionTests.csproj", "{F309FB86-B948-41A7-9143-645027EB784C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PensionsRetrievalFunctionTests", "..\tests\PensionsRetrievalFunctionTests\PensionsRetrievalFunctionTests.csproj", "{F309FB86-B948-41A7-9143-645027EB784C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

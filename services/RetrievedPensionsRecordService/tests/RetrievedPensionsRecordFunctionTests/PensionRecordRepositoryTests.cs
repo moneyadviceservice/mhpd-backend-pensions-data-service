@@ -1,10 +1,10 @@
-﻿using MhpdCommon.Models.MessageBodyModels;
+﻿using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MessageBodyModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using RetrievedPensionsRecordFunction.Models;
-using RetrievedPensionsRecordFunction.Models.Configuration;
 using RetrievedPensionsRecordFunction.Repository;
 using System.Net;
 
@@ -12,12 +12,13 @@ namespace RetrievedPensionsRecordFunctionTests;
 
 public  class PensionRecordRepositoryTests
 {
-    private readonly Mock<ItemResponse<RetrievedPensionRecord>> _response;
+    private readonly Mock<ItemResponse<RetrievedPensionRecord>> _writeResponse;
+    private readonly Mock<FeedResponse<RetrievedPensionRecord>> _readResponse;
     private readonly PensionRecordRepository _repository;
 
     public PensionRecordRepositoryTests()
     {
-        var configuration = new MhpdCosmosConfiguration
+        var configuration = new CommonCosmosConfiguration
         {
             DatabaseId = "PensionDatabase",
             ContainerId = "PensionContainer",
@@ -25,21 +26,23 @@ public  class PensionRecordRepositoryTests
         };
 
         var container = new Mock<Container>();
-        var database = new Mock<Database>();
         var client = new Mock<CosmosClient>();
-        _response = new Mock<ItemResponse<RetrievedPensionRecord>>();
-
+        var iterator = new Mock<FeedIterator<RetrievedPensionRecord>>();
         var loggerMock = new Mock<ILogger<PensionRecordRepository>>();
 
-        client.Setup(mock => mock.GetDatabase(configuration.DatabaseId))
-            .Returns(database.Object);
+        _writeResponse = new Mock<ItemResponse<RetrievedPensionRecord>>();
+        _readResponse = new Mock<FeedResponse<RetrievedPensionRecord>>();
 
-        database.Setup(mock => mock.GetContainer(configuration.ContainerId))
+        iterator.Setup(mock => mock.ReadNextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_readResponse.Object);
+
+        client.Setup(mock => mock.GetContainer(configuration.DatabaseId, configuration.ContainerId))
             .Returns(container.Object);
 
         container.Setup(mock => mock.UpsertItemAsync(
             It.IsAny<RetrievedPensionRecord>(), It.IsAny<PartitionKey>(), null, default))
-            .Returns(Task.FromResult(_response.Object));
+            .Returns(Task.FromResult(_writeResponse.Object));
+        container.Setup(mock => mock.GetItemQueryIterator<RetrievedPensionRecord>(It.IsAny<QueryDefinition>(),
+            It.IsAny<string>(), It.IsAny<QueryRequestOptions>())).Returns(iterator.Object);
 
         var options = Options.Create(configuration);
         _repository = new PensionRecordRepository(client.Object, options, loggerMock.Object);
@@ -50,7 +53,7 @@ public  class PensionRecordRepositoryTests
     {
         //Arrange
         var payload = GetPayload();
-        _response.Setup(r => r.StatusCode).Returns(HttpStatusCode.Created);
+        _writeResponse.Setup(r => r.StatusCode).Returns(HttpStatusCode.Created);
 
         //Act
         var result = await _repository.SaveRetrievedPensionRecordAsync("CorrelationId", payload);
@@ -77,7 +80,7 @@ public  class PensionRecordRepositoryTests
     {
         //Arrange
         var payload = GetPayload();
-        _response.Setup(r => r.StatusCode).Returns(HttpStatusCode.OK);
+        _writeResponse.Setup(r => r.StatusCode).Returns(HttpStatusCode.OK);
 
         //Act
         var result = await _repository.SaveRetrievedPensionRecordAsync("CorrelationId", payload);
@@ -91,13 +94,31 @@ public  class PensionRecordRepositoryTests
     {
         //Arrange
         var payload = GetPayload();
-        _response.Setup(r => r.StatusCode).Returns(HttpStatusCode.BadRequest);
+        _writeResponse.Setup(r => r.StatusCode).Returns(HttpStatusCode.BadRequest);
 
         //Act
         var result = await _repository.SaveRetrievedPensionRecordAsync("CorrelationId", payload);
 
         //Assert
         Assert.False(result);
+    }
+
+    [Fact]
+    public async Task WhenRecordIsRequested_DatabaseResultIsCorrect()
+    {
+        //Arrange
+        List<RetrievedPensionRecord> records = [
+            new RetrievedPensionRecord(),
+            new RetrievedPensionRecord()
+        ];
+
+        _readResponse.Setup(mock => mock.GetEnumerator()).Returns(records.GetEnumerator);
+
+        //Act
+        var result = await _repository.GetRetrievedRecordsAsync(Guid.NewGuid().ToString());
+
+        //Assert
+        Assert.Equal(2, result.Count);
     }
 
     private static RetrievedPensionDetailsPayload GetPayload()

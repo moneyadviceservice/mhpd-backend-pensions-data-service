@@ -29,12 +29,12 @@ public class PeiIntegrationOrchestratorTests
     }
 
     [Theory]
-    [InlineData(4, 5, 3, 1)]
-    [InlineData(7, 10, 6, 3)]
-    [InlineData(9, 15, 8, 4)]
-    [InlineData(12, 20, 11, 5)]
+    [InlineData(4, 5, 3, 1, 2)]
+    [InlineData(7, 10, 6, 3, 4)]
+    [InlineData(9, 15, 8, 4, 5)]
+    [InlineData(12, 20, 11, 5, 6)]
     public async Task WhenHttpClientIsExecutedWithRetryConfiguration_EndpointIsCalledAsExpected(
-        int callsToSimulate, int timeout, int expectedClientCallCount, int expectedMessagingCallCount)
+        int callsToSimulate, int timeout, int expectedClientCallCount, int expectedMessagingCallCount, int expectedSaveCount)
     {
         //Arrange
         var apiConfiguration = new MhpdApiConfiguration
@@ -86,7 +86,7 @@ public class PeiIntegrationOrchestratorTests
         _messagingService.Verify(mock => mock.SendMessageAsync<PensionRequestPayload>(It.IsAny<PensionRequestPayload>(), OutboundQueue), 
             Times.Exactly(expectedMessagingCallCount));
 
-        _repository.Verify(mock => mock.UpdatePensionsRetrievalRecordAsync(It.IsAny<PensionsRetrievalRecord>()), Times.Once);
+        _repository.Verify(mock => mock.UpdatePensionsRetrievalRecordAsync(It.IsAny<PensionsRetrievalRecord>()), Times.Exactly(expectedSaveCount));
     }
 
 

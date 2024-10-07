@@ -23,7 +23,7 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
 
     [Function(nameof(RetrievedPensionsFunction))]
     public async Task Run(
-        [ServiceBusTrigger("retreived-pension-details", Connection = "ServiceBusConnectionstring")]
+        [ServiceBusTrigger("%InboundQueue%", Connection = "ServiceBusConnectionstring")]
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {

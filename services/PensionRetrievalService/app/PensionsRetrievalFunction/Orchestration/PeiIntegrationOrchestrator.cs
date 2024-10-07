@@ -70,12 +70,14 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
                         _logger.LogInformation("Pension details request sent for PEI {pei} with retrieval Id {id}"
                             , message.Pei, message.PensionRetrievalRecordId);
                         await _messagingService.SendMessageAsync(message, _serviceBusConfiguration.OutboundQueue!);
+
+                        record.PeiData.Add(pei);
+                        await _repository.UpdatePensionsRetrievalRecordAsync(record);
                     }
                 }
                 return response;
             });
 
-            record.PeiData.AddRange(peiResponse.PeiData);
             record.PeisRpt = peiResponse.Rpt;
             record.PeiRetrievalComplete = true;
             await _repository.UpdatePensionsRetrievalRecordAsync(record);

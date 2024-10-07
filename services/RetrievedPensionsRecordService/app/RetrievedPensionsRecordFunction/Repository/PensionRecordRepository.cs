@@ -1,19 +1,32 @@
-﻿using MhpdCommon.Models.MessageBodyModels;
+﻿using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MessageBodyModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RetrievedPensionsRecordFunction.Models;
-using RetrievedPensionsRecordFunction.Models.Configuration;
 using System.Net;
 
 namespace RetrievedPensionsRecordFunction.Repository;
 
-public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCosmosConfiguration> config, ILogger<PensionRecordRepository> logger) 
+public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonCosmosConfiguration> config, ILogger<PensionRecordRepository> logger) 
     : IPensionRecordRepository
 {
     private readonly CosmosClient _cosmosClient = cosmosClient;
     private readonly ILogger<PensionRecordRepository> _logger = logger;
-    private readonly MhpdCosmosConfiguration _mhpdConfiguration = config.Value;
+    private readonly CommonCosmosConfiguration _configuration = config.Value;
+
+    public async Task<List<RetrievedPensionRecord>> GetRetrievedRecordsAsync(string pensionsRetrievalRecordId)
+    {
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.pensionsRetrievalRecordId = @partitionKey")
+                .WithParameter("@partitionKey", pensionsRetrievalRecordId);
+
+        var container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var iterator = container.GetItemQueryIterator<RetrievedPensionRecord>(query);
+
+        var response = await iterator.ReadNextAsync();
+
+        return [.. response];
+    }
 
     public async Task<bool> SaveRetrievedPensionRecordAsync(string? correlationId, RetrievedPensionDetailsPayload payload)
     {
@@ -32,9 +45,7 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCos
             }
         };
 
-        Database database = _cosmosClient.GetDatabase(_mhpdConfiguration.DatabaseId);
-
-        Container container = database.GetContainer(_mhpdConfiguration.ContainerId);
+        Container container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
 
         var response = await container.UpsertItemAsync(record, new PartitionKey(record.PensionsRetrievalRecordId), null, default);
 
@@ -57,8 +68,8 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<MhpdCos
 
     private void LogDatabaseInfo()
     {
-        var connDetails = $"Accessing Cosmos DB partition: [{_mhpdConfiguration.ContainerPartitionKey}] on " +
-            $"container: [{_mhpdConfiguration.ContainerId}] in the database [{_mhpdConfiguration.DatabaseId}]";
+        var connDetails = $"Accessing Cosmos DB partition: [{_configuration.ContainerPartitionKey}] on " +
+            $"container: [{_configuration.ContainerId}] in the database [{_configuration.DatabaseId}]";
 
         _logger.LogCritical(connDetails);
     }

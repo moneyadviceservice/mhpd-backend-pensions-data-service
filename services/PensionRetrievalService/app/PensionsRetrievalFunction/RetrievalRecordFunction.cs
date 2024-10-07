@@ -33,6 +33,6 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
 
         _logger.LogResponse(record);
 
-        return new OkObjectResult(record);
+        return record != null ? new OkObjectResult(record) : new OkResult();
     }
 }

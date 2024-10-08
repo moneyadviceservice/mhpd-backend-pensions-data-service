@@ -4,6 +4,7 @@ using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulatorUnitTests.Mock.ScenarioModelData;
+using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

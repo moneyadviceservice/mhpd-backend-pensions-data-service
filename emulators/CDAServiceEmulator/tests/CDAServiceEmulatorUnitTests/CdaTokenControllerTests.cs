@@ -1,10 +1,11 @@
-using CDAServiceEmulator;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulator.Models.Token;
-using CDAServiceEmulator.TokenValidation;
+using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
@@ -66,7 +67,7 @@ public class CdaTokenControllerTests
         Mock<IOptions<JwtSettings>> mockJwtSettingsOptions = new();
         mockJwtSettingsOptions.Setup(x => x.Value).Returns(jwtConfiguration);
 
-        var utils = new Utils(mockJwtSettingsOptions.Object);        
+        var utils = new TokenUtility(mockJwtSettingsOptions.Object);        
 
         // Create the controller with real TokenRequestValidatorPipeline instance
         _controller = new CdaTokenController(mockLogger.Object, _mockIdValidator.Object, mockValidatorPipeline.Object, mockScenarioModelRepository.Object, utils);
@@ -99,7 +100,7 @@ public class CdaTokenControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Set up a mock validator to return a failure
-        var mockValidator = new Mock<ITokenRequestValidator>();
+        var mockValidator = new Mock<ITokenRequestValidator<CdaTokenRequestModel>>();
         mockValidator.Setup(v => v.Validate(It.IsAny<CdaTokenRequestModel>()))
             .Returns(ValidationResult.Failure(TokenValidationMessages.InvalidGrantType));
         
@@ -121,7 +122,7 @@ public class CdaTokenControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Set up a mock validator to return a failure
-        var mockValidator = new Mock<ITokenRequestValidator>();
+        var mockValidator = new Mock<ITokenRequestValidator<CdaTokenRequestModel>>();
         mockValidator.Setup(v => v.Validate(It.IsAny<CdaTokenRequestModel>()))
             .Returns(ValidationResult.Failure(TokenValidationMessages.UnsupportedGrantType));
         
@@ -150,7 +151,7 @@ public class CdaTokenControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Set up a mock validator to return success
-        var mockValidator = new Mock<ITokenRequestValidator>();
+        var mockValidator = new Mock<ITokenRequestValidator<CdaTokenRequestModel>>();
         mockValidator.Setup(v => v.Validate(It.IsAny<CdaTokenRequestModel>()))
             .Returns(ValidationResult.Success());
 
@@ -182,7 +183,7 @@ public class CdaTokenControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Set up a mock validator to return success
-        var mockValidator = new Mock<ITokenRequestValidator>();
+        var mockValidator = new Mock<ITokenRequestValidator<CdaTokenRequestModel>>();
         mockValidator.Setup(v => v.Validate(It.IsAny<CdaTokenRequestModel>()))
             .Returns(ValidationResult.Success());
         

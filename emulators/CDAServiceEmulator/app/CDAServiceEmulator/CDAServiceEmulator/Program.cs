@@ -1,8 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
-using CDAServiceEmulator;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.TokenValidation;
+using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;
@@ -12,6 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddTransient<IIdValidator, IdValidator>();
+builder.Services.AddTransient<ITokenUtility, TokenUtility>();
 builder.Services.AddControllers();
 
 builder.Services.AddApplicationInsightsTelemetry();
@@ -64,26 +66,26 @@ builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provi
     return new TokenEmulatorPiesIdScenarioModelsRepository(cosmosClient, config.DatabaseName, config.TokenEmulatorPiesIdScenarioModelsContainerName);
 });
 
-builder.Services.AddScoped<ITokenRequestValidator, GrantTypeNotPresentValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, UnsupportedGrantTypeValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenNotJwtValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPresentValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, ClaimTokenFormatNotPensionDashboardRqpValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, ScopeNotOwnerValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, ScopeNotPresentValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, TicketNotAJwtValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, TicketQueryNotPresentValidator>();
-builder.Services.AddScoped<ITokenRequestValidator, ClientIdNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, ClientIdInvalidFormatValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, ClientSecretNotGuidValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, ClientSecretNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, CodeNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, CodeInvalidFormatValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, CodeVerifierNotBase64String>();
-builder.Services.AddScoped<ITokenRequestValidator, CodeVerifierNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, RedirectUriNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator, RedirectUriNotValidUrlValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, GrantTypeNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, UnsupportedGrantTypeValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTokenNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTokenNotJwtValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTokenFormatNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTokenFormatNotPensionDashboardRqpValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ScopeNotOwnerValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ScopeNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, TicketNotAJwtValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, TicketQueryNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientIdNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientIdInvalidFormatValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientSecretNotGuidValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientSecretNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeInvalidFormatValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeVerifierNotBase64String>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeVerifierNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUriNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUriNotValidUrlValidation>();
 builder.Services.AddScoped<TokenRequestValidatorPipeline>();
 
 builder.Services.AddHttpLogging(logging =>
@@ -99,7 +101,7 @@ builder.Services.AddHttpLogging(logging =>
 
 // Bind JwtSettings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddScoped<Utils>();
+builder.Services.AddScoped<TokenUtility>();
 
 var app = builder.Build();
 

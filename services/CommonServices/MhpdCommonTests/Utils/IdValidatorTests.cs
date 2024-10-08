@@ -38,4 +38,26 @@ public class IdValidatorTests
         var actualResult = _idValidator.IsValidPeI(idString);
         Assert.Equal(expectedResult, actualResult);
     }
+    
+        
+    [Theory]
+    [InlineData("Hello, World!", true)]  // Valid string, all characters are within the printable ASCII range
+    [InlineData("1234567890", true)]      // Valid string, all numeric characters
+    [InlineData(" ", true)]               // Valid string, single space
+    [InlineData("!@#$%^&*()", true)]      // Valid string, special characters
+    [InlineData("ASCII: \x7E\x20", true)] // Valid string, exact boundaries (space and tilde)
+    [InlineData("", false)]               // Invalid: empty string
+    [InlineData("\x19Hello", false)]      // Invalid: control character
+    [InlineData("Hello\x80", false)]      // Invalid: non-ASCII character (> 0x7E)
+    [InlineData("Valid\x7EChars\x80Here", false)] // Mixed case with non-ASCII character
+
+    // Test method
+    public void TestIsValidString(string input, bool expected)
+    {
+        // Act
+        var result = IdValidator.IsValidString(input);
+
+        // Assert
+        Assert.Equal(expected, result);
+    }
 }

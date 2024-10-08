@@ -1,7 +1,8 @@
 ﻿using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulator.Models.Token;
-using CDAServiceEmulator.TokenValidation;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -15,7 +16,7 @@ public class CdaTokenController(
     IIdValidator idValidator,
     TokenRequestValidatorPipeline tokenRequestValidators, 
     TokenEmulatorPiesIdScenarioModelsRepository tokenEmulatorPiesIdScenarioModelRepository,
-    Utils utils)
+    ITokenUtility tokenUtility)
     : ControllerBase
 {
     [HttpPost]
@@ -69,7 +70,7 @@ public class CdaTokenController(
             AccessToken = TokenQueryParams.ValidJwtToken,
             TokenType = isAuthorizationCodeGrantType ? TokenQueryParams.TokenTypeBearer : TokenQueryParams.TokenTypeRpt,
             Upgraded = false,
-            IdToken = isAuthorizationCodeGrantType ? utils.GenerateJwt(peisStartCode) : null,
+            IdToken = isAuthorizationCodeGrantType ? tokenUtility.GenerateJwt(peisStartCode) : null,
             Pct = !isAuthorizationCodeGrantType ? TokenQueryParams.ValidJwtToken : null
         };
     }

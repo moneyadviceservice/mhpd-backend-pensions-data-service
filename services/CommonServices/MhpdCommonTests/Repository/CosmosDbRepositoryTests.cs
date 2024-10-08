@@ -129,6 +129,6 @@ public class CosmosDbRepositoryTests
 
 public class TestEntity
 {
-    public string Id { get; set; }
-    public string PartitionKey { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string PartitionKey { get; set; } = string.Empty;
 }

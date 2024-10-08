@@ -16,4 +16,14 @@ public class IdValidator : IIdValidator
     {
         return !string.IsNullOrEmpty(pei) && pei.Length == Length && Regex.IsMatch(pei, Pattern);
     }
+    
+    // Method to check if a string matches the pattern
+    public static bool IsValidString(string input)
+    {
+        // Regex pattern to match printable ASCII characters (space to tilde)
+        const string pattern = @"^[\x20-\x7E]+$";
+
+        // Return true if input matches the pattern
+        return Regex.IsMatch(input, pattern, RegexOptions.None, TimeSpan.FromMilliseconds(500));
+    }
 }

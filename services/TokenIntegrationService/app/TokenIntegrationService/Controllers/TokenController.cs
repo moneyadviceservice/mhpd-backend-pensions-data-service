@@ -1,52 +1,60 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MhpdCommon.Extensions;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.TokenValidation;
+using MhpdCommon.Utils;
+using Microsoft.AspNetCore.Mvc;
 using TokenIntegrationService.HttpClients;
 using TokenIntegrationService.Models;
 
-namespace TokenIntegrationService.Controllers
+namespace TokenIntegrationService.Controllers;
+
+[Route("/")]
+[ApiController]
+public class TokenController(
+    ICdaServiceClient iCdaServiceClient,
+    ILogger<TokenController> logger,
+    IIdValidator idValidator,
+    TokenIntegrationRequestValidatorPipeline validatorPipeline)
+    : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class TokenController : ControllerBase
+    [HttpPost]
+    [Route("rpts")]
+    public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
+    {            
+        logger.LogRequest(request);
+            
+        if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
+        {
+            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
+        }
+
+        var validation = validatorPipeline.Validate(request);
+        if (!validation.IsValid)
+        {
+            logger.LogError("Error: {ErrorMessage}", validation.ErrorMessage);
+            return await Task.FromResult<IActionResult>(BadRequest(validation.ErrorMessage));
+        }
+            
+        var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
+            
+        var result = await iCdaServiceClient.PostRptAsync(cdaTokenRequestModelRequest, requestHeader);
+        var response = new TokenIntegrationResponseModel { Rpt = result.AccessToken };
+        
+        logger.LogResponse(response);
+            
+        return Ok(response);             
+    }
+
+    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(TokenIntegrationRequestModel requestBody)
     {
-        private readonly ICDATokenService _iCDATokenService;
-
-        private const string GrantType = "urn:ietf:params:oauth:grant-type:uma-ticket";
-        private const string ClaimTokenFormat = "pension_dashboad_rqp";
-        private const string Scope = "owner";
-        private const string RequestId = "sdfasdfasdasdadsg";
-
-        public TokenController(ICDATokenService iCDATokenService)
+        return new CdaTokenRequestModel
         {
-            _iCDATokenService = iCDATokenService;
-        }
-
-        [HttpPost]
-        [Route("/rpts")]
-        public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel requestBody)
-        {            
-            if (!requestBody.Validate())
-                return BadRequest("Bad Request");
-
-            var request = CreateCDATokenServiceRequestModel(requestBody);
-            
-            var result = await _iCDATokenService.PostRpt(request);           
-            
-            return Ok(new TokenIntegrationResponseModel {  Rpt = result.AccessToken });             
-        }
-
-        private CDATokenRequestModel CreateCDATokenServiceRequestModel(TokenIntegrationRequestModel requestBody)
-        {
-            return new CDATokenRequestModel
-            {
-                GrantType = GrantType,
-                ClaimToken = requestBody.Rqp,
-                ClaimTokenFormat = ClaimTokenFormat,
-                Scope = Scope,
-                RequestId = RequestId,
-                Ticket = requestBody.Ticket,
-                Rqp = requestBody.Rqp,
-                CdaTokenUrl = requestBody.As_Uri
-            };
-        }
+            GrantType = TokenQueryParams.UmaGrantType,
+            ClaimToken = requestBody.Rqp,
+            ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
+            Scope = TokenQueryParams.Owner,
+            Ticket = requestBody.Ticket,
+        };
     }
 }

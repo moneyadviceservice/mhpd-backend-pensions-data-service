@@ -1,4 +1,5 @@
-using CDAServiceEmulator.TokenValidation;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -10,9 +11,9 @@ public static class Helper
     public const string ValidRedirectUri = "https://www.example.com/api/1";
     public const string GeneratedRsaPrivateKeyPem =
         "-----BEGIN RSA PRIVATE KEY-----\r\nMIIEpAIBAAKCAQEAu+NIp4+Hm5qJoEmQwfYm/+JTph1bqTow6bwTWGVLb0LihRQH\r\n2Z5im04zBY7JekJcY4t3xiCz4lbO5aAjPkWRSNMLCQtT3U/tE4ouQc3CXal/BKVV\r\nThzEx4uRYOlfwm7MBuP0ywmArqL/uzv+nXR6d1SbJen0aPVq5GI1+pZPD32XQrx1\r\nVSPRvwHdbJKlJKv0Am0l5JAJhlqasWcL39qXVdlUl7BSpQ0RsqI9vQDTHaHT4f0a\r\n9WaE/0Bqs0wU5lwGKCfrF3QQyPTfqiRBKJhS8OJWA5Umm9OmZyUUvfhX9TR2yi0a\r\nB91wZixUZ1moc0c5hDbgT3ApwpqMfmpmD/MB4QIDAQABAoIBAQCbDCpurBEaJWMh\r\nNNQSW9E/JEQnNt7nPbATkjLcpWqkvCs16pu3x+5Tfyq3kWdOTujy9Kq4g1AunbhK\r\n4eVzg/EqiY33vrNMVKKtl0Ao6WVV6YN6D/3fYfo5OUGVGcD+MHSJ0x+1VXgtpTEo\r\nD5BD21UcmGMX3ILnAm9dXHZy/grsGijjO6kUXjFUFfiw01hNncOebAKRver7FaK7\r\noeac0QO1Pld2b/IBw5SkaqnQ9+cU4+RA6R23GKhvj+aMMCVNQ+vNr5wZd1Po7+HB\r\n6QAckfCtkSHtaGGt2vg/Ry19qRjLFq/Z9P87r6gvAgE/b3nCWJEmsqcXjtarMUus\r\nHVZkvnSJAoGBAPnpqm7F5SQGide98GeLrw71JqIO/UC+vsNTO6juMo0/cLu1k4Ju\r\n6wHJjW8EYK23V15zPQU+zrpc4ns6ZftQcVDfpXZDHMfWxZCGsmLH7gFjCXGxzC+t\r\nFtXklx1Skf23nZ9KK2SMsvoPckBplWSw+rNf5e4a1QOlOI+PkHWtzG1fAoGBAMB2\r\n3F1VvFFnz/o2trja0mGvd7hlla2E6PrpLAdzUdRXcBns+WA3i6zdmdj+p7Na5ba+\r\nDL8ZAt3hPIQa+1sjfdmtOTNvYIJEooLUcC70REa1BeQ0DCDomYyNzeAR1pU4Qv8l\r\nLN0iteKLben9BllRASijhGQwPfaNSLwzIf2go5i/AoGAaY9bYALS8M6aNriR7QrB\r\nXM4MDXPLYSewqAxmLMrAK41abs8ZiYSUW2LpDLWKqJXCn7CJW8fVxj4po+dc4DRw\r\nSLrOxw89/uMm/A8JFlRgodFVUeLJ3nF8LciqU8ZmyAZg28GWZphPmPQhTDfM1IU0\r\nv8OH+XT3+Nw28dywJiTNLn0CgYAeYKRXdvjKQIBrFcexVZhvIqrax+3f/WJod/Uj\r\nF+iKg2KGNQkHTr0VA8UMouUFQguP1F9eqivxqWNL1pZlxCxQ9y5YF/Q7m2mrDKzI\r\nPHWqU1gitLRVXWEe9iLQgwBDfSXV76AtJxVeNHOcwvsFjeuI5oY26gZdq98XFVsA\r\nFSK9MQKBgQD5dsOKU+9iDVe9vPEArP61jI2YWlXHQ//pUnpP6nOvnLRwfiZ3uCWy\r\nUnPQm5hpHkQ3yWAZ7Qg9VmHdfeW37+s7vrecjopPfEAzkRBylqb6f8PvBpvbxBr3\r\nkIlKA7uY0Jma1Cr1Cz4q/BepAeVmXrgK9k6hJJQsPkTM/s4LpjZQ/g==\r\n-----END RSA PRIVATE KEY-----";
-
-    // Helper method to create and order validators
-    public static List<ITokenRequestValidator> GetOrderedValidators()
+    
+        // Helper method to create and order validators
+    public static List<ITokenRequestValidator<CdaTokenRequestModel>> GetOrderedValidators()
     {
         // Mock loggers for each validator
         var logger2 = new Mock<ILogger<UnsupportedGrantTypeValidation>>();
@@ -41,7 +42,7 @@ public static class Helper
         var idValidator = new Mock<IdValidator>();
 
         // Create the validators
-        var validators = new List<ITokenRequestValidator>
+        var validators = new List<ITokenRequestValidator<CdaTokenRequestModel>>
         {
             new UnsupportedGrantTypeValidation(logger2.Object),
             new ClaimTokenFormatNotPresentValidator(logger3.Object),

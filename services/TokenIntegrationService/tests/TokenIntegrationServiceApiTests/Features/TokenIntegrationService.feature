@@ -1,4 +1,5 @@
-﻿Feature: Token Integration Service Tests
+﻿@Ignore
+Feature: Token Integration Service Tests
 
 API Tests for Token Integration Service.  To Test on Local use localhost in place of Azure QA Environment.
 

@@ -85,7 +85,7 @@ public class TokenController(
         try
         {
             // Attempt to decode the IdToken
-            var claims = tokenUtility.DecodeJwt("asdfafd");
+            var claims = tokenUtility.DecodeJwt(result.IdToken);
 
             // Ensure "peis_id" claim exists before assigning it
             if (claims.TryGetValue("peis_id", out var peisId))

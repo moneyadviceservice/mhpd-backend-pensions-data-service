@@ -1,7 +1,7 @@
-﻿namespace TokenIntegrationService.Models
+﻿
+namespace TokenIntegrationService.Models;
+
+public class TokenIntegrationResponseModel
 {
-    public class TokenIntegrationResponseModel
-    {
-        public string? Rpt { get; set; }
-    }
+    public string? Rpt { get; set; }
 }

@@ -13,7 +13,7 @@ public class ServiceCommunicationExceptionTests
             // Assert
             Assert.NotNull(exception);
             Assert.Null(exception.InnerException); // Should not have an inner exception
-            Assert.Equal("Exception of type 'ServiceCommunicationException' was thrown.", exception.Message);
+            Assert.Equal("Exception of type 'MhpdCommon.CustomExceptions.ServiceCommunicationException' was thrown.", exception.Message);
         }
 
         [Fact]

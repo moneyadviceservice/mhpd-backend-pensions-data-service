@@ -237,4 +237,64 @@ public class TokenUtilityTests
         // Assert
         Assert.False(result);
     }
+    
+    [Fact]
+    public void DecodeJwt_ShouldReturnCorrectClaims()
+    {
+        // Arrange
+        string peisStartCode = "PEIS123";
+        
+        // Generate a JWT
+        string token = _tokenUtility.GenerateJwt(peisStartCode);
+        
+        // Act
+        var claims = _tokenUtility.DecodeJwt(token);
+        
+        // Assert
+        Assert.True(claims.ContainsKey("sub"));
+        Assert.Equal("cf668d47-ee58-4e33-bc05-feb7058de58d", claims["sub"]);
+
+        Assert.True(claims.ContainsKey("iss"));
+        Assert.Equal("https://emulators.maps.org.uk/am/oauth2", claims["iss"]);
+
+        Assert.True(claims.ContainsKey("aud"));
+        Assert.Equal("https://pdp/ig/token", claims["aud"]);
+
+        Assert.True(claims.ContainsKey("iat"));
+        Assert.False(string.IsNullOrEmpty(claims["iat"]));
+
+        Assert.True(claims.ContainsKey("exp"));
+        Assert.False(string.IsNullOrEmpty(claims["exp"]));
+
+        Assert.True(claims.ContainsKey("jti"));
+        Assert.False(string.IsNullOrEmpty(claims["jti"]));
+
+        Assert.True(claims.ContainsKey("peis_id"));
+        Assert.StartsWith(peisStartCode, claims["peis_id"]);
+    }
+
+    [Fact]
+    public void DecodeJwt_ShouldThrowException_ForInvalidToken()
+    {
+        // Arrange
+        string invalidToken = "invalid.jwt.token";
+        
+        // Act & Assert
+        Assert.Throws<ArgumentException>(() => _tokenUtility.DecodeJwt(invalidToken));
+    }
+
+    [Fact]
+    public void DecodeJwt_ShouldReturn_Correct_PeisId_ForValidToken()
+    {
+        // Arrange
+        var idToken =
+            "eyJhbGciOiJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGRzaWctbW9yZSNyc2Etc2hhMjU2IiwidHlwIjoiSldUIn0.eyJwZWlzX2lkIjoiMDAwMjZjZTItOWM3ZS00YjJmLWE3YTYtMDk1ZDU1ZGUwODExIiwic3ViIjoiY2Y2NjhkNDctZWU1OC00ZTMzLWJjMDUtZmViNzA1OGRlNThkIiwiaXNzIjoiaHR0cHM6Ly9lbXVsYXRvcnMubWFwcy5vcmcudWsvYW0vb2F1dGgyIiwiYXVkIjpbImh0dHBzOi8vcGRwL2lnL3Rva2VuIiwiaHR0cHM6Ly9wZHAvaWcvdG9rZW4iXSwiaWF0IjoxNzI4NDU4ODQ3LCJleHAiOjE3Mjg0NTk0NDcsImp0aSI6IjAwOWYxMzFkLTk1NmUtNDgxMS1hNjM0LTgzZDdhYTRjZDZkMyJ9.ENiVIWmCmRZSt0KO71irwxtO4Z2yJGN3Z3luPEDVIyVI_8oFReVgLRZbpnigSxgJnu_8lh3tE1L3c5uv29ScB5a1e6AqoGcJ8R6zc8J1DrE6oBQA7ClU7guw1m9Rx1D2z4X0PiRk0AVU3rF5UkqDpNcJ2dlyLBkUYTYmuJZ25AWq2NYlQaHL_f2kErC1-Q6gsFWbGmKLIEJbjiGB4FN4kI_jIe9Ey04QOHvc1Z59vgGLdU9k9wNt9mooK2daacqhUnAjNb1JAGOuEs5rt5v_5S-7V6MVw0Oubx3UEE378Q_UKPUDQTdcsD20G7knOjUpu_ZTYlITFyOpOs2lUM4xrw";
+        
+        // Act
+        var result = _tokenUtility.DecodeJwt(idToken);
+        
+        // Assert
+        Assert.True(result.ContainsKey("peis_id"));
+        Assert.Equal("00026ce2-9c7e-4b2f-a7a6-095d55de0811", result["peis_id"]);
+    }
 }

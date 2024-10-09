@@ -77,6 +77,21 @@ public class TokenUtility : ITokenUtility
         return jwtHandler.WriteToken(token);
     }
     
+    public IDictionary<string, string> DecodeJwt(string token)
+    {
+        var jwtHandler = new JwtSecurityTokenHandler();
+        var jwtToken = jwtHandler.ReadJwtToken(token);
+
+        var claimsDictionary = new Dictionary<string, string>();
+        
+        foreach (var claim in jwtToken.Claims)
+        {
+            claimsDictionary[claim.Type] = claim.Value;
+        }
+
+        return claimsDictionary;
+    }
+    
     public bool DoesRegexMatch(string input, string pattern)
     {
         try

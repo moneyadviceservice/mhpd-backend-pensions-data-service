@@ -20,6 +20,20 @@ builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>,
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, AsUriNotAUrlValidator>();
 builder.Services.AddScoped<TokenIntegrationRequestValidatorPipeline>();
 
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, GrantTypeNotPresentValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, UnsupportedGrantTypeValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientIdNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientIdInvalidFormatValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientSecretNotGuidValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientSecretNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeInvalidFormatValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeVerifierNotBase64String>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeVerifierNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUriNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUriNotValidUrlValidation>();
+builder.Services.AddScoped<TokenRequestValidatorPipeline>();
+
 // Add services to the container.
 builder.Services.AddControllers();
 

@@ -30,7 +30,7 @@ public class CdaServiceClientUnitTests
         mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceEndpoint])
             .Returns(CdaServicesEndpointUrl);
             
-        // Setup the mock HttpClientFactory to return a client that uses the mocked HttpMessageHandler
+        // Set up the mock HttpClientFactory to return a client that uses the mocked HttpMessageHandler
         _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.CdaService))
             .Returns(new HttpClient(_handlerMoq.Object)
             {
@@ -52,11 +52,9 @@ public class CdaServiceClientUnitTests
             Ticket = TokenQueryParams.ValidJwtToken
         };
 
-        var rpts = new RptsModel { AccessToken = TokenQueryParams.ValidJwtToken };
-
         var response = new HttpResponseMessage
         {
-            Content = JsonContent.Create(rpts),
+            Content = JsonContent.Create(new CdaTokenResponseModel { AccessToken = TokenQueryParams.ValidJwtToken }),
             StatusCode = HttpStatusCode.OK,
         };
 
@@ -67,30 +65,65 @@ public class CdaServiceClientUnitTests
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
+        
 
-        var result = await _sut.PostRptAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
+        var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
 
         // Asserting the result is not null and is of the correct type
         Assert.NotNull(result);
-        Assert.IsType<RptsModel>(result);
-        Assert.Equal(rpts.AccessToken, result.AccessToken);  // Further verification of content
+        Assert.IsType<CdaTokenResponseModel>(result);
+        Assert.Equal(TokenQueryParams.ValidJwtToken, result.AccessToken);  // Further verification of content
     }
+    
+    [Fact]
+    public async Task PostRpt_Should_Return_Response_When_IdToken_Is_Present_Successful()
+    {
+        var request = new CdaTokenRequestModel
+        {
+            GrantType = TokenQueryParams.UmaGrantType,
+            ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
+            ClaimToken = TokenQueryParams.ValidJwtToken,
+            Scope = TokenQueryParams.Owner,
+            Ticket = TokenQueryParams.ValidJwtToken
+        };
+
+        var response = new HttpResponseMessage
+        {
+            Content = JsonContent.Create(new CdaTokenResponseModel { IdToken = TokenQueryParams.ValidJwtToken }),
+            StatusCode = HttpStatusCode.OK,
+        };
+
+        // Mock SendAsync method of the HttpMessageHandler to return the mocked response
+        _handlerMoq.Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
+        
+
+        var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
+
+        // Asserting the result is not null and is of the correct type
+        Assert.NotNull(result);
+        Assert.IsType<CdaTokenResponseModel>(result);
+        Assert.Equal(TokenQueryParams.ValidJwtToken, result.IdToken);  // Further verification of content
+    }
+
 
     [Fact]
     public async Task PostRptAsync_Should_Throw_InvalidOperationException_When_Endpoint_Is_Not_Configured()
     {
         // Arrange
-        var request = new CdaTokenRequestModel();
         var mockConfiguration = new Mock<IConfiguration>();
         mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceEndpoint]).Returns(string.Empty);
-        var sut = new CdaServiceClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object);
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await sut.PostRptAsync(request, new RequestHeaderModel { XRequestId = "123" })
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            Task.FromResult(new CdaServiceClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object))
         );
 
-        Assert.Equal("An invalid operation occurred during CDA service communication", ex.Message);
+        Assert.Equal("CDA Service endpoint is not configured.", ex.Message);
     }
 
     [Fact]
@@ -107,7 +140,7 @@ public class CdaServiceClientUnitTests
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostRptAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
         );
 
         Assert.Equal("Error communicating with CDA service", ex.Message);
@@ -133,7 +166,7 @@ public class CdaServiceClientUnitTests
             .ReturnsAsync(response);
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostRptAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
         );
 
         Assert.IsType<System.Text.Json.JsonException>(ex.InnerException);
@@ -153,7 +186,7 @@ public class CdaServiceClientUnitTests
             .ThrowsAsync(new Exception("Unexpected error"));
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostRptAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
         );
 
         Assert.Equal("An unexpected error occurred during CDA service communication.", ex.Message);

@@ -1,10 +1,9 @@
-﻿using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Models.RequestHeaderModel;
+﻿using MhpdCommon.Models.RequestHeaderModel;
 using TokenIntegrationService.Models;
 
 namespace TokenIntegrationService.HttpClients;
 
 public interface ICdaServiceClient
 {
-    Task<RptsModel> PostRptAsync(CdaTokenRequestModel request, RequestHeaderModel requestHeader);
+    Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request, RequestHeaderModel requestHeader);
 }

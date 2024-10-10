@@ -58,6 +58,13 @@
         "description": "The name for the container"
       }
     },
+	"holderNameViewDataContainerName": {
+      "type": "string",
+      "defaultValue": "holdernameViewConfigurationEmulatorData",
+      "metadata": {
+        "description": "The name for the container"
+      }
+    },
     "throughput": {
       "type": "int",
       "defaultValue": 400,
@@ -264,6 +271,50 @@
       "dependsOn": [
         "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), parameters('databaseName'))]"
       ]
+    },
+	{
+      "type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
+      "apiVersion": "2023-04-15",
+      "name": "[concat(parameters('cosmosDbAccountName'), '/', parameters('databaseName'), '/', parameters('holderNameViewDataContainerName'))]",
+      "properties": {
+        "resource": {
+          "id": "[parameters('holderNameViewDataContainerName')]",
+          "partitionKey": {
+            "paths": [
+              "/holdernameGuid"
+            ],
+            "kind": "Hash"
+          },
+          "uniqueKeyPolicy": {
+            "uniqueKeys": [
+              {
+                "paths": [
+                  "/holdernameGuid"
+                ]
+              }
+            ]
+          },
+          "indexingPolicy": {
+            "indexingMode": "consistent",
+            "includedPaths": [
+                {
+                  "path": "/holdernameGuid/?"
+                }
+              ],
+              "excludedPaths": [
+				{
+                  "path": "/*"
+                }
+			  ]
+          }
+        },
+        "options": {
+          "throughput": "[parameters('throughput')]"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosDbAccountName'), parameters('databaseName'))]"
+      ]
     }
   ],
   "outputs": {
@@ -282,6 +333,14 @@
     "resourceId": {
       "type": "string",
       "value": "[resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', toLower(parameters('cosmosDbAccountName')), parameters('databaseName'))]"
+    },
+    "cosmosDbEndpoint": {
+      "type": "string",
+      "value": "[reference(parameters('cosmosDbAccountName')).documentEndpoint]"
+    },
+    "cosmosDbPrimaryKey": {
+      "type": "string",
+      "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDbAccountName')), '2021-04-15').primaryMasterKey]"
     }
   }
 }

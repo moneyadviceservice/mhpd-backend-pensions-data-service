@@ -1,0 +1,17 @@
+[
+  {
+    "id": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
+    "holdernameGuid": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
+    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+  },
+  {
+    "id": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
+    "holdernameGuid": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
+    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+  },
+  {
+    "id": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
+    "holdernameGuid": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
+    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+  }
+]

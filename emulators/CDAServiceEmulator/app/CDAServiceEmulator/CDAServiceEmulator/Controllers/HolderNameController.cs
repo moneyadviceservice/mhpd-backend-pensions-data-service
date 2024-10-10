@@ -1,46 +1,44 @@
-﻿using CDAServiceEmulator.Mocks;
+﻿using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models;
+using CDAServiceEmulator.Models.HolderConfiguration;
+using MhpdCommon.Constants;
+using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CDAServiceEmulator.Controllers;
 
-[Route("api/[controller]")]
+[Route("/")]
 [ApiController]
-public class HolderNameController(IIdValidator idValidator) : ControllerBase
+public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataRepository<HolderNameConfigurationModel> viewDataRepository) : ControllerBase
 {
     [HttpGet]
-    [Route("/holdername-view-configurations")]
-    public async Task<IActionResult> GetAsync([FromHeader(Name = "X-Request-ID")] string? requestId, [FromQuery] string? holdername_guid)
+    [Route("holdername-view-configurations")]
+    public async Task<IActionResult> GetAsync([FromHeader] RequestHeaderModel headerModel, [FromQuery] string? holdername_guid)
     {
-        // Validate the input
-        if (!idValidator.IsValidGuid(requestId))
+        if (!idValidator.IsValidGuid(headerModel.XRequestId))
         {
-            return BadRequest("Invalid X-Request-ID header");
+            return BadRequest(Constants.HolderNameConstants.InvalidRequestId);
         }
 
-        // Scenario 1: No holdername_guid provided
         if (holdername_guid == null)
         {
-            var allConfigurations = await HolderConfigurationMock.GetHolderConfiguration();
-            return Ok(new { holder_view_configurations = allConfigurations });
+            var allConfigurations = await viewDataRepository.GetHolderNameConfigurationsAsync();
+            return Ok(new HolderNameViewDataResponse { Configurations = allConfigurations });
         }
 
-        // Scenario 3: Invalid holdername_guid format
         if (!idValidator.IsValidGuid(holdername_guid))
         {
-            return BadRequest("Invalid holdername_guid format");
+            return BadRequest(Constants.HolderNameConstants.InvalidHolderNameId);
         }
 
-        // Filter based on holdername_guid
-        var filteredConfigurations = HolderConfigurationMock.FilterConfigurations(holdername_guid);
+        var filteredConfigurations = await viewDataRepository.GetByIdAsync(holdername_guid, holdername_guid);
 
-        // Scenario 4: Unknown holdername_guid
-        if (filteredConfigurations.Count == 0)
+        if (filteredConfigurations == null)
         {
-            return NotFound("Unknown holdername_guid");
+            return NotFound(Constants.HolderNameConstants.UnknownHolderNameId);
         }
 
-        // Scenario 2: Known holdername_guid
-        return Ok(new { holder_view_configurations = filteredConfigurations });
+        return Ok(new HolderNameViewDataResponse { Configurations = [filteredConfigurations] });
     }
 }

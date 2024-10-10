@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models.HolderConfiguration;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.TokenValidation;
@@ -64,6 +65,15 @@ builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provi
     var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
     
     return new TokenEmulatorPiesIdScenarioModelsRepository(cosmosClient, config.DatabaseName, config.TokenEmulatorPiesIdScenarioModelsContainerName);
+});
+
+// Register HolderNameViewDataRepository
+builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameConfigurationModel>>(provider =>
+{
+    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+
+    return new HolderNameViewDataRepository(cosmosClient, config.DatabaseName, config.HolderNameConfigurationModelsContainerName);
 });
 
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, GrantTypeNotPresentValidator>();

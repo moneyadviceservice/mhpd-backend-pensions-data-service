@@ -20,6 +20,9 @@
         "tokenEmulatorPiesIdScenarioModelContainerName": {
             "value": "tokenEmulatorPiesIdScenarioModels"
         },
+		"holderNameViewDataContainerName": {
+            "value": "holdernameViewConfigurationEmulatorData"
+        },
         "throughput": {
             "value": 400
         },

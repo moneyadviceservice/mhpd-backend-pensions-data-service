@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using MhpdCommon.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.DataProtection;
+using System.Globalization;
 
 namespace MaPSCDAService.Controllers
 {
@@ -19,13 +21,20 @@ namespace MaPSCDAService.Controllers
         private readonly ILogger<MaPSCDAServiceController> _logger;
         private readonly IPkceGenerator _pkceGenerator;
         private readonly string? _redirectTargetUrl;
+        private readonly IRqpTokenManager _tokenManager;
 
-        public MaPSCDAServiceController(IOptions<UriSettings> uriSettings, ILogger<MaPSCDAServiceController> logger, IPkceGenerator pkceGenerator, IConfiguration configuration)
+        public MaPSCDAServiceController
+            (IOptions<UriSettings> uriSettings, 
+            ILogger<MaPSCDAServiceController> logger, 
+            IPkceGenerator pkceGenerator, 
+            IConfiguration configuration,
+            IRqpTokenManager tokenManager)
         {
             _configuration = configuration;
             _logger = logger;
             _pkceGenerator = pkceGenerator;
             _redirectTargetUrl = uriSettings.Value.RedirectTargetUrl; 
+            _tokenManager = tokenManager;
         }
 
         [Route("/rqp")]
@@ -37,16 +46,13 @@ namespace MaPSCDAService.Controllers
 
             if (!GetSecret(out KeyVaultSecrets secrets))
                 return StatusCode(StatusCodes.Status500InternalServerError);
-
-            string rqpsToken = GenerateRqpToken(rqpquery.UserSessionId!, rqpquery.Iss!, secrets);
+            if (string.IsNullOrEmpty(rqpquery.Iss))
+                return BadRequest("Issuer is required.");
+            if (string.IsNullOrEmpty(rqpquery.UserSessionId))
+                return BadRequest("UserSessionID is required.");
+            var rqpsToken = _tokenManager.GenerateToken(rqpquery.UserSessionId, rqpquery.Iss);
 
             return Ok(new RQPResponseModel { Rqp = rqpsToken });
-        }
-
-        private string GenerateRqpToken(string userSessionId, string issuer, KeyVaultSecrets secrets)
-        {
-            RSA256TokenUtils.RQPTokenManager _tokenManager = new RSA256TokenUtils.RQPTokenManager(userSessionId, issuer, secrets);
-            return _tokenManager.GenerateToken();
         }
 
         private bool GetSecret(out KeyVaultSecrets secrets)
@@ -90,22 +96,30 @@ namespace MaPSCDAService.Controllers
                 _logger.LogError(Constants.MissingOrInvalidRedirectPurpose);
                 return BadRequest(Constants.MissingOrInvalidRedirectPurpose);
             }
+            
+            
+            if (!GetSecret(out KeyVaultSecrets secrets))
+            {
+                _logger.LogError("Failed to retrieve secrets. Kid or Audience is null.");
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
 
-            var response = CreateRedirectResponse();
+            var fetchRqp = _tokenManager.GenerateToken(requestPayload.UserSessionId, requestPayload.Iss);
+
+            var response = CreateRedirectResponse(fetchRqp);
 
             _logger.LogResponse(response);
 
             return Ok(response);
         }
 
-        private RedirectResponseModel CreateRedirectResponse()
-        {
+        private RedirectResponseModel CreateRedirectResponse(string fetchRqp)
+        {            
             var (codeChallenge, codeVerifier) = _pkceGenerator.GeneratePkce();
             return new RedirectResponseModel
-            {
-                // Replaced the constant with the private field storing the environment variable value.
+            {                
                 RedirectTargetUrl = _redirectTargetUrl,
-                Rqp = Constants.SampleRqpToken,
+                Rqp = fetchRqp,
                 Scope = Constants.Scope,
                 ResponseType = Constants.ResponseType,
                 Prompt = Constants.Prompt,

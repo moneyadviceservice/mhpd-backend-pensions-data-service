@@ -15,12 +15,4 @@ public static class Constants
     public const string Service = "PDPPensionFinder";
     public const string CodeChallengeMethod = "S256";
     public const string RedirectPurpose = "FIND";
-    
-    // Test values
-    public const string Kid = "ec1abf89-225b-49c2-ab87-1d425ac70f8d";
-    public const string Audience = "https://pdp/ig/token";
-    public const string Iss = "myapp.com";
-    public const string UserSessionId123 = "mySessionId-123abcd";
-    public const string UserSessionId = "ff2bba91-1867-4ff5-be4c-534ad527a59f";
-    public const string InvalidIssUsersessionId = "Invalid input: Iss and UserSessionId are required.";
 }

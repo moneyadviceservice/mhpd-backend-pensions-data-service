@@ -1,31 +1,34 @@
 ﻿using MaPSCDAService.Models;
-using static MaPSCDAService.Utils.RSA256TokenUtils;
+using MaPSCDAService.Utils;
+using Microsoft.Extensions.Configuration;
 
 namespace MaPSCDAServiceUnitTests
 {
     public class RSA256TokenUtilsUnitTests
     {
-        private const string _userSessionId = "6ee2ec99-70a6-4781-b2d2-da2cc75fd177";
-        private const string _issuer = "MHPD-75b68255-444e-4d5f-bbfe-249c26d69963";
-        private const string _role = "owner";
-        private readonly RQPTokenManager _tokenManager;
-
-        private readonly KeyVaultSecrets _secrets = new KeyVaultSecrets
+        private const string UserSessionId = TestConstants.UserSessionId;
+        private const string Issuer = TestConstants.Iss;
+        private readonly IRqpTokenManager _tokenManager;
+        private readonly IConfiguration _configuration;
+        
+        public RSA256TokenUtilsUnitTests()
         {
-            Kid = "ec1abf89-225b-49c2-ab87-1d425ac70f8d",
-            Audience = "https://pdp/ig/token"
-        };
 
-        public RSA256TokenUtilsUnitTests() 
-        {
-            _tokenManager = new RQPTokenManager(_userSessionId, _issuer, _secrets);
-        }
+            _configuration = new ConfigurationBuilder()
+                .AddJsonFile("AppSettings.json")
+                .Build();
+            _configuration["Kid"] = TestConstants.Kid;
+            _configuration["Audience"] = TestConstants.Audience; 
+            _configuration["privateKey"] = TestConstants.PrivateRsaKey;
+            
+            _tokenManager = new RqpTokenManager(_configuration);
+        }       
 
         [Fact]
         public void GivenATokenManager_WhenTokenIsGenerated_ThenItReturns_CorrectToken()
         {
             //Act
-            var token = _tokenManager.GenerateToken();
+            var token = _tokenManager.GenerateToken(UserSessionId, Issuer);
 
             // Assert
             Assert.True(!string.IsNullOrEmpty(token));
@@ -34,18 +37,21 @@ namespace MaPSCDAServiceUnitTests
         [Fact]
         public void GivenATokenManager_WhenTokenIsGeneratedAndValidated_ThenItValidatesTheToken()
         {
+            // Arrange
+            var token = _tokenManager.GenerateToken(UserSessionId, Issuer);
+    
             // Act
-            var token = _tokenManager.GenerateToken();
-            var result = _tokenManager.ValidateToken(token, out RQPModel rqpModel);
+            RQPModel rqpModel;  
+            var result = _tokenManager.ValidateToken(token, Issuer, out rqpModel);  
 
             // Assert
-            Assert.True(!string.IsNullOrEmpty(token));
-            Assert.True(result == true);
-            Assert.True(!(rqpModel == null));
-            Assert.True(rqpModel.Subject == $"{_userSessionId}@{rqpModel.Issuer}");
-            Assert.True(rqpModel.Issuer == rqpModel.Issuer);
-            Assert.True(!string.IsNullOrEmpty(rqpModel.Audience));
-            Assert.True(rqpModel.Role == _role);
+            Assert.True(!string.IsNullOrEmpty(token));  
+            
+            Assert.NotNull(rqpModel);  
+            Assert.Equal($"{UserSessionId}@{Issuer}", rqpModel.Subject);
+            Assert.Equal(TestConstants.Audience, rqpModel.Audience);
+            Assert.Equal(TestConstants.Role, rqpModel.Role);  
+            Assert.True(result);  
         }
     }
 }

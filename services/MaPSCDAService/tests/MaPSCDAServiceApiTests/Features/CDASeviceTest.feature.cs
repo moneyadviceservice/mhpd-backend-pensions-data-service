@@ -21,12 +21,14 @@ namespace MaPSCDAServiceApiTests.Features
     [System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [NUnit.Framework.TestFixtureAttribute()]
     [NUnit.Framework.DescriptionAttribute("CDA Service Tests")]
+    [NUnit.Framework.IgnoreAttribute("Ignored feature")]
     public partial class CDAServiceTestsFeature
     {
         
         private TechTalk.SpecFlow.ITestRunner testRunner;
         
-        private string[] _featureTags = ((string[])(null));
+        private string[] _featureTags = new string[] {
+                "ignore"};
         
 #line 1 "CDASeviceTest.feature"
 #line hidden
@@ -36,7 +38,8 @@ namespace MaPSCDAServiceApiTests.Features
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "Features", "CDA Service Tests", "API Tests for CDA Service Service.  To Test on Local use localhost in place of Az" +
-                    "ure QA Environment.", ProgrammingLanguage.CSharp, ((string[])(null)));
+                    "ure QA Environment.", ProgrammingLanguage.CSharp, new string[] {
+                        "ignore"});
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -87,7 +90,7 @@ namespace MaPSCDAServiceApiTests.Features
                     "cdaservice"};
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("CDA Service Post Request with Valid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 6
+#line 7
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -107,13 +110,13 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 7
+#line 8
  testRunner.Given("user sends post request to \'Azure QA Environment\' CDA Service endpoint", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 8
+#line 9
  testRunner.Then("response is all ok with response code as \'OK\'", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
-#line 9
+#line 10
  testRunner.And("response body contains rqp", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "And ");
 #line hidden
             }
@@ -146,7 +149,7 @@ this.ScenarioInitialize(scenarioInfo);
             argumentsOfScenario.Add("userSessionId", userSessionId);
             argumentsOfScenario.Add("StatusCode", statusCode);
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Get Request with various invalid inputs", null, tagsOfScenario, argumentsOfScenario, this._featureTags);
-#line 13
+#line 14
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
             bool isScenarioIgnored = default(bool);
@@ -166,11 +169,11 @@ this.ScenarioInitialize(scenarioInfo);
             else
             {
                 this.ScenarioStart();
-#line 14
+#line 15
  testRunner.Given(string.Format("user sends post request to \'Azure QA Environment\' with body as \'{0}\' for iss \'{1}" +
                             "\' for userSessionId", iss, userSessionId), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-#line 15
+#line 16
  testRunner.Then(string.Format("response is all ok with response code as \'{0}\'", statusCode), ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Then ");
 #line hidden
             }

@@ -15,7 +15,7 @@ namespace MaPSCDAServiceUnitTests
         {
 
             _configuration = new ConfigurationBuilder()
-                .AddJsonFile("AppSettings.json")
+                .AddJsonFile("appsettings.json")
                 .Build();
             _configuration["Kid"] = TestConstants.Kid;
             _configuration["Audience"] = TestConstants.Audience; 

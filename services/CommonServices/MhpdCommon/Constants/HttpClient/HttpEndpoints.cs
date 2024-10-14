@@ -6,4 +6,5 @@ namespace MhpdCommon.Constants.HttpClient;
 public static class HttpEndpoints
 {
     public const string CdaTokenServiceEndpoint = "token";
+    public const string PeiRetrievalDetails = "pei_retrieval_details";
 }

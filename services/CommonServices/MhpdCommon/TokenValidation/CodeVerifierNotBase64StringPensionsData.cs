@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 
 namespace MhpdCommon.TokenValidation;
 
-public class CodeVerifierNotBase64String(ILogger<CodeVerifierNotBase64String> logger) : ITokenRequestValidator<CdaTokenRequestModel>
+public class CodeVerifierNotBase64StringPensionsData(ILogger<CodeVerifierNotBase64StringPensionsData> logger) : ITokenRequestValidator<PensionsDataRequestModel>
 {
-    public int Order => 9;
+    public int Order => 6;
     public string GrantType => string.Empty;
     
-    public ValidationResult Validate(CdaTokenRequestModel request)
+    public ValidationResult Validate(PensionsDataRequestModel request)
     {
         if (request.CodeVerifier != null && !TokenUtility.IsValidCodeVerifier(request.CodeVerifier))
         {

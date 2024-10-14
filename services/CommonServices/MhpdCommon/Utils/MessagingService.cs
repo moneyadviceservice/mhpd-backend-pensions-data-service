@@ -7,11 +7,17 @@ public class MessagingService(ServiceBusClient serviceBusClient) : IMessagingSer
 {
     private readonly ServiceBusClient _serviceBusClient = serviceBusClient;
 
-    public async Task SendMessageAsync<T>(T message, string queue)
+    public async Task SendMessageAsync<T>(T message, string queue, string? correlationId = null)
     {
         var sender = _serviceBusClient.CreateSender(queue);
         var jsonMessage = JsonSerializer.Serialize(message);
         ServiceBusMessage busMessage = new(jsonMessage);
+        
+        if (!string.IsNullOrEmpty(correlationId))
+        {
+            busMessage.CorrelationId = correlationId;
+        }
+        
         await sender.SendMessageAsync(busMessage);
     }
 }

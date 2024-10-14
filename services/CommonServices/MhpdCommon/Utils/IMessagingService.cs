@@ -2,5 +2,5 @@
 
 public interface IMessagingService
 {
-    Task SendMessageAsync<T>(T message, string queue);
+    Task SendMessageAsync<T>(T message, string queue, string? correlationId = null);
 }

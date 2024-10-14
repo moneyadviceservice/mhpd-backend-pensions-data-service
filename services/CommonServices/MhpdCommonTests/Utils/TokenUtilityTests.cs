@@ -297,4 +297,80 @@ public class TokenUtilityTests
         Assert.True(result.ContainsKey("peis_id"));
         Assert.Equal("00026ce2-9c7e-4b2f-a7a6-095d55de0811", result["peis_id"]);
     }
+    
+    [Fact]
+    public void IsValidCodeVerifier_ValidCodeVerifier_ReturnsTrue()
+    {
+        // Arrange
+        const string validCodeVerifier = "7189b64cc5f65b805baf201e384dc53ae7d18305d5ebb6170ad557b6"; // 60 characters
+
+        // Act
+        var result = TokenUtility.IsValidCodeVerifier(validCodeVerifier);
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public void IsValidCodeVerifier_TooShortCodeVerifier_ReturnsFalse()
+    {
+        // Arrange
+        const string shortCodeVerifier = "short123"; // Less than 43 characters
+
+        // Act
+        var result = TokenUtility.IsValidCodeVerifier(shortCodeVerifier);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidCodeVerifier_TooLongCodeVerifier_ReturnsFalse()
+    {
+        // Arrange
+        var longCodeVerifier = new string('a', 129); // More than 128 characters
+
+        // Act
+        var result = TokenUtility.IsValidCodeVerifier(longCodeVerifier);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidCodeVerifier_InvalidCharacters_ReturnsFalse()
+    {
+        // Arrange
+        const string invalidCodeVerifier = "7189b64cc5f65b805baf201e384dc53ae7d18305d5ebb6170ad557b6@#"; // Invalid special characters
+
+        // Act
+        var result = TokenUtility.IsValidCodeVerifier(invalidCodeVerifier);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public void IsValidCodeVerifier_NullOrEmptyCodeVerifier_ReturnsFalse()
+    {
+        // Arrange
+        string nullCodeVerifier = null!;
+        const string emptyCodeVerifier = "";
+
+        // Act & Assert
+        Assert.False(TokenUtility.IsValidCodeVerifier(nullCodeVerifier));
+        Assert.False(TokenUtility.IsValidCodeVerifier(emptyCodeVerifier));
+    }
+
+    [Fact]
+    public void IsValidCodeVerifier_BoundaryLengthValid_ReturnsTrue()
+    {
+        // Arrange
+        var minLengthCodeVerifier = new string('a', 43); // Exactly 43 characters
+        var maxLengthCodeVerifier = new string('a', 128); // Exactly 128 characters
+
+        // Act & Assert
+        Assert.True(TokenUtility.IsValidCodeVerifier(minLengthCodeVerifier));
+        Assert.True(TokenUtility.IsValidCodeVerifier(maxLengthCodeVerifier));
+    }
 }

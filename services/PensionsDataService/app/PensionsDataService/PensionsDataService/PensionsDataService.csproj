@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RootNamespace>PensionsDataService</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MhpdCommon" Version="1.1.31" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+        <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.43.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.0" />
+        <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.1" />
+    </ItemGroup>
+
+</Project>

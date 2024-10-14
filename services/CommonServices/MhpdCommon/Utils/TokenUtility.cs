@@ -10,8 +10,13 @@ using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegiste
 
 namespace MhpdCommon.Utils;
 
-public class TokenUtility : ITokenUtility
+public partial class TokenUtility : ITokenUtility
 {
+    // Regular expression pattern for valid code_verifier
+    // Use the GeneratedRegexAttribute to compile the regex pattern at compile-time
+    [GeneratedRegex(@"^[a-zA-Z0-9\-\.\\_\~]{43,128}$")]
+    private static partial Regex CodeVerifierPattern();
+    
     private readonly JwtSettings _jwtSettings;
     private readonly int _expiryInSeconds;
 
@@ -113,5 +118,21 @@ public class TokenUtility : ITokenUtility
     {
         return Uri.TryCreate(url, UriKind.Absolute, out var uriResult) 
                && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+    }
+    
+    /// <summary>
+    /// Validates that the input code_verifier is between 43 and 128 characters long and matches the required pattern.
+    /// </summary>
+    /// <param name="codeVerifier">The code verifier to validate.</param>
+    /// <returns>True if the code_verifier is valid; otherwise, false.</returns>
+    public static bool IsValidCodeVerifier(string codeVerifier)
+    {
+        if (string.IsNullOrEmpty(codeVerifier))
+        {
+            return false;
+        }
+
+        // Check if the code verifier matches the length requirements and regex pattern
+        return CodeVerifierPattern().IsMatch(codeVerifier);
     }
 }

@@ -6,6 +6,7 @@ public static class TokenValidationMessages
     public const string InvalidRequest = "Invalid request";
     public const string InvalidGrantType = "Invalid grant_type";
     public const string MissingGrantType = "Missing grant_type";
+    public const string MissingAuthorisationCode = "Missing authorisation code";
     public const string InvalidTicketQuery = "Invalid ticket query";
     public const string InvalidTicketQueryFormat = "Invalid ticket query format, not in jwt format";
     public const string InvalidRqpFormat = "Invalid rqp format, not in jwt format";
@@ -15,6 +16,7 @@ public static class TokenValidationMessages
     public const string InvalidXRequestId = "Invalid X-Request-ID";
     public const string InvalidClientIdFormat = "Invalid client_id format";
     public const string InvalidCodeFormat = "Invalid code format";
+    public const string InvalidAuthorisationCodeFormat = "Invalid authorisation code format";
     public const string InvalidClientSecretFormat = "Invalid client_secret";
     public const string InvalidRedirectUri = "Invalid rediect_uri";
     public const string InvalidCodeVerifierFormat = "Invalid code_verifier";
@@ -23,6 +25,10 @@ public static class TokenValidationMessages
     public const string InvalidCodeVerifier = "Invalid code_verifier";
     public const string InvalidRqp = "Invalid rqp";
     public const string InvalidAsUri = "Invalid as_uri";
+    public const string InvalidIss = "Invalid iss";
+    public const string MissingIss = "Missing iss";
+    public const string MissingUserSessionId = "Missing userSessionId";
+    public const string InvalidUserSessionId = "Invalid userSessionId";
     
     // Log error messages
     public const string ClaimTokenFormatNotDashboardRqp = "claim_token_format is not pension_dashboard_rqp";
@@ -40,6 +46,8 @@ public static class TokenValidationMessages
     public const string ClientSecretNotAGuid = "client_id format is incorrect";
     public const string ClientSecretNotPresent = "client_secret not provided in request";
     public const string CodeNotPresent = "Code not provided in request";
+    public const string AuthorisationCodeNotPresent = "Authorisation code not provided in request";
+    public const string AuthorisationCodeInvalidFormat = "Authorisation code format is incorrect";
     public const string CodeInvalidFormat = "code format is incorrect";
     public const string CodeVerifierNotPresent = "Code_verifier not provided in request";
     public const string RedirectUriNotPresent = "redirect_uri not provided in request";

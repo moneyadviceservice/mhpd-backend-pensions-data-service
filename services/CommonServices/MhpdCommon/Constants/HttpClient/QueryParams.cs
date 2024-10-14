@@ -9,6 +9,7 @@ public static class QueryParams
     public const string ClientSecret = "client_secret";
     public const string CodeVerifier = "code_verifier";
     public const string Code = "code";
+    public const string AuthorisationCode = "authorisationCode";
     public const string RedirectUri = "redirect_uri";
     
     // When grant_type is uma-ticket, expect these query params

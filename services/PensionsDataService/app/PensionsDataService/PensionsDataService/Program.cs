@@ -26,16 +26,18 @@ if (builder.Environment.IsDevelopment())
     // Set the value as an environment variable (for this process)
     Environment.SetEnvironmentVariable("ServiceBusConnectionString", serviceBusConnection);
     Environment.SetEnvironmentVariable("OutboundQueue", outboundQueue);
+    
+    Console.WriteLine("ServiceBusConnectionString {0}", serviceBusConnection);
+    Console.WriteLine("OutboundQueue {0}", outboundQueue);
 }
 
-Console.WriteLine("Connection string {0}", Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.ConnectionStringVariable));
-Console.WriteLine("ServiceBusConnectionString {0}", builder.Configuration.GetSection("CommonServiceBusConfiguration")["OutboundQueue"]);
+Console.WriteLine("ServiceBusConnectionString {0}", builder.Configuration.GetConnectionString("ServiceBusConnectionString"));
+Console.WriteLine("OutboundQueue {0}", builder.Configuration.GetSection("OutboundQueue"));
 
 // Add services to the container.
 builder.Services.AddScoped<IIdValidator, IdValidator>();
 builder.Services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
 
-builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUriNotValidUrlValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUriNotValidUrlValidationPensionsData>();

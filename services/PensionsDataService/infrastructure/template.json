@@ -11,7 +11,7 @@
     "parameters": {
       "webAppName": {
         "type": "string",
-        "defaultValue": "MaPSPensionsDataService",
+        "defaultValue": "PensionsDataService",
         "minLength": 2,
         "metadata": {
           "description": "Web app name."

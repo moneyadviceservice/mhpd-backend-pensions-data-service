@@ -6,4 +6,5 @@ public static class HttpClientNames
     public const string MapsCdaService = "MapsCdaService";
     public const string TokenIntegrationService = "TokenIntegrationService";
     public const string PdpViewDataEmulator = "PdpViewDataEmulator";
+    public const string RetrievalRecordFunction = "RetrievalRecordFunction";
 }

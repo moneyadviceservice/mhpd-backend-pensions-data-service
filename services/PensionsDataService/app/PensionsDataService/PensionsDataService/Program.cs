@@ -37,6 +37,7 @@ Console.WriteLine("OutboundQueue {0}", builder.Configuration.GetSection("Outboun
 // Add services to the container.
 builder.Services.AddScoped<IIdValidator, IdValidator>();
 builder.Services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
+builder.Services.AddScoped<IRetrievalRecordFunctionClient, RetrievalRecordFunctionClient>();
 
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();

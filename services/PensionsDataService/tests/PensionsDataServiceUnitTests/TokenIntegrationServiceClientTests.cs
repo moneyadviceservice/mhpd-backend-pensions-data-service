@@ -102,7 +102,6 @@ public class TokenIntegrationServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
         
-
         var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
 
         // Asserting the result is not null and is of the correct type

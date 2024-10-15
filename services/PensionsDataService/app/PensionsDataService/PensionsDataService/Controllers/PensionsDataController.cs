@@ -18,14 +18,40 @@ public class PensionsDataController(ILogger<PensionsDataController> logger,
     IIdValidator idValidator,
     PensionsDataRequestValidatorPipeline requestValidators,
     ITokenIntegrationServiceClient tokenIntegrationServiceClient,
+    IRetrievalRecordFunctionClient retrievalRecordFunctionClient,
     IOptions<CommonServiceBusConfiguration> serviceBusOptions,
     IMessagingService messagingService) : ControllerBase
 {
+    [HttpGet]
+    [Route("pensions-data")]
+    public async Task<IActionResult> GetPensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
+    {
+        logger.LogRequest(requestHeader);
+        
+        if (string.IsNullOrEmpty(requestHeader.UserSessionId))
+        {
+            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.MissingUserSessionId));
+        }
+        
+        if (!idValidator.IsValidGuid(requestHeader.UserSessionId))
+        {
+            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidUserSessionId));
+        }
+
+        // Get the pensions retrieval record associated with the passed userSessionId
+        var result = await retrievalRecordFunctionClient.GetAsync(requestHeader);
+
+        logger.LogResponse(result);
+        
+        return await Task.FromResult(result);
+    }
+    
     [HttpPost]
     [Route("pensions-data")]
     public async Task<IActionResult> PostPensionsDataAsync([FromBody] PensionsDataRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {
         logger.LogRequest(requestHeader);
+        logger.LogRequest(request);
         
         if (string.IsNullOrEmpty(requestHeader.Iss))
         {
@@ -51,7 +77,7 @@ public class PensionsDataController(ILogger<PensionsDataController> logger,
         
         // Get pei from the token integration service
         var result = await tokenIntegrationServiceClient
-            .PostAsync(CreateCdaTokenServiceRequestModel(request), requestHeader);
+            .PostAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader);
         
         // Post a message to initiate a process to retrieve the Pensions Data for the userSessionId
         var message = CreateRequestPayload(result, requestHeader);
@@ -75,9 +101,9 @@ public class PensionsDataController(ILogger<PensionsDataController> logger,
         };
     }
     
-    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request)
+    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request, ILogger<PensionsDataController> logger)
     {
-        return new CdaTokenRequestModel
+        var cdaTokenRequest = new CdaTokenRequestModel
         {
             GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
@@ -86,5 +112,10 @@ public class PensionsDataController(ILogger<PensionsDataController> logger,
             RedirectUri = request.RedirectUri,
             CodeVerifier = request.CodeVerifier
         };
+        
+        // Log cdaTokenServiceRequest
+        logger.LogRequest(cdaTokenRequest);
+
+        return cdaTokenRequest;
     }
 }

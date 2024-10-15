@@ -18,6 +18,7 @@ public class PensionsDataControllerTests
 {
     private readonly Mock<IIdValidator> _mockIdValidator;
     private readonly Mock<ITokenIntegrationServiceClient> _mockTokenIntegrationServiceClient;
+    private readonly Mock<IRetrievalRecordFunctionClient> _mockRetrievalRecordFunctionClient;
     private readonly PensionsDataController _controller;
     private readonly RequestHeaderModel _validRequestHeader = new()
     {
@@ -30,6 +31,7 @@ public class PensionsDataControllerTests
         Mock<ILogger<PensionsDataController>> mockLogger = new();
         _mockIdValidator = new Mock<IIdValidator>();
         _mockTokenIntegrationServiceClient = new Mock<ITokenIntegrationServiceClient>();
+        _mockRetrievalRecordFunctionClient = new Mock<IRetrievalRecordFunctionClient>();
         Mock<IMessagingService> mockMessagingService = new();
         Mock<IOptions<CommonServiceBusConfiguration>> mockServiceBusOptions = new();
 
@@ -54,7 +56,8 @@ public class PensionsDataControllerTests
             mockLogger.Object, 
             _mockIdValidator.Object, 
             mockValidatorPipeline.Object, 
-            _mockTokenIntegrationServiceClient.Object, 
+            _mockTokenIntegrationServiceClient.Object,
+            _mockRetrievalRecordFunctionClient.Object,
             mockServiceBusOptions.Object, 
             mockMessagingService.Object
         );
@@ -207,5 +210,91 @@ public class PensionsDataControllerTests
         // Assert
         var statusCodeResult = Assert.IsType<StatusCodeResult>(result);
         Assert.Equal((int)HttpStatusCode.NoContent, statusCodeResult.StatusCode);
+    }
+    
+    [Fact]
+    public async Task GetPensionsDataAsync_WhenUserSessionIdIsMissing_ThenReturnsBadRequest()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = null };  // Invalid UserSessionId
+
+        // Act
+        var result = await _controller.GetPensionsDataAsync(requestHeader);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(TokenValidationMessages.MissingUserSessionId, badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task GetPensionsDataAsync_WhenUserSessionIdIsInvalid_ThenReturnsBadRequest()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "invalid-guid" };  // Invalid UserSessionId
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(false);
+
+        // Act
+        var result = await _controller.GetPensionsDataAsync(requestHeader);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(TokenValidationMessages.InvalidUserSessionId, badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task GetPensionsDataAsync_WhenRetrievalRecordClientReturnsSuccess_ThenReturnsOkResult()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+
+        // Simulate a successful response from the retrieval record function client
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new OkResult());
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionsDataAsync(requestHeader);
+
+        // Assert
+        Assert.IsType<OkResult>(result);
+    }
+
+    [Fact]
+    public async Task GetPensionsDataAsync_WhenRetrievalRecordClientThrowsHttpRequestException_ThenReturnsHttpRequestException()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+
+        // Simulate an HttpRequestException from the retrieval record function client
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ThrowsAsync(new HttpRequestException("Error calling external service"));
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpRequestException>(async () => 
+            await _controller.GetPensionsDataAsync(requestHeader));
+    }
+
+    [Fact]
+    public async Task GetPensionsDataAsync_WhenRetrievalRecordClientThrowsException_ThenLogsErrorAndThrowsException()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+
+        // Simulate a generic exception from the retrieval record function client
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ThrowsAsync(new Exception("Unexpected error"));
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<Exception>(async () =>
+            await _controller.GetPensionsDataAsync(requestHeader));
     }
 }

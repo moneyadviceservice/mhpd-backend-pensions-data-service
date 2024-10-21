@@ -2,7 +2,7 @@
 {
     public class ResponseMessage
     {
-        public string? ResponseStatusCode { get; set; }
+        public string ResponseStatusCode { get; set; } = string.Empty;
         public string? WWWAuthenticateResponseHeader { get; set; }
     }
 }

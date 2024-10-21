@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Drawing;
+using System.Text.RegularExpressions;
 
 namespace MhpdCommon.Utils;
 
@@ -15,6 +16,19 @@ public class IdValidator : IIdValidator
     public bool IsValidPeI(string? pei)
     {
         return !string.IsNullOrEmpty(pei) && pei.Length == Length && Regex.IsMatch(pei, Pattern);
+    }
+
+    public bool TryExtractPei(string? pei, out string holderNameId, out string externalAssetId)
+    {
+        holderNameId = string.Empty;
+        externalAssetId = string.Empty;
+
+        if(!IsValidPeI(pei)) return false;
+
+        holderNameId = pei!.Split(":")[0];
+        externalAssetId = pei!.Split(":")[1];
+
+        return true;
     }
     
     // Method to check if a string matches the pattern

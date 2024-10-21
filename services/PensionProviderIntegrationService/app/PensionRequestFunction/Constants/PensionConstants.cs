@@ -34,4 +34,7 @@ public static class PensionConstants
     public const string ContractReference = "contactReference";
     public const string PensionStartDate = "pensionStartDate";
     public const string StartDate = "startDate";
+    public const string RetrievalResult = "retrievalResult";
+    public const string Pei = "pei";
+    public const string PensionRetrievalRecordId = "pensionRetrievalRecordId";
 }

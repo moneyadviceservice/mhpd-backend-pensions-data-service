@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Schemas\PensionDetailsRequestPayload.json" />
     <None Remove="Schemas\pensionsRetrievalPayload.json" />
     <None Remove="Schemas\pensionsRetrievalRecord.json" />
     <None Remove="Schemas\RetrievedPensionPayload.json" />
@@ -20,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Schemas\PensionDetailsRequestPayload.json" />
     <EmbeddedResource Include="Schemas\PensionsRetrievalPayload.json" />
     <EmbeddedResource Include="Schemas\PensionsRetrievalRecord.json" />
     <EmbeddedResource Include="Schemas\RetrievedPensionRecord.json" />
@@ -31,6 +33,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.43.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />

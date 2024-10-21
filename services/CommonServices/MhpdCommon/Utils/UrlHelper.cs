@@ -27,6 +27,28 @@ public static class UrlHelper
         return endpointName + GenerateQueryString(queryList);
     }
 
+    /// <summary>
+    /// Builds a fully qualified path by combining the domain root with a relative path.
+    /// The function handles trailing and leading slashes in both the root and the suffix path
+    /// </summary>
+    /// <param name="baseUrl">The domain root of the url. For example https://api.domain.com/</param>
+    /// <param name="relativeUrl">The path to the resource you need. For example /basket/details or /employees?department=IT</param>
+    /// <returns>A fully qualified url. For example https://api.domain.com/basket/details</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the domain root is null or empty spaces</exception>
+    public static string ConstructPath(string? baseUrl, string? relativeUrl)
+    {
+        if (string.IsNullOrWhiteSpace(baseUrl))
+            throw new ArgumentNullException(nameof(baseUrl));
+
+        if (string.IsNullOrWhiteSpace(relativeUrl))
+            return baseUrl;
+
+        baseUrl = baseUrl.TrimEnd('/');
+        relativeUrl = relativeUrl.TrimStart('/');
+
+        return $"{baseUrl}/{relativeUrl}";
+    }
+
     private static string GenerateQueryString(List<Tuple<string, string>> queryList)
     {
         return "?" + string.Join("&", queryList.Select(q => $"{q.Item1}={q.Item2}"));

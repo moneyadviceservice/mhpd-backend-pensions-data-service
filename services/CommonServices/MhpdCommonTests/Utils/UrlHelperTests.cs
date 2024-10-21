@@ -21,7 +21,7 @@ public class UrlHelperTests
         };
 
         // Act
-        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.CdaTokenServiceEndpoint);
+        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
         Assert.Equal("token?grant_type=authorization_code&ticket=my_ticket&claim_token=my_token&claim_token_format=format&scope=read", result);
@@ -38,7 +38,7 @@ public class UrlHelperTests
         };
 
         // Act
-        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.CdaTokenServiceEndpoint);
+        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
         Assert.Equal("token?user_id=123&email=test@example.com", result);
@@ -56,7 +56,7 @@ public class UrlHelperTests
         };
 
         // Act
-        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.CdaTokenServiceEndpoint);
+        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
         Assert.Equal("token?grant_type=authorization_code&claim_token_format=format", result);
@@ -69,12 +69,34 @@ public class UrlHelperTests
         var request = new CdaTokenRequestModel(); // No values set
 
         // Act
-        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.CdaTokenServiceEndpoint);
+        var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
         Assert.Equal("token?", result); // Empty query string
     }
 
+    [Theory]
+    [InlineData("http://www.pdp.com", "/view/data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com", "view/data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com/", "/view/data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com/", "view/data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com/view", "/data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com/view", "data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com/view/", "/data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com/view/", "data", "http://www.pdp.com/view/data")]
+    [InlineData("http://www.pdp.com", null, "http://www.pdp.com")]
+    public void One_Base_Path_Should_Be_Combined_With_Relative_Path(string baseUrl, string route, string expected)
+    {
+        var actual = UrlHelper.ConstructPath(baseUrl, route);
+
+        Assert.Equal(expected, actual);
+    }
+
+    [Fact]
+    public void Base_Path_Null_Should_Throw_Exception()
+    {
+        Assert.Throws<ArgumentNullException>(() => UrlHelper.ConstructPath(null, "relative/path"));
+    }
 }
 
 public class UserRequestModel

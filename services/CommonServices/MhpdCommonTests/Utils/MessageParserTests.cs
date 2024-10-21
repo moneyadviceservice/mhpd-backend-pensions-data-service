@@ -58,4 +58,27 @@ public class MessageParserTests
 
         Assert.NotNull(payload);
     }
+
+    [Theory]
+    [InlineData(@"TestData/PensionRequest/InvalidPeiRequest.json")]
+    [InlineData(@"TestData/PensionRequest/InvalidRecordIdRequest.json")]
+    [InlineData(@"TestData/PensionRequest/MissingIssuerRequest.json")]
+    public void WhenAnInvalidRequestPayloadIsParsed_ItThrowsAnException(string payloadFile)
+    {
+        var payloadData = File.ReadAllText(payloadFile);
+
+        Assert.Throws<AggregateException>(() => _messageParser.ToPensionRequestPayload(payloadData));
+    }
+
+
+    [Theory]
+    [InlineData(@"TestData/PensionRequest/ValidPensionRequest.json")]
+    public void WhenAValidRequestPayloadIsParsed_ItReturnsARecord(string payloadFile)
+    {
+        var payloadData = File.ReadAllText(payloadFile);
+
+        var payload = _messageParser.ToPensionRequestPayload(payloadData);
+
+        Assert.NotNull(payload);
+    }
 }

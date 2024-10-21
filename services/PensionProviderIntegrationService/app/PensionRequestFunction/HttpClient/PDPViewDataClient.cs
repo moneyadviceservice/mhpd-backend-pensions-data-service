@@ -1,57 +1,50 @@
 ﻿using System.Net.Http.Headers;
+using MhpdCommon.Constants;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
 
-namespace PensionRequestFunction.HttpClient
+namespace PensionRequestFunction.HttpClient;
+
+public  class PdpViewDataClient(IHttpClientFactory httpClientFactory) : IPdpViewDataClient
 {
-    public  class PDPViewDataClient : IPDPViewDataClient
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+
+    public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt)       
     {
-        private readonly IHttpClientFactory _httpClientFactory;
+        var scope = "owner";
+        var client = _httpClientFactory.CreateClient();
 
-        public PDPViewDataClient(IHttpClientFactory httpClientFactory)
+        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
+
+        var response = await client.GetAsync($"{viewDataUrl}/{assetGuid}?scope={scope}");
+        
+        return CreateResponse(response).Result;
+    }
+
+    private static async Task<PdpServiceResponseModel> CreateResponse(HttpResponseMessage? response)
+    {
+        if (response!.StatusCode == System.Net.HttpStatusCode.OK)
         {
-            _httpClientFactory = httpClientFactory;
-        }
+            var result = await response!.Content.ReadAsStringAsync();
 
-        public async Task<PDPServiceResponseModel> GetPDPViewDataAsync(string assetGuid, string viewDataUrl, string rpt)       
-        {
-            var scope = "owner";
-            var client = _httpClientFactory.CreateClient("PDPViewData");
-
-            client.DefaultRequestHeaders.Add("X-Request-ID", Guid.NewGuid().ToString());
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", rpt);
-
-            var response = await client.GetAsync($"{viewDataUrl}{assetGuid}?scope={scope}");
-            
-            return CreateResponse(response).Result;
-        }
-
-        private async Task<PDPServiceResponseModel> CreateResponse(HttpResponseMessage? response)
-        {
-            if (response!.StatusCode == System.Net.HttpStatusCode.OK)
+            return new PdpServiceResponseModel
             {
-                var result = await response!.Content.ReadAsStringAsync();
-
-
-                return new PDPServiceResponseModel
-                {
-                    ViewDataToken = result,
-                    ResponseMessage = new ResponseMessage
-                    {
-                        ResponseStatusCode = "200"
-                    }
-                };
-            }
-
-            return new PDPServiceResponseModel
-            {
-                ViewDataToken = null,
+                ViewDataToken = result,
                 ResponseMessage = new ResponseMessage
                 {
-                    ResponseStatusCode = response!.StatusCode.ToString(),
-                    WWWAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
+                    ResponseStatusCode = "200"
                 }
             };
-
         }
+
+        return new PdpServiceResponseModel
+        {
+            ViewDataToken = null,
+            ResponseMessage = new ResponseMessage
+            {
+                ResponseStatusCode = response.StatusCode.ToString(),
+                WWWAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
+            }
+        };
     }
 }

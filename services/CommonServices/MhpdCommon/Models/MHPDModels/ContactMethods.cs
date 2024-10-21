@@ -22,7 +22,7 @@ public class ContactMethodDetails
     [JsonPropertyName("usage")]
     public List<string>? Usage { get; set; } = new List<string>();
 
-    [JsonPropertyName("ur")]
+    [JsonPropertyName("url")]
     public string? Url { get; set; } = "";
 
 }

@@ -7,4 +7,6 @@ public interface ITokenUtility
     public bool DoesRegexMatch(string input, string pattern);
 
     public IDictionary<string, string> DecodeJwt(string token);
+
+    string? RetrieveClaim(string token, string requiredClaimName);
 }

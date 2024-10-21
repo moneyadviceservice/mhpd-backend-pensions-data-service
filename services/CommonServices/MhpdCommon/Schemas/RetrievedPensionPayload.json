@@ -22,95 +22,107 @@
         "7075aa11-10ad-4b2f-a9f5-1068e79119bf:1ba03e25-659a-43b8-ae77-b956df168969"
       ]
     },
-    "retrievedPensionArrangements": {
-      "type": "array",
-      "description": "The retrieved pension arrangements",
-      "items": {
-        "$ref": "#/%24defs/pensionArrangement"
-      }
+    "retrievalResult": {
+      "description": "The result of the attempt to retrieve the pension information",
+      "oneOf": [
+        {
+          "type": "array",
+          "description": "The pension arrangments retrieved for the PeI.  They are asssumed to belong to a single pension policy.",
+          "items": {
+            "$ref": "#/%24defs/pensionArrangement"
+          }
+        },
+        {
+          "$ref": "#/%24defs/arrangementsRetrievalError",
+          "description": "TBC"
+        }
+      ]
     }
   },
   "required": [
     "pensionRetrievalRecordId",
-    "pei"
+    "pei",
+    "retrievalResult"
   ],
   "examples": [
     {
       "pensionRetrievalRecordId": "e01a9df7-f147-4a3a-a1dd-0507432a5b7f",
       "pei": "7075aa11-10ad-4b2f-a9f5-1068e79119bf:1ba03e25-659a-43b8-ae77-b956df168969",
-      "retrievedPensionArrangement": {
-        "externalPensionPolicyId": "string",
-        "externalAssetId": "string",
-        "matchType": "DEFN",
-        "schemeName": "MyCompany Direct Contribution Scheme",
-        "alternateSchemeNames": [
-          {
-            "name": "Converted from MyOld Direct Contribution Scheme",
-            "alternateNameType": "FOR"
-          }
-        ],
-        "contactReference": "string",
-        "pensionType": "AVC",
-        "pensionOrigin": "A",
-        "pensionStatus": "A",
-        "retirementDate": "2019-08-24",
-        "dateOfBirth": "2019-08-24",
-        "statePensionMessageEng": "string",
-        "statePensionMessageWelsh": "string",
-        "contributionsFromMultipleEmployers": true,
-        "pensionAdministrator": {
-          "name": "Pension Company 1",
-          "contactMethods": [
+      "retrievalResult": [
+        {
+          "externalPensionPolicyId": "string",
+          "externalAssetId": "string",
+          "matchType": "DEFN",
+          "schemeName": "MyCompany Direct Contribution Scheme",
+          "alternateSchemeNames": [
             {
-              "preferred": false,
-              "contactMethodDetails": {
-                "email": "example@examplemyline.com"
+              "name": "Converted from MyOld Direct Contribution Scheme",
+              "alternateNameType": "FOR"
+            }
+          ],
+          "contactReference": "string",
+          "pensionType": "AVC",
+          "pensionOrigin": "A",
+          "pensionStatus": "A",
+          "retirementDate": "2019-08-24",
+          "dateOfBirth": "2019-08-24",
+          "statePensionMessageEng": "string",
+          "statePensionMessageWelsh": "string",
+          "contributionsFromMultipleEmployers": true,
+          "pensionAdministrator": {
+            "name": "Pension Company 1",
+            "contactMethods": [
+              {
+                "preferred": false,
+                "contactMethodDetails": {
+                  "email": "example@examplemyline.com"
+                }
               }
+            ]
+          },
+          "employmentMembershipPeriods": [
+            {
+              "employerName": "My First Company",
+              "employerStatus": "C",
+              "membershipStartDate": "2003-12-01",
+              "membershipEndDate": "2005-06-03"
+            }
+          ],
+          "benefitIllustrations": [
+            {
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "unavailableReason": "ANO",
+                  "benefitType": "AVC",
+                  "calculationMethod": "BS",
+                  "payableDetails": {
+                    "amountType": "INC",
+                    "annualAmount": 200.12,
+                    "monthlyAmount": 16.68,
+                    "lastPaymentDate": "2050-12-23",
+                    "payableDate": "2032-01-31",
+                    "increasing": true
+                  },
+                  "estimatesDcPot": 900000.01,
+                  "survivorBenefit": true,
+                  "safeguardedBenefit": true,
+                  "illustratonWarnings": [
+                    "AVC"
+                  ]
+                }
+              ],
+              "illustrationDate": "2019-08-24"
+            }
+          ],
+          "additionalDataSources": [
+            {
+              "url": "http://example.com",
+              "informationType": "C_AND_C"
             }
           ]
-        },
-        "employmentMembershipPeriods": [
-          {
-            "employerName": "My First Company",
-            "employerStatus": "C",
-            "membershipStartDate": "2003-12-01",
-            "membershipEndDate": "2005-06-03"
-          }
-        ],
-        "benefitIllustrations": [
-          {
-            "illustrationComponents": [
-              {
-                "illustrationType": "ERI",
-                "unavailableReason": "ANO",
-                "benefitType": "AVC",
-                "calculationMethod": "BS",
-                "payableDetails": {
-                  "amountType": "INC",
-                  "annualAmount": 200.12,
-                  "monthlyAmount": 16.68,
-                  "lastPaymentDate": "2050-12-23",
-                  "payableDate": "2032-01-31",
-                  "increasing": true
-                },
-                "estimatesDcPot": 900000.01,
-                "survivorBenefit": true,
-                "safeguardedBenefit": true,
-                "illustratonWarnings": [
-                  "AVC"
-                ]
-              }
-            ],
-            "illustrationDate": "2019-08-24"
-          }
-        ],
-        "additionalDataSources": [
-          {
-            "url": "http://example.com",
-            "informationType": "C_AND_C"
-          }
-        ]
-      }
+        }
+      ]
     }
   ],
   "$defs": {
@@ -120,13 +132,13 @@
       "properties": {
         "externalPensionPolicyId": {
           "type": "string",
-          "description": "The unique id by which the policy that the arrangement is part of is identified in the PDP ecosystem.  All arrangements within a PensionPolicy must have the same externalPensionPolicyId",
+          "description": "The unique id by which the policy that the arrangement is part of is identified in the PDP ecosystem.  All arrangements within a PensionPolicy must have the same externalPensionPolicyId",
           "minLength": 1,
           "maxLength": 50
         },
         "externalAssetId": {
           "type": "string",
-          "description": "The unique id used to identify the asset when requesting the data from the Pension Data Providers.  Arrangements within a pension policy may have the same or different externalAssetIds but arrangements for different policies must never have the same externalAssetId.",
+          "description": "The unique id used to identify the asset when requesting the data from the Pension Data Providers.  Arrangements within a pension policy may have the same or different externalAssetIds but arrangements for different policies must never have the same externalAssetId.",
           "minLength": 1,
           "maxLength": 150
         },
@@ -838,7 +850,7 @@
         },
         "payableDate": {
           "type": "string",
-          "description": "The date that the benefit first becomes payable.  This may not be Pension Owner's retirement date.",
+          "description": "The date that the benefit first becomes payable.  This may not be Pension Owner's retirement date.",
           "format": "date",
           "examples": [
             "2032-01-31"
@@ -878,7 +890,7 @@
         },
         "payableDate": {
           "type": "string",
-          "description": "The date that the benefit becomes payable.  This may not be Pension Owner's retirement date.",
+          "description": "The date that the benefit becomes payable.  This may not be Pension Owner's retirement date.",
           "format": "date",
           "examples": [
             "2032-01-23"
@@ -901,7 +913,7 @@
         },
         "payableDate": {
           "type": "string",
-          "description": "The date that the benefit becomes payable.  This may not be Pension Owner's retirement date.",
+          "description": "The date that the benefit becomes payable.  This may not be Pension Owner's retirement date.",
           "format": "date",
           "examples": [
             "2032-01-23"
@@ -939,6 +951,15 @@
             "SP"
           ],
           "description": "The type of information provided at the website.\n- `C_AND_C` information on costs and charges relating to a DC pension\n- `SIP` the statement of investment principles\n- `IMP` the implementation statement\n- `ANR` the annual report of the independent governance\n- `SP` additional state pension information"
+        }
+      }
+    },
+    "arrangementsRetrievalError": {
+      "type": "object",
+      "title": "arrangementsRetrievalError",
+      "properties": {
+        "id": {
+          "type": "string"
         }
       }
     }

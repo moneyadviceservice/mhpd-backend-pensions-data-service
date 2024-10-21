@@ -1,34 +1,24 @@
-﻿using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.Configuration;
+﻿using MhpdCommon.Constants.HttpClient;
 using PensionRequestFunction.HttpClient.Interfaces;
 using PensionRequestFunction.Models.MapsRqpServiceClient;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 
 namespace PensionRequestFunction.HttpClient.Implementation
 {
-    public class MapsCdaServiceClient : IMapsRqpServiceClient
+    public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory) : IMapsCdaServiceClient
     {
-        private readonly IConfiguration _configuration;
-        private readonly string _mapsCdaServiceEndpoint;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
-        public MapsCdaServiceClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        public async Task<MapsRqpServiceResponseModel> PostRqpAsync(MapsRqpServiceRequestModel request)
         {
-            _httpClientFactory = httpClientFactory;
-            _configuration = configuration;
-            _mapsCdaServiceEndpoint = Environment.GetEnvironmentVariable("MapsCdaServiceEndpoint")!;
-        }
-        public async Task<MapsRqpServiceResponseModel> PostRqp(MapsRqpServiceRequestModel request)
-        {
-            var client = _httpClientFactory.CreateClient("MapsCdaService");
-            client.BaseAddress = new Uri(_mapsCdaServiceEndpoint);
+            var client = _httpClientFactory.CreateClient(HttpClientNames.MapsCdaService);
 
             var payload = JsonSerializer.Serialize(request);
             var content = new StringContent(payload, Encoding.UTF8, "application/json");
-            var endPoint = $"rqp";
 
-            var responseMaPSCDA = await client!.PostAsync(endPoint, content);
+            var responseMaPSCDA = await client!.PostAsync(HttpEndpoints.Internal.Rqp, content);
 
             var result = await responseMaPSCDA.Content.ReadFromJsonAsync<MapsRqpServiceResponseModel>();
 

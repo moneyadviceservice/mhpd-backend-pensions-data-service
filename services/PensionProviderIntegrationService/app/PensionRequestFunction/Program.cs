@@ -1,11 +1,13 @@
 using System.Diagnostics.CodeAnalysis;
+using MhpdCommon.Extensions;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PensionRequestFunction.HttpClient;
 using PensionRequestFunction.HttpClient.Implementation;
 using PensionRequestFunction.HttpClient.Interfaces;
+using PensionRequestFunction.Orchestration;
+using PensionRequestFunction.Transformer;
 
 var host = new HostBuilder()
     .ConfigureFunctionsWebApplication()
@@ -14,13 +16,16 @@ var host = new HostBuilder()
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
         services.AddHttpClient();
-        services.AddAzureClients(builder =>
-        {
-            builder.AddServiceBusClient(Environment.GetEnvironmentVariable("connectionstring"));
-        });
-        services.AddSingleton<IPDPViewDataClient, PDPViewDataClient>();
-        services.AddSingleton<IMapsRqpServiceClient, MapsCdaServiceClient>();
-        services.AddSingleton<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();        
+        //services.AddMhpdCosmosDb();
+        services.AddMhpdUtilities();
+        services.AddMhpdServiceBusTools();
+        services.AddMhpdHttpClients();
+        services.AddTransient<IPdpViewDataClient, PdpViewDataClient>();
+        services.AddTransient<IMapsCdaServiceClient, MapsCdaServiceClient>();
+        services.AddTransient<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
+        services.AddTransient<IHolderNameClient, HolderNameClient>();
+        services.AddTransient<IViewDataOrchestrator, ViewDataOrchestrator>();
+        services.AddTransient<IVewDataToPensionArrangementTransformer, ViewDataToPensionArrangementTransformer>();
     })
     .Build();
 

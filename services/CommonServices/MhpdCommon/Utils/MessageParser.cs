@@ -18,6 +18,11 @@ public class MessageParser : IMessageParser
         return Parse<PensionRetrievalPayload>(message, FileConstants.PensionsRetrievalPayloadSchema);
     }
 
+    public PensionRequestPayload? ToPensionRequestPayload(string message)
+    {
+        return Parse<PensionRequestPayload>(message, FileConstants.PensionDetailsRequestPayloadSchema);
+    }
+
     private static TPayload? Parse<TPayload>(string messageContent, string schemaName)
     {
         var schemaData = ResourceProvider.GetString(schemaName);

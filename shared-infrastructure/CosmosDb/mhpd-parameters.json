@@ -14,6 +14,9 @@
         "mhpdRetrievalContainerName": {
             "value": "mhpdPensionsRetrievalRecords"
         },
+		"mhpdholdernameContainerName": {
+            "value": "mhpdholderNameViewConfigurationData"
+        },
         "throughput": {
             "value": 400
         }

@@ -12,15 +12,19 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var validJson = GetViewDataPayload();
 
         // Act
-        var result = _transformer.Transform(externalAssetId, validJson);
+        var result = _transformer.Transform(externalAssetId, validJson, pei, retrievalRecordId);
 
         // Assert
         Assert.NotNull(result);
         Assert.Contains("Your Pension DC Master Trust", result);
         Assert.Contains(externalAssetId, result);
+        Assert.Contains(pei, result);
+        Assert.Contains(retrievalRecordId, result);
     }
 
     [Fact]
@@ -28,10 +32,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var emptyJson = string.Empty;
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, emptyJson));
+        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, emptyJson, pei, retrievalRecordId));
         Assert.Equal("No arrangements present", ex.Message);
     }
 
@@ -40,10 +46,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var invalidExternalAssetId = "invalid-guid";
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var validJson = GetViewDataPayload();
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => _transformer.Transform(invalidExternalAssetId, validJson));
+        var ex = Assert.Throws<Exception>(() => _transformer.Transform(invalidExternalAssetId, validJson, pei, retrievalRecordId));
         Assert.Equal("Invalid externalAssetId. It must be a valid GUID.", ex.Message);
     }
 
@@ -52,10 +60,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var nullArrangementsJson = "{\"arrangements\": null}";
 
         // Act & Assert
-        var ex = Assert.Throws<JsonException>(() => _transformer.Transform(externalAssetId, nullArrangementsJson));
+        var ex = Assert.Throws<JsonException>(() => _transformer.Transform(externalAssetId, nullArrangementsJson, pei, retrievalRecordId));
         Assert.Equal("The payload either lacks the 'arrangements' property, or the property is not a valid array.", ex.Message);
     }
 
@@ -64,10 +74,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var emptyArrangementsJson = "{\"arrangements\": []}";
 
         // Act & Assert
-        var ex = Assert.Throws<JsonException>(() => _transformer.Transform(externalAssetId, emptyArrangementsJson));
+        var ex = Assert.Throws<JsonException>(() => _transformer.Transform(externalAssetId, emptyArrangementsJson, pei, retrievalRecordId));
         Assert.Equal("The payload either lacks the 'arrangements' property, or the property is not a valid array.", ex.Message);
     }
 
@@ -76,10 +88,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var jsonWithAlternateSchemeNames = GetModifiedViewDataPayload();
 
         // Act
-        var result = _transformer.Transform(externalAssetId, jsonWithAlternateSchemeNames);
+        var result = _transformer.Transform(externalAssetId, jsonWithAlternateSchemeNames, pei, retrievalRecordId);
 
         // Assert
         Assert.NotNull(result);
@@ -91,10 +105,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var jsonMissingRetirementDate = "{\"arrangements\": [{\"pensionProviderSchemeName\": \"Test Scheme\"}]}";
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, jsonMissingRetirementDate));
+        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, jsonMissingRetirementDate, pei, retrievalRecordId));
         Assert.Equal("MatchType not found", ex.Message);
     }
 
@@ -103,10 +119,12 @@ public class ViewDataToPensionArrangementTransformerTests
     {
         // Arrange
         var externalAssetId = Guid.NewGuid().ToString();
+        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
+        var retrievalRecordId = Guid.NewGuid().ToString();
         var jsonMissingMatchType = "{\"arrangements\": [{\"pensionProviderSchemeName\": \"Test Scheme\", \"retirementDate\": \"2025-01-01\"}]}";
 
         // Act & Assert
-        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, jsonMissingMatchType));
+        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, jsonMissingMatchType, pei, retrievalRecordId));
         Assert.Equal("MatchType not found", ex.Message);
     }
     

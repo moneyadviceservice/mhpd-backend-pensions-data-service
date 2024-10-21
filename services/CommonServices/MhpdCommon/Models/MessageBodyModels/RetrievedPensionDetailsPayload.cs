@@ -1,5 +1,4 @@
-﻿using MhpdCommon.Models.MHPDModels;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace MhpdCommon.Models.MessageBodyModels;
 
@@ -11,7 +10,6 @@ public class RetrievedPensionDetailsPayload
     [JsonPropertyName("pei")]
     public string? Pei { get; set; }
 
-    [JsonPropertyName("retrievedPensionArrangements")]
-    public List<PensionArrangement>? PensionArrangements { get; set; }
-
+    [JsonPropertyName("retrievalResult")]
+    public dynamic? RetrievalResult { get; set; }
 }

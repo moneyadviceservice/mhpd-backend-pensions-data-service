@@ -50,7 +50,7 @@ public partial class TokenUtility : ITokenUtility
         // Step 5: Define JWT claims
         var claims = new[]
         {
-            new Claim(QueryParams.PeisId, peisId),  // Custom claim for peis_id
+            new Claim(QueryParams.Cda.Token.PeisId, peisId),  // Custom claim for peis_id
             new Claim(JwtRegisteredClaimNames.Sub, subject),
             new Claim(JwtRegisteredClaimNames.Iss, issuer),
             new Claim(JwtRegisteredClaimNames.Aud, audience),
@@ -134,5 +134,25 @@ public partial class TokenUtility : ITokenUtility
 
         // Check if the code verifier matches the length requirements and regex pattern
         return CodeVerifierPattern().IsMatch(codeVerifier);
+    }
+
+    public string? RetrieveClaim(string token, string requiredClaimName)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        try
+        {
+            var jsonToken = handler.ReadToken(token) as JwtSecurityToken;
+
+            if (jsonToken!.Claims.FirstOrDefault(claim => claim.Type == requiredClaimName) != null)
+            {
+                return jsonToken!.Claims.First(claim => claim.Type == requiredClaimName).Value;
+            }
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+
+        return null;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
@@ -25,6 +26,7 @@ public class ServiceCollectionExtensionTests
         //Assert
         _serviceCollectionMock.ContainsScopedService<IIdValidator, IdValidator>();
         _serviceCollectionMock.ContainsScopedService<IMessageParser, MessageParser>();
+        _serviceCollectionMock.ContainsScopedService<ITokenUtility, TokenUtility>();
     }
 
     [Fact]
@@ -67,5 +69,39 @@ public class ServiceCollectionExtensionTests
         Assert.NotNull(config);
 
         _serviceCollectionMock.ContainsScopedService<IMessagingService, MessagingService>();
+    }
+
+    [Fact]
+    public void WhenServiceCollection_AddsMhpdHttpClients_ClientIsRegistered()
+    {
+        //Arrange
+        const string cdaEmulatorUrl = "https://cda.emulator.net";
+        const string tokenIntegrationUrl = "http://integration.token.com";
+        const string retrievalUrl = "https://retrieve.pensions.gov";
+
+        var serviceCollection = new ServiceCollection();
+        Environment.SetEnvironmentVariable(HttpClientUrlVariables.CdaServiceUrl, cdaEmulatorUrl);
+        Environment.SetEnvironmentVariable(HttpClientUrlVariables.TokenIntegrationServiceUrl, tokenIntegrationUrl);
+        Environment.SetEnvironmentVariable(HttpClientUrlVariables.PensionRetrievalServiceUrl, retrievalUrl);
+
+        //Act
+        serviceCollection.AddMhpdHttpClients();
+
+        var provider = serviceCollection.BuildServiceProvider();
+        var factory = provider.GetRequiredService<IHttpClientFactory>();
+        var cdaEmulatorClient = factory.CreateClient(HttpClientNames.CdaService);
+        var tokenClient = factory.CreateClient(HttpClientNames.TokenIntegrationService);
+        var mapsCdaClient = factory.CreateClient(HttpClientNames.MapsCdaService);
+        var retrievalClient = factory.CreateClient(HttpClientNames.PensionRetrievalService);
+        var retrievedClient = factory.CreateClient(HttpClientNames.RetrievedPensionsService);
+        var config = provider.GetRequiredService(typeof(IOptions<CommonHttpConfiguration>));
+
+        //Assert
+        Assert.Equal(cdaEmulatorUrl, cdaEmulatorClient!.BaseAddress!.OriginalString);
+        Assert.Equal(tokenIntegrationUrl, tokenClient!.BaseAddress!.OriginalString);
+        Assert.Equal(retrievalUrl, retrievalClient!.BaseAddress!.OriginalString);
+        Assert.Null(retrievedClient!.BaseAddress);
+        Assert.Null(mapsCdaClient!.BaseAddress);
+        Assert.NotNull(config);
     }
 }

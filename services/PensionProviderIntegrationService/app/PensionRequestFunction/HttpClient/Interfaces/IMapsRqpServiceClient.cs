@@ -2,8 +2,8 @@
 
 namespace PensionRequestFunction.HttpClient.Interfaces
 {
-    public interface IMapsRqpServiceClient
+    public interface IMapsCdaServiceClient
     {
-        Task<MapsRqpServiceResponseModel> PostRqp(MapsRqpServiceRequestModel request);
+        Task<MapsRqpServiceResponseModel> PostRqpAsync(MapsRqpServiceRequestModel request);
     }
 }

@@ -1,10 +1,8 @@
-﻿namespace PensionRequestFunction.Models.CdaPeisServiceClient
+﻿namespace PensionRequestFunction.Models.CdaPeisServiceClient;
+
+public class PdpServiceResponseModel
 {
-    public class PDPServiceResponseModel
-    {
-        public string? ViewDataToken { get; set; }
+    public string? ViewDataToken { get; set; }
 
-        public ResponseMessage? ResponseMessage { get; set; }        
-
-    }
+    public ResponseMessage ResponseMessage { get; set; } = new ResponseMessage();
 }

@@ -134,14 +134,10 @@
             ],
             "excludedPaths": [
               {
-                "path": "/myPathToNotIndex/*"
-              },
-              {
                 "path": "/_etag/?"
               }
             ]
-          },
-          "defaultTtl": 86400
+          }
         },
         "options": {
           "throughput": "[parameters('throughput')]"

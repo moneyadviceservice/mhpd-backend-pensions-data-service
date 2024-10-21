@@ -1,4 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
+using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Cosmos;
@@ -13,6 +14,7 @@ namespace MhpdCommon.Extensions
         {
             services.AddScoped<IIdValidator, IdValidator>();
             services.AddScoped<IMessageParser, MessageParser>();
+            services.AddScoped<ITokenUtility, TokenUtility>();
 
             return services;
         }
@@ -55,6 +57,43 @@ namespace MhpdCommon.Extensions
             }).ValidateOnStart();
 
             services.AddScoped<IMessagingService, MessagingService>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddMhpdHttpClients(this IServiceCollection services)
+        {
+            AddMhpdHttpClient(services, HttpClientNames.MapsCdaService, HttpClientUrlVariables.MapsCdaServiceUrl);
+            AddMhpdHttpClient(services, HttpClientNames.TokenIntegrationService, HttpClientUrlVariables.TokenIntegrationServiceUrl);
+            AddMhpdHttpClient(services, HttpClientNames.CdaService, HttpClientUrlVariables.CdaServiceUrl);
+            AddMhpdHttpClient(services, HttpClientNames.PensionRetrievalService, HttpClientUrlVariables.PensionRetrievalServiceUrl);
+            AddMhpdHttpClient(services, HttpClientNames.RetrievedPensionsService, HttpClientUrlVariables.RetrievedPensionsServiceUrl);
+            AddMhpdHttpClient(services, HttpClientNames.PeiIntegrationService, HttpClientUrlVariables.PeiIntegrationServiceUrl);
+
+            services.AddOptions<CommonHttpConfiguration>().Configure(option =>
+            {
+                option.MapsCdaServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.MapsCdaServiceUrl);
+                option.TokenIntegrationServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.TokenIntegrationServiceUrl);
+                option.CdaServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.CdaServiceUrl);
+                option.PensionRetrievalServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.PensionRetrievalServiceUrl);
+                option.RetrievedPensionsServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.RetrievedPensionsServiceUrl);
+                option.PeiIntegrationServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.PeiIntegrationServiceUrl);
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddMhpdHttpClient(IServiceCollection services, string serviceName, string serviceUrlVariable)
+        {
+            var serviceUrl = Environment.GetEnvironmentVariable(serviceUrlVariable);
+
+            if (serviceUrl == null) return services;
+
+            services.AddHttpClient(serviceName, client =>
+            {
+                client.BaseAddress = new Uri(serviceUrl);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
 
             return services;
         }

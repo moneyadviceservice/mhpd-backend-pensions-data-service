@@ -2,9 +2,13 @@ namespace MhpdCommon.Constants.HttpClient;
 
 public static class HttpClientNames
 {
-    public const string CdaService = "CdaService";
+    //Internal
     public const string MapsCdaService = "MapsCdaService";
     public const string TokenIntegrationService = "TokenIntegrationService";
-    public const string PdpViewDataEmulator = "PdpViewDataEmulator";
-    public const string RetrievalRecordFunction = "RetrievalRecordFunction";
+    public const string PensionRetrievalService = "PensionRetrievalService";
+    public const string RetrievedPensionsService = "RetrievedPensionsService";
+    public const string PeiIntegrationService = "PeiIntegrationService";
+
+    //External
+    public const string CdaService = "CdaService";
 }

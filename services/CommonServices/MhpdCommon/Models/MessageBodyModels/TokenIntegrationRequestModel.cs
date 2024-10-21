@@ -9,6 +9,6 @@ public class TokenIntegrationRequestModel
 
     public string? Ticket { get; set; }    
 
-    [JsonPropertyName(QueryParams.AsUri)]
+    [JsonPropertyName(QueryParams.Cda.Token.AsUri)]
     public string? AsUri{ get; set; }
 }

@@ -10,7 +10,7 @@ public class MessagingService(ServiceBusClient serviceBusClient) : IMessagingSer
     public async Task SendMessageAsync<T>(T message, string queue, string? correlationId = null)
     {
         var sender = _serviceBusClient.CreateSender(queue);
-        var jsonMessage = JsonSerializer.Serialize(message);
+        var jsonMessage = message is string ? message.ToString() : JsonSerializer.Serialize(message);
         ServiceBusMessage busMessage = new(jsonMessage);
         
         if (!string.IsNullOrEmpty(correlationId))

@@ -4,6 +4,6 @@ namespace PensionRequestFunction.HttpClient.Interfaces
 {
     public interface ITokenIntegrationServiceClient
     {
-        public Task<TokenIntegrationResponseModel> PostRpt(TokenIntegrationServiceRequestModel request);
+        public Task<TokenIntegrationResponseModel> PostRptAsync(TokenIntegrationServiceRequestModel request);
     }
 }

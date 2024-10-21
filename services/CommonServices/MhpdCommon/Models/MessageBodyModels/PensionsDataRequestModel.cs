@@ -5,12 +5,12 @@ namespace MhpdCommon.Models.MessageBodyModels;
 
 public class PensionsDataRequestModel
 {
-    [JsonPropertyName(QueryParams.AuthorisationCode)]
+    [JsonPropertyName(QueryParams.Cda.Token.AuthorisationCode)]
     public string? AuthorisationCode { get; set; }
     
-    [JsonPropertyName(QueryParams.RedirectUri)]
+    [JsonPropertyName(QueryParams.Cda.Token.RedirectUri)]
     public string? RedirectUri { get; set; }
     
-    [JsonPropertyName(QueryParams.CodeVerifier)]
+    [JsonPropertyName(QueryParams.Cda.Token.CodeVerifier)]
     public string? CodeVerifier { get; set; }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
+using MhpdCommon.Constants.HttpClient;
 using Moq;
 using Moq.Protected;
 using PeiIntegrationService.HttpClients.Implementation;
@@ -10,19 +10,13 @@ namespace PeiIntegrationService.UnitTests
 {
     public class MapsCdaServiceClientUnitTests
     {
-        private MapsCdaServiceClient _sut;
+        private readonly MapsCdaServiceClient _sut;
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
         private readonly Mock<HttpMessageHandler> _handlerMoq = new();
-        private readonly IConfiguration _configuration;
 
         public MapsCdaServiceClientUnitTests()
         {
-            _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-               .Build();
-            _configuration["MapsCdaServiceEndpoint"] = "http://localhost:1234";
-
-            _sut = new MapsCdaServiceClient(_httpClientFactoryMock.Object, _configuration!);
+            _sut = new MapsCdaServiceClient(_httpClientFactoryMock.Object);
         }
 
         [Fact]
@@ -53,10 +47,10 @@ namespace PeiIntegrationService.UnitTests
                  ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(httpResponse);
 
-            _httpClientFactoryMock.Setup(x => x.CreateClient("MapsCdaService"))
-                .Returns(new System.Net.Http.HttpClient(_handlerMoq.Object)
+            _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.MapsCdaService))
+                .Returns(new HttpClient(_handlerMoq.Object)
                 {
-                    BaseAddress = new Uri(_configuration["MapsCdaServiceEndpoint"]!)
+                    BaseAddress = new Uri("http://localhost:1234"!)
                 });
 
             // Act

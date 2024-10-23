@@ -1,9 +1,12 @@
 ﻿using Azure.Messaging.ServiceBus;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 namespace MhpdCommon.Extensions
 {
@@ -20,40 +23,51 @@ namespace MhpdCommon.Extensions
         }
 
         public static IServiceCollection AddMhpdCosmosDb(
-            this IServiceCollection services)
+            this IServiceCollection services, IConfiguration? configuration = null)
         {
-            services.AddSingleton<CosmosClient>(provider =>
+            configuration = GetConfiguration(services, configuration);
+
+            services.AddSingleton(provider =>
             {
-                var connString = Environment.GetEnvironmentVariable(CommonCosmosConfiguration.ConnectionStringVariable);
+                var connString = configuration[CommonCosmosConfiguration.ConnectionStringVariable];
+
+                JsonSerializerOptions jsonSerializerOptions = new()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    WriteIndented = true
+                };
+
                 var options = new CosmosClientOptions
                 {
-                    SerializerOptions = new CosmosSerializationOptions { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase },
+                    Serializer = new MhpdCosmosSerializer(jsonSerializerOptions)
                 };
                 return new CosmosClient(connString, options);
             });
 
             services.AddOptions<CommonCosmosConfiguration>().Configure(option =>
             {
-                option.DatabaseId = Environment.GetEnvironmentVariable(CommonCosmosConfiguration.DatabaseVariable);
-                option.ContainerId = Environment.GetEnvironmentVariable(CommonCosmosConfiguration.ContainerVariable);
-                option.ContainerPartitionKey = Environment.GetEnvironmentVariable(CommonCosmosConfiguration.PartitionVariable);
+                option.DatabaseId = configuration[CommonCosmosConfiguration.DatabaseVariable];
+                option.ContainerId = configuration[CommonCosmosConfiguration.ContainerVariable];
+                option.ContainerPartitionKey = configuration[CommonCosmosConfiguration.PartitionVariable];
             }).ValidateOnStart();
 
             return services;
         }
 
-        public static IServiceCollection AddMhpdServiceBusTools(this IServiceCollection services)
+        public static IServiceCollection AddMhpdServiceBusTools(this IServiceCollection services, IConfiguration? configuration = null)
         {
+            configuration = GetConfiguration(services, configuration);
+
             services.AddSingleton(sp =>
             {
-                var connectionString = Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.ConnectionStringVariable);
+                var connectionString = configuration[CommonServiceBusConfiguration.ConnectionStringVariable];
                 return new ServiceBusClient(connectionString);
             });
 
             services.AddOptions<CommonServiceBusConfiguration>().Configure(option =>
             {
-                option.InboundQueue = Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.InboundQueueVariable);
-                option.OutboundQueue = Environment.GetEnvironmentVariable(CommonServiceBusConfiguration.OutboundQueueVariable);
+                option.InboundQueue = configuration[CommonServiceBusConfiguration.InboundQueueVariable];
+                option.OutboundQueue = configuration[CommonServiceBusConfiguration.OutboundQueueVariable];
             }).ValidateOnStart();
 
             services.AddScoped<IMessagingService, MessagingService>();
@@ -61,31 +75,33 @@ namespace MhpdCommon.Extensions
             return services;
         }
 
-        public static IServiceCollection AddMhpdHttpClients(this IServiceCollection services)
+        public static IServiceCollection AddMhpdHttpClients(this IServiceCollection services, IConfiguration? configuration = null)
         {
-            AddMhpdHttpClient(services, HttpClientNames.MapsCdaService, HttpClientUrlVariables.MapsCdaServiceUrl);
-            AddMhpdHttpClient(services, HttpClientNames.TokenIntegrationService, HttpClientUrlVariables.TokenIntegrationServiceUrl);
-            AddMhpdHttpClient(services, HttpClientNames.CdaService, HttpClientUrlVariables.CdaServiceUrl);
-            AddMhpdHttpClient(services, HttpClientNames.PensionRetrievalService, HttpClientUrlVariables.PensionRetrievalServiceUrl);
-            AddMhpdHttpClient(services, HttpClientNames.RetrievedPensionsService, HttpClientUrlVariables.RetrievedPensionsServiceUrl);
-            AddMhpdHttpClient(services, HttpClientNames.PeiIntegrationService, HttpClientUrlVariables.PeiIntegrationServiceUrl);
+            configuration = GetConfiguration(services, configuration);
+
+            AddMhpdHttpClient(services, configuration, HttpClientNames.MapsCdaService, HttpClientUrlVariables.MapsCdaServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.TokenIntegrationService, HttpClientUrlVariables.TokenIntegrationServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.CdaService, HttpClientUrlVariables.CdaServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.PensionRetrievalService, HttpClientUrlVariables.PensionRetrievalServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.RetrievedPensionsService, HttpClientUrlVariables.RetrievedPensionsServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.PeiIntegrationService, HttpClientUrlVariables.PeiIntegrationServiceUrl);
 
             services.AddOptions<CommonHttpConfiguration>().Configure(option =>
             {
-                option.MapsCdaServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.MapsCdaServiceUrl);
-                option.TokenIntegrationServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.TokenIntegrationServiceUrl);
-                option.CdaServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.CdaServiceUrl);
-                option.PensionRetrievalServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.PensionRetrievalServiceUrl);
-                option.RetrievedPensionsServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.RetrievedPensionsServiceUrl);
-                option.PeiIntegrationServiceUrl = Environment.GetEnvironmentVariable(HttpClientUrlVariables.PeiIntegrationServiceUrl);
+                option.MapsCdaServiceUrl = configuration[HttpClientUrlVariables.MapsCdaServiceUrl];
+                option.TokenIntegrationServiceUrl = configuration[HttpClientUrlVariables.TokenIntegrationServiceUrl];
+                option.CdaServiceUrl = configuration[HttpClientUrlVariables.CdaServiceUrl];
+                option.PensionRetrievalServiceUrl = configuration[HttpClientUrlVariables.PensionRetrievalServiceUrl];
+                option.RetrievedPensionsServiceUrl = configuration[HttpClientUrlVariables.RetrievedPensionsServiceUrl];
+                option.PeiIntegrationServiceUrl = configuration[HttpClientUrlVariables.PeiIntegrationServiceUrl];
             });
 
             return services;
         }
 
-        public static IServiceCollection AddMhpdHttpClient(IServiceCollection services, string serviceName, string serviceUrlVariable)
+        public static IServiceCollection AddMhpdHttpClient(IServiceCollection services, IConfiguration configuration, string serviceName, string serviceUrlVariable)
         {
-            var serviceUrl = Environment.GetEnvironmentVariable(serviceUrlVariable);
+            var serviceUrl = configuration[serviceUrlVariable];
 
             if (serviceUrl == null) return services;
 
@@ -96,6 +112,14 @@ namespace MhpdCommon.Extensions
             });
 
             return services;
+        }
+
+        private static IConfiguration GetConfiguration(IServiceCollection services, IConfiguration? configuration)
+        {
+            if (configuration != null) return configuration;
+
+            var serviceProvider = services.BuildServiceProvider();
+            return serviceProvider.GetRequiredService<IConfiguration>();
         }
     }
 }

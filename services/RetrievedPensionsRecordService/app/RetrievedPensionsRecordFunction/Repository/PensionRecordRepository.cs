@@ -1,9 +1,9 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using RetrievedPensionsRecordFunction.Models;
 using System.Net;
 
 namespace RetrievedPensionsRecordFunction.Repository;
@@ -39,10 +39,7 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
             CorrelationId = correlationId,
             Pei = payload.Pei,
             PensionsRetrievalRecordId = payload.PensionRetrievalRecordId,
-            RetrievalResult = new RetrievalResult
-            {
-                PensionArrangements = payload.PensionArrangements
-            }
+            RetrievalResult = payload.RetrievalResult
         };
 
         Container container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);

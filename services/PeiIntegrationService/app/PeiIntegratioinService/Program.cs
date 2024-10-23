@@ -8,10 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // add appsettings.json
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-
-builder.Services.AddHttpClient<CdaPiesServiceClient>("CdaPiesService", c => { });
-builder.Services.AddHttpClient<MapsCdaServiceClient>("MapsCdaService", c => { });
-builder.Services.AddHttpClient<MapsCdaServiceClient>("TokenIntegrationService", c => { });
+builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
 builder.Services.AddTransient<ICdaPiesServiceClient, CdaPiesServiceClient>();
@@ -19,7 +16,7 @@ builder.Services.AddTransient<IMapsRqpServiceClient, MapsCdaServiceClient>();
 builder.Services.AddTransient<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
 
 builder.Services.AddMhpdUtilities();
-
+builder.Services.AddMhpdHttpClients(builder.Configuration);
 builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -40,7 +40,7 @@ public class RetrievalFunctionTests
         var error = new AggregateException(new Exception("Bad Data"));
         _messageParseMock.Setup(x => x.ToPensionRetrievalPayload(It.IsAny<string>())).Throws(error);
 
-        _orchestratorMock.Setup(mock => mock.RunAsync(It.IsAny<PensionRetrievalPayload>())).Verifiable();
+        _orchestratorMock.Setup(mock => mock.RunAsync(It.IsAny<PensionRetrievalPayload>(), It.IsAny<string>())).Verifiable();
 
         _integrationServiceClientMock = new Mock<IPeiIntegrationOrchestrator>();
 

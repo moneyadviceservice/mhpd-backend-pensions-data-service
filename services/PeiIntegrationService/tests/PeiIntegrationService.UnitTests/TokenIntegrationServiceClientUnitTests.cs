@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
+using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.Configuration;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using PeiIntegrationService.HttpClients.Implementation;
@@ -10,20 +12,20 @@ namespace PeiIntegrationService.UnitTests
 {
     public class TokenIntegrationServiceClientUnitTests
     {
-        private TokenIntegrationServiceClient _sut;
-        private readonly IConfiguration _configuration;
+        private readonly TokenIntegrationServiceClient _sut;
         private readonly Mock<HttpMessageHandler> _handlerMoq = new();
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
 
         public TokenIntegrationServiceClientUnitTests()
         {
-            _configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
-            _configuration["CdaTokenServicesEndpoint"] = "http://localhost:9876";
-            _configuration["TokenIntegrationServiceEndpoint"] = "http://localhost:1234";
+            var config = new CommonHttpConfiguration
+            {
+                CdaServiceUrl = "https://cda.service.com"
+            };
 
-            _sut = new TokenIntegrationServiceClient(_httpClientFactoryMock.Object, _configuration!);
+            var options = Options.Create(config);
+
+            _sut = new TokenIntegrationServiceClient(_httpClientFactoryMock.Object, options);
         }
 
         [Fact]
@@ -55,10 +57,10 @@ namespace PeiIntegrationService.UnitTests
                  ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(httpResponse);
 
-            _httpClientFactoryMock.Setup(x => x.CreateClient("TokenIntegrationService"))
+            _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.TokenIntegrationService))
                 .Returns(new HttpClient(_handlerMoq.Object)
                 {
-                    BaseAddress = new Uri(_configuration["TokenIntegrationServiceEndpoint"]!)
+                    BaseAddress = new Uri("http://localhost:1234")
                 });
 
             // Act

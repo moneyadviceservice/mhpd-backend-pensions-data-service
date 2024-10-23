@@ -10,18 +10,21 @@ using Polly;
 
 namespace PensionsRetrievalFunction.Orchestration;
 
-public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> sbOptions, IOptions<MhpdApiConfiguration> apiOptions,
-    IMessagingService messagingService, IPeiServiceClient client, IPensionRetrievalRepository repository,
+public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> sbOptions, 
+    IOptions<PeiOrchestrationSettings> peiOptions,
+    IMessagingService messagingService, 
+    IPeiServiceClient client, 
+    IPensionRetrievalRepository repository,
     ILogger<PeiIntegrationOrchestrator> logger) : IPeiIntegrationOrchestrator
 {
     private readonly CommonServiceBusConfiguration _serviceBusConfiguration = sbOptions.Value;
-    private readonly MhpdApiConfiguration _apiConfiguration = apiOptions.Value;
+    private readonly PeiOrchestrationSettings _settings = peiOptions.Value;
     private readonly IMessagingService _messagingService = messagingService;
     private readonly IPensionRetrievalRepository _repository = repository;
     private readonly IPeiServiceClient _client = client;
     private readonly ILogger<PeiIntegrationOrchestrator> _logger = logger;
 
-    public async Task RunAsync(PensionRetrievalPayload payload)
+    public async Task RunAsync(PensionRetrievalPayload payload, string correlationId)
     {
         var record = await _repository.CreateRecordIfNotExistsAsync(payload);
         if (record == null)
@@ -41,10 +44,10 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
         var retryPolicy = Policy
             .HandleResult(retryCondition)
             .WaitAndRetryAsync(
-                retryCount: _apiConfiguration.RetryLimit,
+                retryCount: _settings.RetryLimit,
                 sleepDurationProvider: retryAttempt =>
                 {
-                    return TimeSpan.FromSeconds(_apiConfiguration.PeiRetryInterval);
+                    return TimeSpan.FromSeconds(_settings.PeiRetryInterval);
                 },
                 onRetry: (outcome, lapse, attemptCount, context) =>
                 {
@@ -69,7 +72,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
                         var message = CreateRequestPayload(pei, record);
                         _logger.LogInformation("Pension details request sent for PEI {pei} with retrieval Id {id}"
                             , message.Pei, message.PensionRetrievalRecordId);
-                        await _messagingService.SendMessageAsync(message, _serviceBusConfiguration.OutboundQueue!);
+                        await _messagingService.SendMessageAsync(message, _serviceBusConfiguration.OutboundQueue!, correlationId);
 
                         record.PeiData.Add(pei);
                         await _repository.UpdatePensionsRetrievalRecordAsync(record);

@@ -44,9 +44,9 @@
 				"description": "The name for the container"
 			}
 		},
-		"mhpdholdernameContainerName": {
+		"mhpdholderNameContainerName": {
 			"type": "string",
-			"defaultValue": "mhpdholdernameViewConfigurationData",
+			"defaultValue": "mhpdholderNameViewConfigurationData",
 			"metadata": {
 				"description": "The name for the container"
 			}
@@ -173,15 +173,24 @@
 		{
 			"type": "Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers",
 			"apiVersion": "2023-04-15",
-			"name": "[concat(parameters('cosmosDbAccountName'), '/', parameters('databaseName'), '/', parameters('mhpdholdernameContainerName'))]",
+			"name": "[concat(parameters('cosmosDbAccountName'), '/', parameters('databaseName'), '/', parameters('mhpdholderNameContainerName'))]",
 			"properties": {
 				"resource": {
-					"id": "[parameters('mhpdholdernameContainerName')]",
+					"id": "[parameters('mhpdholderNameContainerName')]",
 					"partitionKey": {
 						"paths": [
 							"/holdernameGuid"
 						],
 						"kind": "Hash"
+					},
+					"uniqueKeyPolicy": {
+						"uniqueKeys": [
+							{
+								"paths": [
+									"/holdernameGuid"
+								]
+							}
+						]
 					},
 					"indexingPolicy": {
 						"indexingMode": "consistent",

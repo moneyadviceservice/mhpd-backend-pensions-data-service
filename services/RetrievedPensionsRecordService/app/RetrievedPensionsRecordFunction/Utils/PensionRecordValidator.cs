@@ -27,12 +27,6 @@ public class PensionRecordValidator(IIdValidator idValidator) : IPensionRecordVa
             return false;
         }
 
-        if (payload.PensionArrangements?.Count == 0)
-        {
-            reason = "Missing pension arrangements";
-            return false;
-        }
-
         reason = string.Empty;
         return true;
     }

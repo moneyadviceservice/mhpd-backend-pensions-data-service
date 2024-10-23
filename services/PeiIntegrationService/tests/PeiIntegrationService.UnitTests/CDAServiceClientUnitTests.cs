@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using Microsoft.Extensions.Configuration;
+using MhpdCommon.Constants.HttpClient;
 using Moq;
 using Moq.Protected;
 using PeiIntegrationService.HttpClients.Implementation;
@@ -11,19 +11,13 @@ namespace PeiIntegrationService.UnitTests;
 
 public class CDAPiesServiceClientUnitTests
 {
-    private CdaPiesServiceClient _sut;
-    private readonly IConfiguration _configuration;
+    private readonly CdaPiesServiceClient _sut;
     private readonly Mock<HttpMessageHandler> _handlerMoq = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
 
     public CDAPiesServiceClientUnitTests()
     {
-        _configuration = new ConfigurationBuilder()
-                        .AddJsonFile("appsettings.json")
-                       .Build();
-        _configuration["CdaPeisServiceEndpoint"] = "http://localhost:1234";
-
-        _sut = new CdaPiesServiceClient(_httpClientFactoryMock.Object, _configuration);
+        _sut = new CdaPiesServiceClient(_httpClientFactoryMock.Object);
     }
 
     [Fact]
@@ -62,10 +56,10 @@ public class CDAPiesServiceClientUnitTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(httpResponse);
 
-        _httpClientFactoryMock.Setup(x => x.CreateClient("CdaPiesService"))
+        _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.CdaService))
             .Returns(new HttpClient(_handlerMoq.Object)
             {
-                BaseAddress = new Uri(_configuration["CdaPeisServiceEndpoint"]!)
+                BaseAddress = new Uri("http://localhost:1234")
             });
 
         var result = await _sut.GetPiesAsync(request);

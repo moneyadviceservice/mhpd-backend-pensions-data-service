@@ -14,7 +14,7 @@ public class PensionRecordValidatorTests
     }
 
     [Theory]
-    [InlineData("EmptyArrangementsPayload.json", false)]
+    [InlineData("EmptyArrangementsPayload.json", true)]
     [InlineData("EmptyGuidRecordIdPayload.json", false)]
     [InlineData("InvalidPeiPatternPayload.json", false)]
     [InlineData("ValidRetrievedPensionPayload.json", true)]

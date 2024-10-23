@@ -91,8 +91,8 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
 
     private async Task<TokenIntegrationResponseModel> CallTokenIntegrationService(CdaPiesServiceResponseModel cdaServiceResponseModel, MapsRqpServiceResponseModel mapsCdaServiceResponseModel)
     {
-        var ticketValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, Constants.Headers.AuthenticateTicket);
-        var asUriValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, Constants.Headers.AuthenticateUri);
+        var ticketValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
+        var asUriValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
 
         var tokenIntegrationServiceRequestModel = new TokenIntegrationServiceRequestModel
         {

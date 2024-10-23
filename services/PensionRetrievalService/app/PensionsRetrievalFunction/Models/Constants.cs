@@ -2,8 +2,6 @@
 
 public static class Constants
 {
-    internal const string PeiDataEndpoint = "peis";
-
     internal static class RetrievalStatus
     {
         internal const string New = "NEW";

@@ -4,8 +4,10 @@ using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace MhpdCommonTests.Extensions;
 public class ServiceCollectionExtensionTests
@@ -33,8 +35,11 @@ public class ServiceCollectionExtensionTests
     public void WhenServiceCollection_AddsMhpdCosmosDb_ClientIsRegistered()
     {
         //Arrange
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.Setup(x => x[CommonCosmosConfiguration.ConnectionStringVariable]).Returns("AccountEndpoint=https://localhost/;AccountKey=test");
+
         var serviceCollection = new ServiceCollection();
-        Environment.SetEnvironmentVariable(CommonCosmosConfiguration.ConnectionStringVariable, "AccountEndpoint=https://localhost/;AccountKey=test");
+        serviceCollection.AddSingleton(mockConfiguration.Object);
 
         //Act
         serviceCollection.AddMhpdCosmosDb();
@@ -52,12 +57,15 @@ public class ServiceCollectionExtensionTests
     public void WhenServiceCollection_AddsServiceBusTools_ClientIsRegistered()
     {
         //Arrange
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.Setup(x => x[CommonServiceBusConfiguration.ConnectionStringVariable])
+            .Returns("Endpoint=sb://mhpd.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=K@y");
+
         var serviceCollection = new ServiceCollection();
-        Environment.SetEnvironmentVariable(CommonServiceBusConfiguration.ConnectionStringVariable, 
-            "Endpoint=sb://mhpd.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=K@y");
+        serviceCollection.AddSingleton(mockConfiguration.Object);
 
         //Act
-        _serviceCollectionMock.ServiceCollection.AddMhpdServiceBusTools();
+        _serviceCollectionMock.ServiceCollection.AddMhpdServiceBusTools(mockConfiguration.Object);
         serviceCollection.AddMhpdServiceBusTools();
 
         //Assert
@@ -79,13 +87,15 @@ public class ServiceCollectionExtensionTests
         const string tokenIntegrationUrl = "http://integration.token.com";
         const string retrievalUrl = "https://retrieve.pensions.gov";
 
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration.Setup(x => x[HttpClientUrlVariables.CdaServiceUrl]).Returns(cdaEmulatorUrl);
+        mockConfiguration.Setup(x => x[HttpClientUrlVariables.TokenIntegrationServiceUrl]).Returns(tokenIntegrationUrl);
+        mockConfiguration.Setup(x => x[HttpClientUrlVariables.PensionRetrievalServiceUrl]).Returns(retrievalUrl);
+
         var serviceCollection = new ServiceCollection();
-        Environment.SetEnvironmentVariable(HttpClientUrlVariables.CdaServiceUrl, cdaEmulatorUrl);
-        Environment.SetEnvironmentVariable(HttpClientUrlVariables.TokenIntegrationServiceUrl, tokenIntegrationUrl);
-        Environment.SetEnvironmentVariable(HttpClientUrlVariables.PensionRetrievalServiceUrl, retrievalUrl);
 
         //Act
-        serviceCollection.AddMhpdHttpClients();
+        serviceCollection.AddMhpdHttpClients(mockConfiguration.Object);
 
         var provider = serviceCollection.BuildServiceProvider();
         var factory = provider.GetRequiredService<IHttpClientFactory>();

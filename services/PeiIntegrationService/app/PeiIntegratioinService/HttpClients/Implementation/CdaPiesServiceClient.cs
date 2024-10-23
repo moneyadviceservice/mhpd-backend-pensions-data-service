@@ -1,33 +1,25 @@
 ﻿using System.Net.Http.Headers;
+using System.Web;
+using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
 using PeiIntegrationService.HttpClients.Interfaces;
-using PeiIntegrationService.Models;
 using PeiIntegrationService.Models.CdaPeisServiceClient;
 using PeiIntegrationService.Models.CdaPiesService;
 
 namespace PeiIntegrationService.HttpClients.Implementation;
 
-public class CdaPiesServiceClient : ICdaPiesServiceClient
+public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory) : ICdaPiesServiceClient
 {
-    private readonly IConfiguration _configuration;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly string _cdaPeisServiceEndpoint;
-
-    public CdaPiesServiceClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
-    {
-        _httpClientFactory = httpClientFactory;
-        _configuration = configuration;
-        _cdaPeisServiceEndpoint = _configuration[Constants.HttpEndpoints.CdaPeisServiceEndpoint]!;
-    }
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
     public async Task<CdaPiesServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request)
     {
-        var client = _httpClientFactory.CreateClient(Constants.HttpClients.CdaPiesService);
+        var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(Constants.Headers.AuthenticateType, request.Rpt);
-        client.DefaultRequestHeaders.Add(Constants.Headers.RequestId, request.RequestId);
-        client.BaseAddress = new Uri(_cdaPeisServiceEndpoint!);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, request.Rpt);
+        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, request.RequestId);
 
-        var endPoint = $"{request.PeisId}";
+        var endPoint = string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId));
 
         var response = await client!.GetAsync(endPoint);
 

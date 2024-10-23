@@ -1,14 +1,21 @@
-﻿using Microsoft.Extensions.Options;
+﻿using MhpdCommon.Constants.HttpClient;
+using Moq;
+using Moq.Protected;
 using PensionsRetrievalFunction.HttpClients;
 using PensionsRetrievalFunction.Models;
-using System.Net.Http.Json;
 using System.Net;
-using Moq.Protected;
-using Moq;
+using System.Net.Http.Json;
 
 namespace PensionsRetrievalFunctionTests;
 public class PeiServiceClientTests
 {
+    private readonly Mock<IHttpClientFactory> _httpClientFactory;
+
+    public PeiServiceClientTests()
+    {
+        _httpClientFactory = new Mock<IHttpClientFactory>();
+    }
+
     [Theory]
     [InlineData("", "Test", "Data")]
     [InlineData("Test", "\t", "Data")]
@@ -17,16 +24,7 @@ public class PeiServiceClientTests
     public async Task WhenHttpClientIsExecutedWithInvalidParameters_ThrowsException(string iss, string peisId, string userSessionId)
     {
         //Arrange
-        var configuration = new MhpdApiConfiguration
-        {
-            PeiIntegrationApi = "http://go.com",
-            PeiRetryInterval = 10,
-            PeiRetryTimeout = 90
-        };
-
-        var httpClient = new HttpClient();
-        var options = Options.Create(configuration);
-        var client = new PeiServiceClient(httpClient, options);
+        var client = new PeiServiceClient(_httpClientFactory.Object);
 
         //Act & Assert
         await Assert.ThrowsAsync<ArgumentException>(() => client.GetPeiDataAsync(null, iss, peisId, userSessionId));
@@ -39,16 +37,7 @@ public class PeiServiceClientTests
     public async Task WhenHttpClientIsExecutedWithNullParameters_ThrowsException(string iss, string peisId, string userSessionId)
     {
         //Arrange
-        var configuration = new MhpdApiConfiguration
-        {
-            PeiIntegrationApi = "http://go.com",
-            PeiRetryInterval = 10,
-            PeiRetryTimeout = 90
-        };
-
-        var httpClient = new HttpClient();
-        var options = Options.Create(configuration);
-        var client = new PeiServiceClient(httpClient, options);
+        var client = new PeiServiceClient(_httpClientFactory.Object);
 
         //Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() => client.GetPeiDataAsync("rpt", iss, peisId, userSessionId));
@@ -60,17 +49,13 @@ public class PeiServiceClientTests
     private async Task WhenHttpClientIsExecutedWithPayload_ReturnsResponse(bool success, int expectedPeiCount)
     {
         //Arrange
-        var configuration = new MhpdApiConfiguration
-        {
-            PeiIntegrationApi = "http://go.com",
-            PeiRetryInterval = 10,
-            PeiRetryTimeout = 90
-        };
-
         var handler = CreateHttpHandlerWithRetry(success);
-        var httpClient = new HttpClient(handler.Object);
-        var options = Options.Create(configuration);
-        var client = new PeiServiceClient(httpClient, options);
+        _httpClientFactory.Setup(x => x.CreateClient(HttpClientNames.PeiIntegrationService))
+            .Returns(new HttpClient(handler.Object)
+            {
+                BaseAddress = new Uri("http://localhost:1234")
+            });
+        var client = new PeiServiceClient(_httpClientFactory.Object);
 
         //Act
         var response = await client.GetPeiDataAsync("Some", "Sample", "Test", "Data");

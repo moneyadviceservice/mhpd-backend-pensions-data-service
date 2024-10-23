@@ -62,7 +62,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
 
         var retryPolicy = Policy
             .HandleResult<PdpServiceResponseModel>(r => r.ResponseMessage?.ResponseStatusCode == HttpStatusCode.Unauthorized.ToString())
-            .WaitAndRetryAsync(1, retryAttempt => TimeSpan.FromSeconds(2), async (result, timeSpan, retryCount, context) =>
+            .WaitAndRetryAsync(1, retryAttempt => TimeSpan.Zero, async (result, timeSpan, retryCount, context) =>
             {
                 _logger.LogInformation(StatusConstants.FetchingRpt, correlationId);
                 rpt = await DoAuthenticationDance(result.Result, iss, userSessionId);

@@ -1,10 +1,10 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using RetrievedPensionsRecordFunction.Models;
 using RetrievedPensionsRecordFunction.Repository;
 using System.Net;
 
@@ -127,10 +127,7 @@ public  class PensionRecordRepositoryTests
         {
             Pei = "pei",
             PensionRetrievalRecordId = "recordId",
-            PensionArrangements =
-            [
-                new()
-            ]
+            RetrievalResult = Array.Empty<List<PensionArrangement>>()
         };
     }
 }

@@ -66,7 +66,7 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
         // Release the lock on the message
         await messageActions.CompleteMessageAsync(message);
 
-        await _orchestrator.RunAsync(payload); 
+        await _orchestrator.RunAsync(payload, message.CorrelationId); 
     }
 
     private void LogRequestMesage(ServiceBusReceivedMessage receivedMessage)

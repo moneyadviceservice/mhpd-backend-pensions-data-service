@@ -23,7 +23,7 @@ public class PeiIntegrationOrchestratorTests
     {
         _logger = new Mock<ILogger<PeiIntegrationOrchestrator>>();
         _messagingService = new Mock<IMessagingService>();
-        _messagingService.Setup(mock => mock.SendMessageAsync<PensionRequestPayload>(It.IsAny<PensionRequestPayload>(), OutboundQueue)).Verifiable();
+        _messagingService.Setup(mock => mock.SendMessageAsync(It.IsAny<PensionRequestPayload>(), OutboundQueue, It.IsAny<string>())).Verifiable();
 
         _repository = new Mock<IPensionRetrievalRepository>();
     }
@@ -37,9 +37,8 @@ public class PeiIntegrationOrchestratorTests
         int callsToSimulate, int timeout, int expectedClientCallCount, int expectedMessagingCallCount, int expectedSaveCount)
     {
         //Arrange
-        var apiConfiguration = new MhpdApiConfiguration
+        var apiConfiguration = new PeiOrchestrationSettings
         {
-            PeiIntegrationApi = "http://go.com",
             PeiRetryInterval = 2,
             PeiRetryTimeout = timeout
         };
@@ -76,14 +75,16 @@ public class PeiIntegrationOrchestratorTests
         var orchestrator = new PeiIntegrationOrchestrator(sbOptions, apiOptions, _messagingService.Object,
             client.Object, _repository.Object, _logger.Object);
 
+        var correlationId = Guid.NewGuid().ToString();
+
         //Act
-        await orchestrator.RunAsync(payload);
+        await orchestrator.RunAsync(payload, correlationId);
 
         //Assert
         client.Verify(mock => mock.GetPeiDataAsync(It.IsAny<string>(), payload.Iss,
             payload.PeisId, payload.UserSessionId), Times.Exactly(expectedClientCallCount));
 
-        _messagingService.Verify(mock => mock.SendMessageAsync<PensionRequestPayload>(It.IsAny<PensionRequestPayload>(), OutboundQueue), 
+        _messagingService.Verify(mock => mock.SendMessageAsync(It.IsAny<PensionRequestPayload>(), OutboundQueue, correlationId),
             Times.Exactly(expectedMessagingCallCount));
 
         _repository.Verify(mock => mock.UpdatePensionsRetrievalRecordAsync(It.IsAny<PensionsRetrievalRecord>()), Times.Exactly(expectedSaveCount));

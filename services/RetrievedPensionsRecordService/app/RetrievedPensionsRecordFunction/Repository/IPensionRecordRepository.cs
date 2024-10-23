@@ -1,5 +1,5 @@
 ﻿using MhpdCommon.Models.MessageBodyModels;
-using RetrievedPensionsRecordFunction.Models;
+using MhpdCommon.Models.MHPDModels;
 
 namespace RetrievedPensionsRecordFunction.Repository;
 

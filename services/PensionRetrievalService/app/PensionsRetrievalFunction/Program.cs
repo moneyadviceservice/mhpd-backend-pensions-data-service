@@ -24,19 +24,19 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-        services.AddMhpdCosmosDb();
+        services.AddMhpdCosmosDb(hostContext.Configuration);
         services.AddMhpdUtilities();
-        services.AddMhpdServiceBusTools();
+        services.AddMhpdHttpClients(hostContext.Configuration);
+        services.AddMhpdServiceBusTools(hostContext.Configuration);
         services.AddScoped<IPensionRetrievalRepository, PensionRetrievalRepository>();
         services.AddTransient<IPeiServiceClient, PeiServiceClient>();
         services.AddTransient<IPeiIntegrationOrchestrator, PeiIntegrationOrchestrator>();
-        services.AddOptions<MhpdApiConfiguration>().Configure(option =>
+        services.AddOptions<PeiOrchestrationSettings>().Configure(option =>
         {
-            option.PeiIntegrationApi = Environment.GetEnvironmentVariable(MhpdApiConfiguration.PeiIntegrationApiVariable);
-            option.PeiRetryTimeout = tryParseConfig(Environment.GetEnvironmentVariable(MhpdApiConfiguration.PeiRetryTimeoutVariable), 
-                MhpdApiConfiguration.MaxRetryDuration);
-            option.PeiRetryInterval = tryParseConfig(Environment.GetEnvironmentVariable(MhpdApiConfiguration.PeiRetryIntervalVariable), 
-                MhpdApiConfiguration.MinRetryInterval);
+            option.PeiRetryTimeout = tryParseConfig(Environment.GetEnvironmentVariable(PeiOrchestrationSettings.PeiRetryTimeoutVariable), 
+                PeiOrchestrationSettings.MaxRetryDuration);
+            option.PeiRetryInterval = tryParseConfig(Environment.GetEnvironmentVariable(PeiOrchestrationSettings.PeiRetryIntervalVariable), 
+                PeiOrchestrationSettings.MinRetryInterval);
         }).ValidateOnStart();
     })
     .Build();

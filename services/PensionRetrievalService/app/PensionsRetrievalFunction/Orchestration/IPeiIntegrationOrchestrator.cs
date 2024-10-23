@@ -4,5 +4,5 @@ namespace PensionsRetrievalFunction.Orchestration;
 
 public interface IPeiIntegrationOrchestrator
 {
-    Task RunAsync(PensionRetrievalPayload payload);
+    Task RunAsync(PensionRetrievalPayload payload, string correlationId);
 }

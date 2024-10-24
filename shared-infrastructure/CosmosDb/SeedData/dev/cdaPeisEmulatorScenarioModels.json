@@ -107,6 +107,23 @@
     ]
   },
   {
+    "id": "0005",
+    "peisIdStartCode": "0005",
+    "dataPoints": [
+      {
+        "availableAt": 10,
+        "responsePayload": {
+          "peiList": [
+            {
+              "pei": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029:63ab8af1-2004-4a0b-bad0-629cca220757",
+              "description": "My Company Direct Contribution Scheme"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
     "id": "0009",
     "peisIdStartCode": "0009",
     "dataPoints": [

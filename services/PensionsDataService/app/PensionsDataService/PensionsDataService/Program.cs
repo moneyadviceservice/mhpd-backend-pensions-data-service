@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
@@ -9,35 +10,12 @@ using PensionsDataService.HttpClients;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Load environment-specific configurations
-builder.Configuration
-    .SetBasePath(Directory.GetCurrentDirectory())    // Optional, ensures you're loading from the correct directory
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
-
-// Check if running in development environment
-if (builder.Environment.IsDevelopment())
-{
-    // Access the connection string from configuration
-    var serviceBusConnection = builder.Configuration.GetConnectionString("ServiceBusConnectionString");
-    var outboundQueue = builder.Configuration.GetSection("CommonServiceBusConfiguration")["OutboundQueue"];
-
-    // Set the value as an environment variable (for this process)
-    Environment.SetEnvironmentVariable("ServiceBusConnectionString", serviceBusConnection);
-    Environment.SetEnvironmentVariable("OutboundQueue", outboundQueue);
-    
-    Console.WriteLine("ServiceBusConnectionString {0}", serviceBusConnection);
-    Console.WriteLine("OutboundQueue {0}", outboundQueue);
-}
-
-Console.WriteLine("ServiceBusConnectionString {0}", builder.Configuration.GetConnectionString("ServiceBusConnectionString"));
-Console.WriteLine("OutboundQueue {0}", builder.Configuration.GetSection("OutboundQueue"));
-
 // Add services to the container.
 builder.Services.AddScoped<IIdValidator, IdValidator>();
+builder.Services.AddScoped<PensionServiceClients>();
 builder.Services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
-builder.Services.AddScoped<IRetrievalRecordFunctionClient, RetrievalRecordFunctionClient>();
+builder.Services.AddScoped<IRetrievalRecordServiceClient, RetrievalRecordServiceClient>();
+builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsRecordClient>();
 
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
@@ -47,6 +25,7 @@ builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, Cod
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, CodeVerifierNotBase64StringPensionsData>();
 builder.Services.AddScoped<PensionsDataRequestValidatorPipeline>();
 builder.Services.AddMhpdServiceBusTools();
+builder.Services.AddMhpdHttpClients();
 
 builder.Services.AddControllers();
 

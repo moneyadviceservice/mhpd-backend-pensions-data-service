@@ -1,28 +1,28 @@
 using System.Net;
+using System.Net.Http.Json;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
-using MhpdCommon.Models.RequestHeaderModel;
-using Microsoft.AspNetCore.Mvc;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using PensionsDataService.HttpClients;
+using PensionsDataService.Models;
 
 namespace PensionsDataServiceUnitTests;
 
-public class RetrievalRecordFunctionClientTests
+public class RetrievedPensionsRecordClientTests
 {
     private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
-    private readonly Mock<ILogger<RetrievalRecordFunctionClient>> _mockLogger;
-    private readonly Mock<IConfiguration> _mockConfiguration;
-    private readonly RetrievalRecordFunctionClient _client;
+    private readonly Mock<ILogger<RetrievedPensionsRecordClient>> _mockLogger;
+    private readonly RetrievedPensionsRecordClient _client;
 
-    public RetrievalRecordFunctionClientTests()
+    public RetrievedPensionsRecordClientTests()
     {
         _mockHttpClientFactory = new Mock<IHttpClientFactory>();
-        _mockLogger = new Mock<ILogger<RetrievalRecordFunctionClient>>();
-        _mockConfiguration = new Mock<IConfiguration>();
+        _mockLogger = new Mock<ILogger<RetrievedPensionsRecordClient>>();
+        Mock<IConfiguration> mockConfiguration = new();
 
         // Mock the HttpClient
         var handlerMock = new Mock<HttpMessageHandler>();
@@ -33,18 +33,26 @@ public class RetrievalRecordFunctionClientTests
         
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(mockHttpClient);
 
-        _mockConfiguration.Setup(config => config[HttpClientUrlVariables.RetrievalRecordFunctionUrl])
+        mockConfiguration.Setup(config => config[HttpClientUrlVariables.RetrievedPensionsServiceUrl])
             .Returns("https://mockendpoint.com/");
 
         // Initialize the client
-        _client = new RetrievalRecordFunctionClient(_mockHttpClientFactory.Object, _mockConfiguration.Object, _mockLogger.Object);
+        _client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
     }
 
     [Fact]
     public async Task GetAsync_SuccessfulRequest_ReturnsOkResult()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "test-session-id" };
+        var request = new PensionsRetrievalRecordIdModel { PensionsRetrievalRecordId = "test-session-id" };
+        
+        var expectedRecords = new List<RetrievedPensionRecord>();
+        
+        var httpResponse = new HttpResponseMessage
+        {
+            Content = JsonContent.Create(expectedRecords),
+            StatusCode = HttpStatusCode.OK,
+        };
 
         // Mock a successful HTTP response
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -55,29 +63,28 @@ public class RetrievalRecordFunctionClientTests
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>()
             )
-            .ReturnsAsync(new HttpResponseMessage
+            .ReturnsAsync(httpResponse);
+
+        _mockHttpClientFactory.Setup(x => x.CreateClient(HttpClientNames.RetrievedPensionsService))
+            .Returns(new HttpClient(handlerMock.Object)
             {
-                StatusCode = HttpStatusCode.OK
+                BaseAddress = new Uri("http://localhost:1234")
             });
 
-        var httpClient = new HttpClient(handlerMock.Object);
-        httpClient.BaseAddress = new Uri("https://mockendpoint.com/");
-        _mockHttpClientFactory.Setup(factory => factory.CreateClient(HttpClientNames.RetrievalRecordFunction)).Returns(httpClient);
-
-        var client = new RetrievalRecordFunctionClient(_mockHttpClientFactory.Object, _mockConfiguration.Object, _mockLogger.Object);
+        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
         
         // Act
-        var result = await client.GetAsync(requestHeader);
+        var result = await client.GetAsync(request);
 
         // Assert
-        Assert.IsType<OkResult>(result);
+        Assert.IsType<List<RetrievedPensionRecord>>(result);
     }
 
     [Fact]
     public async Task GetAsync_HttpRequestException_ThrowsServiceCommunicationException()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "test-session-id" };
+        var request = new PensionsRetrievalRecordIdModel { PensionsRetrievalRecordId = "test-session-id" };
 
         // Mock a failure HTTP response
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -94,31 +101,15 @@ public class RetrievalRecordFunctionClientTests
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(requestHeader));
-        Assert.Equal("An invalid operation occurred during retrieval record function communication", exception.Message);
-    }
-
-    [Fact]
-    public async Task GetAsync_InvalidOperationException_ThrowsInvalidOperationException()
-    {
-        // Arrange
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceEndpoint]).Returns(string.Empty);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            Task.FromResult(new RetrievalRecordFunctionClient(_mockHttpClientFactory.Object, mockConfiguration.Object, _mockLogger.Object))
-        );
-
-        // Act & Assert
-        Assert.Equal("RetrievalRecordFunctionClient endpoint is not configured.", exception.Message);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(request));
+        Assert.Equal("An invalid operation occurred during retrieved record service communication", exception.Message);
     }
 
     [Fact]
     public async Task GetAsync_InvalidOperationDuringRequest_ThrowsInvalidOperationException()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "test-session-id" };
+        var request = new PensionsRetrievalRecordIdModel { PensionsRetrievalRecordId = "test-session-id" };
 
         // Mock a failure during request
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -135,15 +126,15 @@ public class RetrievalRecordFunctionClientTests
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(requestHeader));
-        Assert.Equal("An invalid operation occurred during retrieval record function communication", exception.Message);
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(request));
+        Assert.Equal("An invalid operation occurred during retrieved record service communication", exception.Message);
     }
 
     [Fact]
     public async Task GetAsync_UnhandledException_ThrowsServiceCommunicationException()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "test-session-id" };
+        var request = new PensionsRetrievalRecordIdModel { PensionsRetrievalRecordId = "test-session-id" };
 
         // Mock an unhandled exception
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -156,21 +147,24 @@ public class RetrievalRecordFunctionClientTests
             )
             .ThrowsAsync(new Exception("Unhandled exception"));
 
-        var httpClient = new HttpClient(handlerMock.Object);
-        _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
-
-        var client = new RetrievalRecordFunctionClient(_mockHttpClientFactory.Object, _mockConfiguration.Object, _mockLogger.Object);
+        _mockHttpClientFactory.Setup(x => x.CreateClient(HttpClientNames.RetrievedPensionsService))
+            .Returns(new HttpClient(handlerMock.Object)
+            {
+                BaseAddress = new Uri("http://localhost:1234")
+            });
+        
+        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(requestHeader));
-        Assert.Equal("An unexpected error occurred during retrieval record function communication", exception.Message);
+        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request));
+        Assert.Equal("An unexpected error occurred during retrieved record service communication", exception.Message);
     }
 
     [Fact]
     public async Task GetAsync_EnsureSuccessStatusCode_Failure_ThrowsServiceCommunicationException()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "test-session-id" };
+        var request = new PensionsRetrievalRecordIdModel { PensionsRetrievalRecordId = "test-session-id" };
 
         // Mock a failed HTTP response
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -186,13 +180,16 @@ public class RetrievalRecordFunctionClientTests
                 StatusCode = HttpStatusCode.BadRequest // Simulate failure
             });
 
-        var httpClient = new HttpClient(handlerMock.Object);
-        _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
+        _mockHttpClientFactory.Setup(x => x.CreateClient(HttpClientNames.RetrievedPensionsService))
+            .Returns(new HttpClient(handlerMock.Object)
+            {
+                BaseAddress = new Uri("http://localhost:1234")
+            });
         
-        var client = new RetrievalRecordFunctionClient(_mockHttpClientFactory.Object, _mockConfiguration.Object, _mockLogger.Object);
+        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(requestHeader));
-        Assert.Equal("Error communicating with retrieval record endpoint", exception.Message);
+        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request));
+        Assert.Equal("Error communicating with retrieved record endpoint", exception.Message);
     }
 }

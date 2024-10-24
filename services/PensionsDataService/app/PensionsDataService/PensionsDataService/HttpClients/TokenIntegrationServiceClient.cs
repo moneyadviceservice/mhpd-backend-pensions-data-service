@@ -36,7 +36,7 @@ public class TokenIntegrationServiceClient : ITokenIntegrationServiceClient
             _httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestHeader.XRequestId);
 
             // Construct the endpoint based on the request type
-            var endpoint = UrlHelper.ConstructEndPoint(request, HttpEndpoints.PeiRetrievalDetails);
+            var endpoint = UrlHelper.ConstructEndPoint(request, HttpEndpoints.Internal.PeiRetrievalDetails);
 
             // Send the request to the constructed endpoint
             var response = await _httpClient.PostAsync(endpoint, null);

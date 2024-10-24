@@ -66,7 +66,6 @@ public class TokenIntegrationServiceClientTests
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
-        
 
         var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
 
@@ -116,7 +115,7 @@ public class TokenIntegrationServiceClientTests
     {
         // Arrange
         var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceEndpoint]).Returns(string.Empty);
+        mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceUrl]).Returns(string.Empty);
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>

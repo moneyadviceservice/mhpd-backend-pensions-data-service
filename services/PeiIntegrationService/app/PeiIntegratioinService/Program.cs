@@ -7,8 +7,7 @@ using PeiIntegrationService.HttpClients.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // add appsettings.json
-builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
 builder.Services.AddTransient<ICdaPiesServiceClient, CdaPiesServiceClient>();

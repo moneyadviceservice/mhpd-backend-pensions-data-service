@@ -42,7 +42,7 @@
     },
     "variables": {
       "appServicePlan_externalId": "[resourceId(parameters('infrastructureResourceGroup'), 'Microsoft.Web/serverfarms', parameters('appServicePlanName'))]",
-      "functionWorkerRuntime": "dotnet"
+      "functionWorkerRuntime": "dotnet-isolated"
     },
     "resources": [
         {
@@ -93,6 +93,10 @@
                         {
                             "name": "FUNCTIONS_WORKER_RUNTIME",
                             "value": "[variables('functionWorkerRuntime')]"
+                        },
+						            {
+                            "name": "WEBSITE_RUN_FROM_PACKAGE",
+                            "value": "1"
                         }
                     ]
                 }

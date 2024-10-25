@@ -48,5 +48,20 @@
     "id": "testScenario10",
     "code": "testScenario10",
     "peisIdStartCode": "0010"
+  },
+  {
+    "id": "testScenario97",
+    "code": "testScenario97",
+    "peisIdStartCode": "0097"
+  },
+  {
+    "id": "testScenario98",
+    "code": "testScenario98",
+    "peisIdStartCode": "0098"
+  },
+  {
+    "id": "testScenario99",
+    "code": "testScenario99",
+    "peisIdStartCode": "0099"
   }
 ]

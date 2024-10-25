@@ -48,16 +48,20 @@ public partial class TokenUtility : ITokenUtility
         var exp = iat + _expiryInSeconds;
 
         // Step 5: Define JWT claims
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(QueryParams.Cda.Token.PeisId, peisId),  // Custom claim for peis_id
-            new Claim(JwtRegisteredClaimNames.Sub, subject),
-            new Claim(JwtRegisteredClaimNames.Iss, issuer),
-            new Claim(JwtRegisteredClaimNames.Aud, audience),
-            new Claim(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
-            new Claim(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
-            new Claim(JwtRegisteredClaimNames.Jti, jti.ToString()) // Random 36-character GUID for jti
+            new(JwtRegisteredClaimNames.Sub, subject),
+            new(JwtRegisteredClaimNames.Iss, issuer),
+            new(JwtRegisteredClaimNames.Aud, audience),
+            new(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
+            new(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
+            new(JwtRegisteredClaimNames.Jti, jti.ToString()) // Random 36-character GUID for jti
         };
+
+        if (!string.IsNullOrWhiteSpace(peisStartCode))
+        {
+            claims.Add(new(QueryParams.Cda.Token.PeisId, peisId)); // Custom claim for peis_id
+        }
         
         // Step 6: Define signing credentials (for example, using HS256 symmetric key)
         var rsa = RSA.Create();

@@ -1,6 +1,7 @@
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
@@ -165,8 +166,12 @@ public class CdaTokenControllerTests
         Assert.Equal(TokenQueryParams.TokenTypeRpt, response.TokenType);
     }
     
-    [Fact]
-    public async Task GenerateTokenAsync_ValidRequest_AuthorizationCodeGrantType_ReturnsOk()
+    [Theory]
+    [InlineData("PEIS123")]
+    [InlineData(Constants.TokenConstants.NullIdTokenCode)]
+    [InlineData(Constants.TokenConstants.InvalidIdTokenCode)]
+    [InlineData(Constants.TokenConstants.MissingPeisTokenCode)]
+    public async Task GenerateTokenAsync_ValidRequest_AuthorizationCodeGrantType_ReturnsOk(string startCode)
     {
         // Arrange
         var request = new CdaTokenRequestModel
@@ -192,7 +197,7 @@ public class CdaTokenControllerTests
         {
             Id = "1",
             Code = "1",
-            PeisIdStartCode = "PEIS123"
+            PeisIdStartCode = startCode
         };
 
         var response = new Mock<ItemResponse<TokenEmulatorPiesIdScenarioModel>>();
@@ -209,6 +214,8 @@ public class CdaTokenControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseValue = Assert.IsType<CdaTokenResponseModel>(okResult.Value);
         Assert.NotNull(responseValue.AccessToken);
+        if(startCode != Constants.TokenConstants.NullIdTokenCode)
+            Assert.NotNull(responseValue.IdToken);
         Assert.Equal(TokenQueryParams.TokenTypeBearer, responseValue.TokenType);
     }
 }

@@ -26,10 +26,6 @@ public class CdaServiceClientUnitTests
     {
         Mock<IConfiguration> mockConfiguration = new();
 
-        // Mock IConfiguration behavior for "CdaServiceEndpoint"
-        mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceEndpoint])
-            .Returns(CdaServicesEndpointUrl);
-            
         // Set up the mock HttpClientFactory to return a client that uses the mocked HttpMessageHandler
         _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.CdaService))
             .Returns(new HttpClient(_handlerMoq.Object)
@@ -37,7 +33,7 @@ public class CdaServiceClientUnitTests
                 BaseAddress = new Uri(CdaServicesEndpointUrl)
             });
             
-        _sut = new CdaServiceClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object);
+        _sut = new CdaServiceClient(_httpClientFactoryMock.Object, _logger.Object);
     }
 
     [Fact]
@@ -110,21 +106,6 @@ public class CdaServiceClientUnitTests
         Assert.Equal(TokenQueryParams.ValidJwtToken, result.IdToken);  // Further verification of content
     }
 
-
-    [Fact]
-    public async Task PostRptAsync_Should_Throw_InvalidOperationException_When_Endpoint_Is_Not_Configured()
-    {
-        // Arrange
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(c => c[HttpClientUrlVariables.CdaServiceEndpoint]).Returns(string.Empty);
-
-        // Act & Assert
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            Task.FromResult(new CdaServiceClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object))
-        );
-
-        Assert.Equal("CDA Service endpoint is not configured.", ex.Message);
-    }
 
     [Fact]
     public async Task PostRpt_Should_Throw_ServiceCommunicationException_When_HttpRequestException_Occurs()

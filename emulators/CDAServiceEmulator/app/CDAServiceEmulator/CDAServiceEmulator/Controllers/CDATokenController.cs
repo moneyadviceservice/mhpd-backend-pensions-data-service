@@ -1,4 +1,5 @@
 ﻿using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.RequestHeaderModel;
@@ -70,9 +71,18 @@ public class CdaTokenController(
             AccessToken = TokenQueryParams.ValidJwtToken,
             TokenType = isAuthorizationCodeGrantType ? TokenQueryParams.TokenTypeBearer : TokenQueryParams.TokenTypeRpt,
             Upgraded = false,
-            IdToken = isAuthorizationCodeGrantType ? tokenUtility.GenerateJwt(peisStartCode) : null,
+            IdToken = isAuthorizationCodeGrantType ? GetIdToken(peisStartCode) : null,
             Pct = !isAuthorizationCodeGrantType ? TokenQueryParams.ValidJwtToken : null
         };
+    }
+
+    private string? GetIdToken(string peisStartCode)
+    {
+        if (peisStartCode == Constants.TokenConstants.NullIdTokenCode) return null;
+        if (peisStartCode == Constants.TokenConstants.InvalidIdTokenCode) return "ThisStringIsNotAValidJwtToken";
+        if (peisStartCode == Constants.TokenConstants.MissingPeisTokenCode) return tokenUtility.GenerateJwt(null); //return a Jwt with no PeisId claim
+
+        return tokenUtility.GenerateJwt(peisStartCode);
     }
 
     private void LogInfoWithJsonObject<T>(string type, T data)

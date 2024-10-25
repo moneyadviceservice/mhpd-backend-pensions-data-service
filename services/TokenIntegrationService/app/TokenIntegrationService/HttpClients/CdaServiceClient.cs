@@ -1,53 +1,37 @@
-﻿using System.Security.Policy;
-using MhpdCommon.Constants;
+﻿using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Utils;
 using TokenIntegrationService.Models;
-using UrlHelper = MhpdCommon.Utils.UrlHelper;
 
 namespace TokenIntegrationService.HttpClients;
 
-public class CdaServiceClient : ICdaServiceClient
+public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaServiceClient> logger) : ICdaServiceClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<CdaServiceClient> _logger;
-    
-    public CdaServiceClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<CdaServiceClient> logger)
-    {
-        _logger = logger;
-        
-        _httpClient = httpClientFactory.CreateClient(HttpClientNames.CdaService);
-        
-        // Set the base address for the client
-        var endpoint = configuration[HttpClientUrlVariables.CdaServiceEndpoint];
-        if (string.IsNullOrEmpty(endpoint))
-        {
-            throw new InvalidOperationException("CDA Service endpoint is not configured.");
-        }
-        _httpClient.BaseAddress = new Uri(endpoint);
-    }
-    
+    private readonly ILogger<CdaServiceClient> _logger = logger;
+
     public async Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request, RequestHeaderModel requestHeader)
     {
         try
         {
+            var httpClient = httpClientFactory.CreateClient(HttpClientNames.CdaService);
             // Add request ID header
-            _httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestHeader.XRequestId);
+            httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestHeader.XRequestId);
 
             // Construct the endpoint based on the request type
             var endpoint = request switch
             {
                 TokenIntegrationRequestModel tokenRequest => UrlHelper.ConstructEndPoint(tokenRequest,
-                    HttpEndpoints.CdaTokenServiceEndpoint),
+                    HttpEndpoints.External.CdaTokenServiceEndpoint),
                 CdaTokenRequestModel cdaTokenRequest => UrlHelper.ConstructEndPoint(cdaTokenRequest,
-                    HttpEndpoints.CdaTokenServiceEndpoint),
+                    HttpEndpoints.External.CdaTokenServiceEndpoint),
                 _ => throw new InvalidOperationException("Unsupported request type.")
             };
 
             // Send the request to the constructed endpoint
-            var response = await _httpClient.PostAsync(endpoint, null);
+            var response = await httpClient.PostAsync(endpoint, null);
 
             // Check if the response is successful
             response.EnsureSuccessStatusCode();

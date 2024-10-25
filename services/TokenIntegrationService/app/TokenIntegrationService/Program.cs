@@ -1,17 +1,14 @@
 using System.Diagnostics.CodeAnalysis;
-using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.TokenValidation;
-using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using TokenIntegrationService.HttpClients;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddHttpClient<CdaServiceClient>(HttpClientNames.CdaService, c => {} );
-
+builder.Services.AddMhpdUtilities();
+builder.Services.AddMhpdHttpClients();
 builder.Services.AddScoped<ICdaServiceClient, CdaServiceClient>();
-builder.Services.AddScoped<IIdValidator, IdValidator>();
-builder.Services.AddScoped<ITokenUtility, TokenUtility>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, RqpNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, RqpNotAJwtValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, TicketNotPresentTokenIntegrationValidator>();

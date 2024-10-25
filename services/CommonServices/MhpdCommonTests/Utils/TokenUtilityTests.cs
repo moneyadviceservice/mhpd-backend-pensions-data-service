@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using MhpdCommonTests.TokenValidationTests;
@@ -25,12 +26,13 @@ public class TokenUtilityTests
         _tokenUtility = new MhpdCommon.Utils.TokenUtility(mockJwtSettingsOptions.Object);
     }
 
-    [Fact]
-    public void GenerateJwt_ShouldReturnValidJwt_WithExpectedClaims()
+    [Theory]
+    [InlineData("TEST")]
+    [InlineData("")]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public void GenerateJwt_ShouldReturnValidJwt_WithExpectedClaims(string? peisStartCode)
     {
-        // Arrange
-        var peisStartCode = "TEST";
-        
         // Act
         var jwtToken = _tokenUtility.GenerateJwt(peisStartCode);
         var handler = new JwtSecurityTokenHandler();
@@ -47,16 +49,24 @@ public class TokenUtilityTests
         var iatClaim = token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Iat);
         var expClaim = token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Exp);
         var jtiClaim = token.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti);
-        var peisIdClaim = token.Claims.FirstOrDefault(c => c.Type == "peis_id");
+        var peisIdClaim = token.Claims.FirstOrDefault(c => c.Type == QueryParams.Cda.Token.PeisId);
 
         // Assert - Check if the claims exist and are correct
         Assert.NotNull(iatClaim);
         Assert.NotNull(expClaim);
         Assert.NotNull(jtiClaim);
-        Assert.NotNull(peisIdClaim);
 
-        // Validate that peis_id starts with peisStartCode
-        Assert.StartsWith(peisStartCode, peisIdClaim.Value);
+        if (string.IsNullOrWhiteSpace(peisStartCode))
+        {
+            Assert.Null(peisIdClaim);
+        }
+        else
+        {
+            Assert.NotNull(peisIdClaim);
+
+            // Validate that peis_id starts with peisStartCode
+            Assert.StartsWith(peisStartCode, peisIdClaim.Value);
+        }
     }
     
     [Fact]

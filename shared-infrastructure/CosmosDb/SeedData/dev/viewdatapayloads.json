@@ -324,79 +324,73 @@
         }
     },
     {
-        "externalPensionPolicyId": "D9267759822",
-        "externalAssetId": "e4f88759-5c0b-4148-82aa-9c6611914e9c",
-        "matchType": "DEFN",
-        "schemeName": "Workers Trust Local 701",
-        "contactReference": "Ref/rb-dr-bd-sb-08",
-        "pensionType": "DC",
-        "pensionOrigin": "WM",
-        "pensionStatus": "I",
-        "startDate": "2002-07-03",
-        "retirementDate": "2034-09-18",
-        "dateOfBirth": "1979-09-18",
-        "pensionAdministrator": {
-            "name": "Pension For Everyone",
-            "contactMethods": [
+        "id": "22af2958-6389-4457-b9da-dab16c7652a0",
+        "assetGuid": "22af2958-6389-4457-b9da-dab16c7652a0",
+        "view_data": {
+            "arrangements": [
                 {
-                    "preferred": false,
-                    "contactMethodDetails": {
-                        "url": "https://www.everypension.co.uk"
-                    }
-                },
-                {
-                    "preferred": false,
-                    "contactMethodDetails": {
-                        "email": "query@everypension.com"
-                    }
-                },
-                {
-                    "preferred": false,
-                    "contactMethodDetails": {
-                        "number": "+44 800093434",
-                        "usage": [
-                            "M"
+                    "pensionLink": "D9267759822",
+                    "externalAssetId": "22af2958-6389-4457-b9da-dab16c7652a0",
+                    "possibleMatch": false,
+                    "pensionProviderSchemeName": "ANO Trust Local",
+                    "pensionReference": "Ref/ANO12345",
+                    "pensionType": "DC",
+                    "pensionOrigin": "WM",
+                    "pensionStatus": "I",
+                    "pensionStartDate": "2002-07-03",
+                    "retirementDate": "2044-09-18",
+                    "dateOfBirth": "1979-09-18",
+                    "pensionAdministrator": {
+                        "name": "Pension For Everyone",
+                        "contactMethods": [
+                            {
+                                "preferred": false,
+                                "contactMethodDetails": {
+                                    "url": "https://www.everypension.co.uk"
+                                }
+                            },
+                            {
+                                "preferred": false,
+                                "contactMethodDetails": {
+                                    "email": "query@everypension.com"
+                                }
+                            },
+                            {
+                                "preferred": false,
+                                "contactMethodDetails": {
+                                    "number": "+44 800093434",
+                                    "usage": [
+                                        "M"
+                                    ]
+                                }
+                            },
+                            {
+                                "preferred": false,
+                                "contactMethodDetails": {
+                                    "postalName": "Pension For Everyone",
+                                    "line1": "12 Mike Close",
+                                    "line2": "Main Street",
+                                    "line3": "Newcastle",
+                                    "postcode": "S16 3BG",
+                                    "countryCode": "GB"
+                                }
+                            }
                         ]
-                    }
-                },
-                {
-                    "preferred": false,
-                    "contactMethodDetails": {
-                        "postalName": "Pension For Everyone",
-                        "line1": "12 Mike Close",
-                        "line2": "Main Street",
-                        "line3": "Newcastle",
-                        "postcode": "S16 3BG",
-                        "countryCode": "GB"
-                    }
+                    },
+                    "benefitIllustrations": [
+                        {
+                            "illustrationComponents": [
+                                {
+                                    "illustrationType": "ERI",
+                                    "unavailableReason": "ANO",
+                                    "benefitType": "DC"
+                                }
+                            ],
+                            "illustrationDate": "2024-01-09"
+                        }
+                    ]
                 }
             ]
-        },
-        "benefitIllustrations": [
-            {
-                "illustrationComponents": [
-                    {
-                        "illustrationType": "ERI",
-                        "unavailableReason": "DCHA",
-                        "benefitType": "DC",
-                        "calculationMethod": "SMPI",
-                        "survivorBenefit": false,
-                        "dcPot": 311011,
-                        "safeguardedBenefit": false
-                    },
-                    {
-                        "illustrationType": "AP",
-                        "unavailableReason": "DCHA",
-                        "benefitType": "DC",
-                        "amountType": "INC",
-                        "calculationMethod": "SMPI",
-                        "dcPot": 311011,
-                        "survivorBenefit": false,
-                        "safeguardedBenefit": false
-                    }
-                ],
-                "illustrationDate": "2024-01-09"
-            }
-        ]
+        }
     }
 ]

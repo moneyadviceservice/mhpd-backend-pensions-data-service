@@ -50,6 +50,11 @@
     "peisIdStartCode": "0010"
   },
   {
+    "id": "testScenario20",
+    "code": "testScenario20",
+    "peisIdStartCode": "0020"
+  },
+  {
     "id": "testScenario97",
     "code": "testScenario97",
     "peisIdStartCode": "0097"

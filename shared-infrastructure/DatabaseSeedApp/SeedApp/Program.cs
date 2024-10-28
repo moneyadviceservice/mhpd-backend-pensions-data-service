@@ -9,6 +9,7 @@ if(args.Length < 6)
     return;
 }
 
+bool resetData = false;
 string endpoint = args[0];
 string accountKey = args[1];
 string databaseName = args[2];
@@ -16,10 +17,24 @@ string containerName = args[3];
 string partitionKeyField = args[4];
 string filePath = args[5];
 
+if(args.Length > 6)
+{
+    _ = bool.TryParse(args[6], out resetData);
+}
+
 CosmosClient client = new(endpoint, accountKey);
 Container container = client.GetContainer(databaseName, containerName);
 
-await DeleteAllItemsAsync(container, partitionKeyField);
+if (resetData)
+{
+    Console.WriteLine("Data reset flag was set. Dropping existing data...");
+    await DeleteAllItemsAsync(container, partitionKeyField);
+    Console.WriteLine("Data reset complete.");
+}
+else
+{
+    Console.WriteLine("Data reset flag was not set. Existing data will be left intact.");
+}
 
 string jsonContent = await File.ReadAllTextAsync(filePath);
 var items = JsonConvert.DeserializeObject<dynamic[]>(jsonContent);
@@ -35,7 +50,7 @@ Console.WriteLine($"Seeding data from file: {filePath}...");
 
 foreach (var item in items)
 {
-    await container.CreateItemAsync(item, new PartitionKey((string)item[partitionKeyField]));
+    await container.UpsertItemAsync(item, new PartitionKey((string)item[partitionKeyField]));
 }
 
 Console.WriteLine("Data seeding completed.");

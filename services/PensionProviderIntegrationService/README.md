@@ -67,7 +67,7 @@ dotnet restore
     "TokenIntegrationServiceUrl": "<your_token_integration_service_url>",
     "CdaServiceUrl": "<your_cda_service_url>",
     "DatabaseId": "mhpd-businesslayer",
-    "ContainerId": "mhpdholdernameViewConfigurationData",
+    "ContainerId": "mhpdholderNameViewConfigurationData",
     "ContainerPartitionKey": "/holdernameGuid",
     "CosmosDBConnectionString": "AccountEndpoint=<your_cosmosdb_account_endpoint>;AccountKey=<your_cosmosdb_account_key>;",
     "ServiceBusConnectionstring": "Endpoint=sb://<your_servicebus_namespace>.servicebus.windows.net/;SharedAccessKeyName=<your_shared_access_key_name>;SharedAccessKey=<your_shared_access_key>;",

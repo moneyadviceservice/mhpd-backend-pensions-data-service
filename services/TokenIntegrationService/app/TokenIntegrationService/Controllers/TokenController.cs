@@ -60,7 +60,7 @@ public class TokenController(
         
         if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
         {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
+            requestHeader.XRequestId = Guid.NewGuid().ToString();
         }
 
         var validation = cdaRequestValidatorPipeline.Validate(request);

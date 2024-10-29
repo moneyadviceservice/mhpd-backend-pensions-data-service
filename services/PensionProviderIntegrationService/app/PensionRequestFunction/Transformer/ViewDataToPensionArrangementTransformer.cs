@@ -167,16 +167,18 @@ namespace PensionRequestFunction.Transformer
 
         private static JsonObject GetPensionArrangement(string externalAssetId, ref JsonElement pdpArrangement)
         {
-            if (!TryGetElementValueWithValidation(pdpArrangement, PensionConstants.StatePensionDate, out var retirementDate))
-                TryGetElementValueWithValidation(pdpArrangement, PensionConstants.RetirementDate, out retirementDate);
-            
             var pensionArrangement = new JsonObject
             {
                 { PensionConstants.ExternalAssetId, externalAssetId },
                 { PensionConstants.SchemeName, pdpArrangement.GetProperty(PensionConstants.PensionProviderSchemeName).GetString() },
-                { PensionConstants.MatchType, GetMatchType(pdpArrangement) },
-                { PensionConstants.RetirementDate,  retirementDate.ToString()} // Should this be decided depending on type of pension i.e state pension for statePensionDate
+                { PensionConstants.MatchType, GetMatchType(pdpArrangement) }
             };
+
+            if (TryGetElementValueWithValidation(pdpArrangement, PensionConstants.StatePensionDate, out var retirementDate) ||
+                TryGetElementValueWithValidation(pdpArrangement, PensionConstants.RetirementDate, out retirementDate))
+            {
+                pensionArrangement.Add(PensionConstants.RetirementDate, retirementDate.ToString());
+            }
 
             // Helper method to add properties if they exist
             var element = pdpArrangement;

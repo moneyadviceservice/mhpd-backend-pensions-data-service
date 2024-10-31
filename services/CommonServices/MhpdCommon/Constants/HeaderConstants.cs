@@ -11,4 +11,5 @@ public static class HeaderConstants
     public const string RequestId = "X-Request-ID";
     public const string PeisId = "peisId";
     public const string UserSessionId = "userSessionId";
+    public const string CorrelationId = "mhpdCorrelationId";
 }

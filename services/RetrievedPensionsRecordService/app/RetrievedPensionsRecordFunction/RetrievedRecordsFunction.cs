@@ -1,3 +1,4 @@
+using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +19,20 @@ namespace RetrievedPensionsRecordFunction
         [Function("RetrievedRecordsFunction")]
         public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "retrieved-pension-records")] HttpRequest req)
         {
+            var correlationId = req.Headers[HeaderConstants.CorrelationId].ToString();
+
+            if (string.IsNullOrEmpty(correlationId))
+            {
+                correlationId = Guid.NewGuid().ToString();
+            }
+
+            if (!_idValidator.IsValidGuid(correlationId))
+            {
+                return new BadRequestObjectResult(Constants.InvalidCorrelationId);
+            }
+
+            using var scope = _logger.BeginCorrelationScope(correlationId, Constants.HttpLogSource);
+
             var pensionsRetrievalRecordId = req.Query[Constants.RetrievedRecordQuery].ToString();
 
             _logger.LogRequest($"Pension retrieval record Id: {pensionsRetrievalRecordId}");

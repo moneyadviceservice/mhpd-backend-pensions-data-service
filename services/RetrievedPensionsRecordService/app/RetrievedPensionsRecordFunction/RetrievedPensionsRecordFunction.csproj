@@ -10,7 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="MhpdCommon" Version="1.2.18" />
+    <PackageReference Include="MhpdCommon" Version="1.2.25" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.43.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.20.1" />
@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http.AspNetCore" Version="1.2.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.ServiceBus" Version="5.15.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.16.4" />
-    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.1.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />

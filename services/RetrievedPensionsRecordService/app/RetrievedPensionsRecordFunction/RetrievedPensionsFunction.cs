@@ -1,8 +1,10 @@
 using Azure.Messaging.ServiceBus;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using RetrievedPensionsRecordFunction.Models;
 using RetrievedPensionsRecordFunction.Repository;
 using RetrievedPensionsRecordFunction.Utils;
 using System.Text;
@@ -20,6 +22,7 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
     private readonly IMessageParser _messageParser = messageParser;
     private readonly IPensionRecordValidator _pensionValidator = pensionValidator;
     private readonly IPensionRecordRepository _pensionRepository = pensionRepository;
+    private const string InvalidPayloadResponse = "Invalid retrieved pension payload";
 
     [Function(nameof(RetrievedPensionsFunction))]
     public async Task Run(
@@ -27,8 +30,6 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {
-        LogRequestMesage(message);
-
         if (!_idValidator.IsValidGuid(message.CorrelationId))
         {
             var Idresponse = $"Missing or Invalid correlationId: {message.CorrelationId}";
@@ -37,10 +38,34 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
             return;
         }
 
-        const string payloadResponse = "Invalid retrieved pension payload";
+        using var scope = _logger.BeginCorrelationScope(message.CorrelationId, Constants.QueueLogSource);
+        LogRequestMesage(message);
+
+        try
+        {
+            var payload = ExtractAndValidateMessagePayload(message);
+
+            if (await _pensionRepository.SaveRetrievedPensionRecordAsync(message.CorrelationId, payload))
+            {
+                await messageActions.CompleteMessageAsync(message);
+            }
+            else
+            {
+                await messageActions.AbandonMessageAsync(message);
+            }
+        }
+        catch (Exception error)
+        {
+            _logger.LogCritical(error, error.Message);
+            await messageActions.DeadLetterMessageAsync(message, deadLetterReason: error.Message);
+        }
+    }
+
+    private RetrievedPensionDetailsPayload ExtractAndValidateMessagePayload(ServiceBusReceivedMessage message)
+    {
         var messageBody = Encoding.UTF8.GetString(message.Body);
-        RetrievedPensionDetailsPayload? payload;
         string? logMessage;
+        RetrievedPensionDetailsPayload? payload;
 
         try
         {
@@ -48,54 +73,29 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
         }
         catch (AggregateException error)
         {
-            var builder = new StringBuilder(payloadResponse);
+            var builder = new StringBuilder(InvalidPayloadResponse);
             builder.AppendLine();
             foreach (var ex in error.InnerExceptions)
             {
-                builder.AppendLine(ex.Message); 
+                builder.AppendLine(ex.Message);
             }
 
             logMessage = builder.ToString();
-            _logger.LogCritical(error, logMessage);
-            await messageActions.DeadLetterMessageAsync(message, deadLetterReason: logMessage);
-            return;
+            throw new InvalidDataException(logMessage, error);
         }
 
         if (!_pensionValidator.ValidateRecord(payload, out var reason))
         {
-            _logger.LogCritical(reason);
-            await messageActions.DeadLetterMessageAsync(message, deadLetterReason: reason);
-            return;
+            throw new InvalidDataException($"{InvalidPayloadResponse} - {reason}");
         }
 
-        if (payload == null)
-        {
-            _logger.LogCritical(payloadResponse);
-            await messageActions.DeadLetterMessageAsync(message, deadLetterReason: payloadResponse);
-            return;
-        }
-
-        bool result = await _pensionRepository.SaveRetrievedPensionRecordAsync(message.CorrelationId, payload);
-
-        if (result)
-        {
-            logMessage = $"Retrieved pension successfully saved: {payload.PensionRetrievalRecordId}";
-            _logger.LogInformation(logMessage);
-            await messageActions.CompleteMessageAsync(message);
-        }
-        else
-        {
-            logMessage = $"Failed to persist retrieved pension: {payload.PensionRetrievalRecordId}";
-            _logger.LogCritical(logMessage);
-            await messageActions.AbandonMessageAsync(message);
-        }
+        return payload!;
     }
 
     private void LogRequestMesage(ServiceBusReceivedMessage receivedMessage)
     {
         var logMessage = $"Message Received - CorrelationId:[{receivedMessage.CorrelationId}], " +
-            $"MessageId: [{receivedMessage.MessageId}], ContentType: [{receivedMessage.ContentType}]";
-        _logger.LogInformation(logMessage);
-        _logger.LogInformation("Message Body: {body}", receivedMessage.Body);
+            $"MessageId: [{receivedMessage.MessageId}], ContentType: [{receivedMessage.ContentType}] {Environment.NewLine}";
+        _logger.LogWarning("Message Details : {details} Body: {body}", logMessage, receivedMessage.Body);
     }
 }

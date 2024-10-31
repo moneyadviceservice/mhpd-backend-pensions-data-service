@@ -33,8 +33,10 @@ public class RetrievedRecordsFunctionTest
         _function = new RetrievedRecordsFunction(_loggerMock.Object, _repository.Object, _idValidatorMock.Object);
     }
 
-    [Fact]
-    public async Task Function_ShouldReturnOk_WhenHeadersAreValid()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Function_ShouldReturnOk_WhenHeadersAreValid(bool withHeader)
     {
         //Arrange
         var retrievalRecordId = Guid.NewGuid().ToString();
@@ -43,8 +45,15 @@ public class RetrievedRecordsFunctionTest
             { Constants.RetrievedRecordQuery, retrievalRecordId}
         };
 
+        var headers = new Dictionary<string, StringValues>();
+        if (withHeader)
+        {
+            headers.Add(HeaderConstants.CorrelationId, Guid.NewGuid().ToString());
+        }
+
         var mockRequest = new Mock<HttpRequest>();
         mockRequest.Setup(req => req.Query).Returns(new QueryCollection(queryParams));
+        mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
 
         //Act
         var response = await _function.RunAsync(mockRequest.Object);
@@ -59,18 +68,29 @@ public class RetrievedRecordsFunctionTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Function_ShouldReturnBadRequest_WhenHeadersAreInvalid(bool withHeader)
+    public async Task Function_ShouldReturnBadRequest_WhenQueryIsInvalid(bool withParams)
     {
         //Arrange
-        _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(false);
+        var correlationId = Guid.NewGuid().ToString();
         var queryParams = new Dictionary<string, StringValues>();
 
-        if (withHeader)
+        _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(false);
+        _idValidatorMock.Setup(x => x.IsValidGuid(correlationId)).Returns(true);
+        
+        var headers = new Dictionary<string, StringValues>
+        {
+            { HeaderConstants.CorrelationId, correlationId}
+        };
+
+        if (withParams)
+        {
             queryParams.Add(HeaderConstants.UserSessionId, Guid.NewGuid().ToString());
+        }
 
         var queries = new QueryCollection(queryParams);
         var mockRequest = new Mock<HttpRequest>();
         mockRequest.Setup(req => req.Query).Returns(queries);
+        mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
 
         //Act
         var response = await _function.RunAsync(mockRequest.Object);
@@ -79,6 +99,36 @@ public class RetrievedRecordsFunctionTest
         var result = Assert.IsType<BadRequestObjectResult>(response);
         Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
         Assert.Equal(Constants.InvalidRecordId, result.Value);
+        _repository.Verify(mock => mock.GetRetrievedRecordsAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Function_ShouldReturnBadRequest_WhenHeaderIsInvalid()
+    {
+        //Arrange
+        _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(false);
+
+        var queryParams = new Dictionary<string, StringValues>
+        {
+            { Constants.RetrievedRecordQuery, Guid.NewGuid().ToString() }
+        };
+
+        var headers = new Dictionary<string, StringValues>
+        {
+            { HeaderConstants.CorrelationId, "Guid.NewGuid().ToString()"}
+        };
+
+        var mockRequest = new Mock<HttpRequest>();
+        mockRequest.Setup(req => req.Query).Returns(new QueryCollection(queryParams));
+        mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
+
+        //Act
+        var response = await _function.RunAsync(mockRequest.Object);
+
+        //Assert
+        var result = Assert.IsType<BadRequestObjectResult>(response);
+        Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.Equal(Constants.InvalidCorrelationId, result.Value);
         _repository.Verify(mock => mock.GetRetrievedRecordsAsync(It.IsAny<string>()), Times.Never);
     }
 }

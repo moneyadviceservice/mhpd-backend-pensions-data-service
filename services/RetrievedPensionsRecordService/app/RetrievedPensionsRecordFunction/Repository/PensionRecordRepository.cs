@@ -54,7 +54,7 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
             logMessage = $"Retrieved pension record for PEI: {payload.Pei} " +
                 $"{(response.StatusCode == HttpStatusCode.Created ? "created" : "updated")}.";
 
-            _logger.LogInformation(logMessage);
+            _logger.LogWarning(logMessage);
             return true;
         }
 
@@ -68,6 +68,6 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
         var connDetails = $"Accessing Cosmos DB partition: [{_configuration.ContainerPartitionKey}] on " +
             $"container: [{_configuration.ContainerId}] in the database [{_configuration.DatabaseId}]";
 
-        _logger.LogCritical(connDetails);
+        _logger.LogInformation(connDetails);
     }
 }

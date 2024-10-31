@@ -111,7 +111,7 @@ public class RetrievedPensionFunctionTests
 
         // Assert
         _actionsMock.Verify(r => r.DeadLetterMessageAsync(message, null,
-            It.Is<string>(arg => arg.StartsWith(ValidateFailReason)), null, It.IsAny<CancellationToken>()), Times.Once);
+            It.Is<string>(arg => arg.EndsWith(ValidateFailReason)), null, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

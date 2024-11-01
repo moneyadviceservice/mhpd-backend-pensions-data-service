@@ -29,7 +29,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
         var record = await _repository.CreateRecordIfNotExistsAsync(payload);
         if (record == null)
         {
-            _logger.LogInformation("Pension retrieval record already exists for session: {session}. Skipping further processing...", payload.UserSessionId);
+            _logger.LogWarning("Pension retrieval record already exists for session: {session}. Skipping further processing...", payload.UserSessionId);
             return;
         }
 
@@ -51,7 +51,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
                 },
                 onRetry: (outcome, lapse, attemptCount, context) =>
                 {
-                    _logger.LogInformation("Attempt #{attemptCount} to fetch PEI data for user session {sessionId}", attemptCount, payload.UserSessionId);
+                    _logger.LogWarning("Retry attempt #{attemptCount} to fetch PEI data for user session {sessionId}", attemptCount, payload.UserSessionId);
                 }
             );
 
@@ -59,7 +59,15 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
         {
             await retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _client.GetPeiDataAsync(peiResponse.Rpt, payload.Iss, payload.PeisId, payload.UserSessionId);
+                var response = await _client.GetPeiDataAsync(new PeiRequest
+                {
+                    Iss = payload.Iss,
+                    Rpt = peiResponse.Rpt,
+                    CorrelationId = correlationId,
+                    UserSessionId = payload.UserSessionId,
+                    PeisId = payload.PeisId,
+                });
+
                 peiResponse.SetRpt(response.Rpt);
 
                 foreach (var pei in response.PeiData)
@@ -70,7 +78,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
                     if (peiResponse.TryAdd(pei))
                     {
                         var message = CreateRequestPayload(pei, record);
-                        _logger.LogInformation("Pension details request sent for PEI {pei} with retrieval Id {id}"
+                        _logger.LogWarning("Pension details request sent for PEI {pei} with retrieval Id {id}"
                             , message.Pei, message.PensionRetrievalRecordId);
                         await _messagingService.SendMessageAsync(message, _serviceBusConfiguration.OutboundQueue!, correlationId);
 
@@ -89,6 +97,8 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
         {
             _logger.LogError(error, "Error retrieving PEI data for Id {PeisId}", payload.PeisId);
         }
+
+        _logger.LogWarning("Pei request orchestration complete");
     }
 
     private static PensionRequestPayload CreateRequestPayload(PeiData pei, PensionsRetrievalRecord record)

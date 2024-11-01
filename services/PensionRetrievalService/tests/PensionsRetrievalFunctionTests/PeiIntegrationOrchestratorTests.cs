@@ -81,8 +81,8 @@ public class PeiIntegrationOrchestratorTests
         await orchestrator.RunAsync(payload, correlationId);
 
         //Assert
-        client.Verify(mock => mock.GetPeiDataAsync(It.IsAny<string>(), payload.Iss,
-            payload.PeisId, payload.UserSessionId), Times.Exactly(expectedClientCallCount));
+        client.Verify(mock => mock.GetPeiDataAsync(It.Is<PeiRequest>(request => request.Iss == payload.Iss && 
+        request.PeisId == payload.PeisId && request.UserSessionId == payload.UserSessionId)), Times.Exactly(expectedClientCallCount));
 
         _messagingService.Verify(mock => mock.SendMessageAsync(It.IsAny<PensionRequestPayload>(), OutboundQueue, correlationId),
             Times.Exactly(expectedMessagingCallCount));
@@ -98,7 +98,7 @@ public class PeiIntegrationOrchestratorTests
         var attempts = 1;
 
         var sequence = httpClientMock
-            .SetupSequence(mock => mock.GetPeiDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            .SetupSequence(mock => mock.GetPeiDataAsync(It.IsAny<PeiRequest>()));
 
         while (simulationAttempts > attempts)
         {

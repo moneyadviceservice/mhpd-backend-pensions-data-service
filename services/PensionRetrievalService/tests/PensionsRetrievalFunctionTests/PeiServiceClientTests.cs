@@ -1,4 +1,5 @@
 ﻿using MhpdCommon.Constants.HttpClient;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using PensionsRetrievalFunction.HttpClients;
@@ -10,10 +11,12 @@ namespace PensionsRetrievalFunctionTests;
 public class PeiServiceClientTests
 {
     private readonly Mock<IHttpClientFactory> _httpClientFactory;
+    private readonly Mock<ILogger<PeiServiceClient>> _logger;
 
     public PeiServiceClientTests()
     {
         _httpClientFactory = new Mock<IHttpClientFactory>();
+        _logger = new Mock<ILogger<PeiServiceClient>>();
     }
 
     [Theory]
@@ -24,10 +27,10 @@ public class PeiServiceClientTests
     public async Task WhenHttpClientIsExecutedWithInvalidParameters_ThrowsException(string iss, string peisId, string userSessionId)
     {
         //Arrange
-        var client = new PeiServiceClient(_httpClientFactory.Object);
+        var client = new PeiServiceClient(_httpClientFactory.Object, _logger.Object);
 
         //Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => client.GetPeiDataAsync(null, iss, peisId, userSessionId));
+        await Assert.ThrowsAsync<ArgumentException>(() => client.GetPeiDataAsync(CreatePeiRequest(null, iss, peisId, userSessionId)));
     }
 
     [Theory]
@@ -37,10 +40,10 @@ public class PeiServiceClientTests
     public async Task WhenHttpClientIsExecutedWithNullParameters_ThrowsException(string iss, string peisId, string userSessionId)
     {
         //Arrange
-        var client = new PeiServiceClient(_httpClientFactory.Object);
+        var client = new PeiServiceClient(_httpClientFactory.Object, _logger.Object);
 
         //Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => client.GetPeiDataAsync("rpt", iss, peisId, userSessionId));
+        await Assert.ThrowsAsync<ArgumentNullException>(() => client.GetPeiDataAsync(CreatePeiRequest("rpt", iss, peisId, userSessionId)));
     }
 
     [Theory]
@@ -55,10 +58,10 @@ public class PeiServiceClientTests
             {
                 BaseAddress = new Uri("http://localhost:1234")
             });
-        var client = new PeiServiceClient(_httpClientFactory.Object);
+        var client = new PeiServiceClient(_httpClientFactory.Object, _logger.Object);
 
         //Act
-        var response = await client.GetPeiDataAsync("Some", "Sample", "Test", "Data");
+        var response = await client.GetPeiDataAsync(CreatePeiRequest("Some", "Sample", "Test", "Data"));
 
         //Assert
         handler.Protected().Verify("SendAsync", Times.Once(), ItExpr.IsAny<HttpRequestMessage>(),
@@ -97,6 +100,18 @@ public class PeiServiceClientTests
         }
 
         return httpMessageHandlerMock;
+    }
+
+    private static PeiRequest CreatePeiRequest(string? rpt, string iss, string peisId, string userSessionId)
+    {
+        return new PeiRequest
+        {
+            CorrelationId = Guid.NewGuid().ToString(),
+            Iss = iss,
+            PeisId = peisId,
+            Rpt = rpt,
+            UserSessionId = userSessionId
+        };
     }
 
     private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, List<PeiData>? content = null)

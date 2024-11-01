@@ -30,13 +30,21 @@ public class RetrievalRecordFunctionTests
         _function = new RetrievalRecordFunction(_loggerMock.Object, _repository.Object, _idValidatorMock.Object);
     }
 
-    [Fact]
-    public async Task Function_ShouldReturnOk_WhenHeadersAreValid()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Function_ShouldReturnOk_WhenHeadersAreValid(bool withCorrelationHeader)
     {
         //Arrange
         var userSessionId = Guid.NewGuid().ToString();
+        var correlationId = Guid.NewGuid().ToString();
         var request = new DefaultHttpContext().Request;
         request.Headers[HeaderConstants.UserSessionId] = userSessionId;
+
+        if (withCorrelationHeader)
+        {
+            request.Headers[HeaderConstants.CorrelationId] = correlationId;
+        }
 
         var mockRequest = new Mock<HttpRequest>();
         mockRequest.Setup(req => req.Headers).Returns(request.Headers);
@@ -54,14 +62,21 @@ public class RetrievalRecordFunctionTests
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task Function_ShouldReturnBadRequest_WhenHeadersAreInvalid(bool withHeader)
+    public async Task Function_ShouldReturnBadRequest_WhenSessionIdHeadersIsInvalid(bool withSessionId)
     {
         //Arrange
+        var correlationId = Guid.NewGuid().ToString();
         _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(false);
+        _idValidatorMock.Setup(x => x.IsValidGuid(correlationId)).Returns(true);
+
         var request = new DefaultHttpContext().Request;
 
-        if(withHeader)
+        request.Headers[HeaderConstants.CorrelationId] = correlationId;
+
+        if (withSessionId)
+        {
             request.Headers[HeaderConstants.UserSessionId] = Guid.NewGuid().ToString();
+        }
 
         var mockRequest = new Mock<HttpRequest>();
         mockRequest.Setup(req => req.Headers).Returns(request.Headers);
@@ -73,6 +88,30 @@ public class RetrievalRecordFunctionTests
         var result = Assert.IsType<BadRequestObjectResult>(response);
         Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
         Assert.Equal(Constants.ResponseType.InvalidSessionId, result.Value);
+        _repository.Verify(mock => mock.GetRetrievalRecordAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Function_ShouldReturnBadRequest_WhenCorrelationIdHeadersIsInvalid()
+    {
+        //Arrange
+        var correlationId = "Guid.NewGuid().ToString()";
+        _idValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(false);
+
+        var request = new DefaultHttpContext().Request;
+
+        request.Headers[HeaderConstants.CorrelationId] = correlationId;
+
+        var mockRequest = new Mock<HttpRequest>();
+        mockRequest.Setup(req => req.Headers).Returns(request.Headers);
+
+        //Act
+        var response = await _function.RunAsync(mockRequest.Object);
+
+        //Assert
+        var result = Assert.IsType<BadRequestObjectResult>(response);
+        Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
+        Assert.Equal(Constants.ResponseType.InvalidCorrelationId, result.Value);
         _repository.Verify(mock => mock.GetRetrievalRecordAsync(It.IsAny<string>()), Times.Never);
     }
 }

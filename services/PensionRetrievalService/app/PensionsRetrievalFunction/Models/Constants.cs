@@ -2,6 +2,12 @@
 
 public static class Constants
 {
+    internal static class LogSource
+    {
+        public const string Queue = "Retrieved Pensions Message Queue";
+        public const string Http = "Retrieved Pensions Http GET";
+    }
+
     internal static class RetrievalStatus
     {
         internal const string New = "NEW";
@@ -13,5 +19,7 @@ public static class Constants
     public static class ResponseType
     {
         public const string InvalidSessionId = "userSessionId missing or invalid";
+        public const string InvalidCorrelationId = "mhpdCorrelationId invalid";
+        public const string InvalidPayloadResponse = "Invalid pension retrieval payload";
     }
 }

@@ -19,7 +19,21 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
     [Function("RetrievalRecordFunction")]
     public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "pensions-retrieval-records")] HttpRequest req)
     {
+        var correlationId = req.Headers[HeaderConstants.CorrelationId].ToString();
+
+        if (string.IsNullOrEmpty(correlationId))
+        {
+            correlationId = Guid.NewGuid().ToString();
+        }
+
+        if (!_idValidator.IsValidGuid(correlationId))
+        {
+            return new BadRequestObjectResult(Constants.ResponseType.InvalidCorrelationId);
+        }
+
         var userSessionId = req.Headers[HeaderConstants.UserSessionId].ToString();
+
+        using var scope = _logger.BeginCorrelationScope(correlationId, Constants.LogSource.Http);
 
         _logger.LogRequest($"User session Id: {userSessionId}");
 

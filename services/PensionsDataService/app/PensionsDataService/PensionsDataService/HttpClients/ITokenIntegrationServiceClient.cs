@@ -6,5 +6,5 @@ namespace PensionsDataService.HttpClients;
 
 public interface ITokenIntegrationServiceClient
 {
-    Task<PeiRetrievalDetailsResponseModel> PostAsync(CdaTokenRequestModel request, RequestHeaderModel requestHeader);
+    Task<PeiRetrievalDetailsResponseModel> PostAsync(PensionsDataRequestModel request, RequestHeaderModel requestHeader);
 }

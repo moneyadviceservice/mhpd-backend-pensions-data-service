@@ -51,7 +51,7 @@ public class TokenControllerUnitTests
         var cdaValidators = Helper.GetOrderedValidators();
 
         // Create the TokenRequestValidatorPipeline with the mock validators
-        Mock<TokenRequestValidatorPipeline> mockCdaValidatorPipeline = new(cdaValidators);
+        Mock<PensionsDataRequestValidatorPipeline> mockCdaValidatorPipeline = new(cdaValidators);
         
         _iCdaToken
             .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>(), _requestHeaderModel))
@@ -121,14 +121,13 @@ public class TokenControllerUnitTests
     public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_WithValidRequestBody_ThenItShouldReturn_OKRequest200Response()
     {
         // Arrange           
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel()
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType, // Only used for triggering the validations
             ClientId = TokenQueryParams.ValidClientId,
             ClientSecret = TokenQueryParams.ValidClientSecret,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = AsUriValue,
+            RedirectUrl = AsUriValue,
         };
         
         _iCdaToken
@@ -413,14 +412,13 @@ public class TokenControllerUnitTests
     public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_InvalidClientSecret_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange           
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
             ClientSecret = string.Empty,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = AsUriValue,
+            RedirectUrl = AsUriValue,
         };
 
         // Act
@@ -434,40 +432,15 @@ public class TokenControllerUnitTests
     }
     
     [Fact]
-    public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_InvalidGrantType_ThenItShouldReturn_BadRequest400Response()
-    {
-        // Arrange           
-        var request = new CdaTokenRequestModel
-        {
-            GrantType = string.Empty,
-            ClientId = TokenQueryParams.ValidClientId,
-            ClientSecret = TokenQueryParams.ValidClientSecret,
-            Code = TokenQueryParams.ValidCode,
-            CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = AsUriValue,
-        };
-
-        // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
-        var badResult = (BadRequestObjectResult)result;
-
-        // Assert
-        Assert.True(result.GetType() == typeof(BadRequestObjectResult));
-        Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-        Assert.Equal(TokenValidationMessages.MissingGrantType, badResult.Value);
-    }
-    
-    [Fact]
     public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_InvalidClientId_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange           
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientSecret = TokenQueryParams.ValidClientSecret,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = AsUriValue,
+            RedirectUrl = AsUriValue,
         };
 
         // Act
@@ -484,13 +457,12 @@ public class TokenControllerUnitTests
     public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_InvalidCode_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange           
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
             ClientSecret = TokenQueryParams.ValidClientSecret,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = AsUriValue,
+            RedirectUrl = AsUriValue,
         };
 
         // Act
@@ -500,18 +472,17 @@ public class TokenControllerUnitTests
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-        Assert.Equal(TokenValidationMessages.InvalidRequest, badResult.Value);
+        Assert.Equal(TokenValidationMessages.MissingAuthorisationCode, badResult.Value);
     }
     
     [Fact]
     public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_InvalidRedirectUri_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange           
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             ClientSecret = TokenQueryParams.ValidClientSecret,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier
         };
@@ -523,20 +494,19 @@ public class TokenControllerUnitTests
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-        Assert.Equal(TokenValidationMessages.InvalidRequest, badResult.Value);
+        Assert.Equal(TokenValidationMessages.RedirectUriNotPresent, badResult.Value);
     }
     
     [Fact]
     public async void WhenController_Pei_Retrieval_Endpoint_IsCalled_InvalidCodeVerifier_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             ClientSecret = TokenQueryParams.ValidClientSecret,
-            RedirectUri = AsUriValue
+            RedirectUrl = AsUriValue
         };
 
         // Act
@@ -546,20 +516,19 @@ public class TokenControllerUnitTests
         // Assert
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-        Assert.Equal(TokenValidationMessages.InvalidRequest, badResult.Value);
+        Assert.Equal(TokenValidationMessages.CodeVerifierNotPresent, badResult.Value);
     }
     
     [Fact]
     public async Task WhenPeisIdIsMissingInIdToken_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             ClientSecret = TokenQueryParams.ValidClientSecret,
-            RedirectUri = AsUriValue,
+            RedirectUrl = AsUriValue,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier
         };
 
@@ -587,13 +556,12 @@ public class TokenControllerUnitTests
     public async Task When_IdToken_Is_Invalid_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
             ClientId = TokenQueryParams.ValidClientId,
-            Code = TokenQueryParams.ValidCode,
+            AuthorisationCode = TokenQueryParams.ValidCode,
             ClientSecret = TokenQueryParams.ValidClientSecret,
-            RedirectUri = AsUriValue,
+            RedirectUrl = AsUriValue,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier
         };
 

@@ -30,7 +30,7 @@ public class CdaTokenRequestModel
     public string? Code { get; set; }
     
     [FromQuery(Name = QueryParams.Cda.Token.RedirectUri)]
-    public string? RedirectUri { get; set; }
+    public string? RedirectUrl { get; set; }
     
     [FromQuery(Name = QueryParams.Cda.Token.CodeVerifier)]
     public string? CodeVerifier { get; set; }

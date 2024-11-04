@@ -30,8 +30,8 @@ public static class Helper
         var logger13 = new Mock<ILogger<CodeNotPresentValidation>>();
         var logger14 = new Mock<ILogger<CodeVerifierNotPresentValidation>>();
         var logger15 = new Mock<ILogger<CodeVerifierNotBase64String>>();
-        var logger16 = new Mock<ILogger<RedirectUriNotPresentValidation>>();
-        var logger17 = new Mock<ILogger<RedirectUriNotValidUrlValidation>>();
+        var logger16 = new Mock<ILogger<RedirectUrlNotPresentValidation>>();
+        var logger17 = new Mock<ILogger<RedirectUrlNotValidUrlValidation>>();
         var logger18 = new Mock<ILogger<UnsupportedGrantTypeValidation>>();
         var logger19 = new Mock<ILogger<CodeInvalidFormatValidation>>();
         var logger20 = new Mock<ILogger<ClaimTokenNotPresentValidation>>();
@@ -58,8 +58,8 @@ public static class Helper
             new CodeNotPresentValidation(logger13.Object),
             new CodeVerifierNotPresentValidation(logger14.Object),
             new CodeVerifierNotBase64String(logger15.Object),
-            new RedirectUriNotPresentValidation(logger16.Object),
-            new RedirectUriNotValidUrlValidation(logger17.Object),
+            new RedirectUrlNotPresentValidation(logger16.Object),
+            new RedirectUrlNotValidUrlValidation(logger17.Object),
             new UnsupportedGrantTypeValidation(logger18.Object),
             new CodeInvalidFormatValidation(logger19.Object),
             new ClaimTokenNotPresentValidation(logger20.Object),

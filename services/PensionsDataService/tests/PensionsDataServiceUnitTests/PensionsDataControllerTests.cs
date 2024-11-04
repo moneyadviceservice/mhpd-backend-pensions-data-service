@@ -177,7 +177,7 @@ public class PensionsDataControllerTests
         var request = new PensionsDataRequestModel
         {
             AuthorisationCode = "123e4567-e89b-12d3-a456-426614174000",
-            RedirectUri = "https://example.com"
+            RedirectUrl = "https://example.com"
         };
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -201,8 +201,10 @@ public class PensionsDataControllerTests
         // Arrange
         var request = new PensionsDataRequestModel
         {
+            ClientId = TokenQueryParams.ValidClientId,
+            ClientSecret = TokenQueryParams.ValidClientSecret,
             AuthorisationCode = TokenQueryParams.ValidCode,
-            RedirectUri = "https://example.com",
+            RedirectUrl = "https://example.com",
             CodeVerifier = TokenQueryParams.ValidCodeVerifier
         };
 
@@ -214,7 +216,7 @@ public class PensionsDataControllerTests
             .Returns(ValidationResult.Success);
 
         // Mock the token integration service client to simulate a successful response
-        _mockTokenIntegrationServiceClient.Setup(client => client.PostAsync(It.IsAny<CdaTokenRequestModel>(), It.IsAny<RequestHeaderModel>()))
+        _mockTokenIntegrationServiceClient.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new PeiRetrievalDetailsResponseModel());
 
         // Act
@@ -342,8 +344,7 @@ public class PensionsDataControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseModel = Assert.IsType<PensionsDataResponseModel>(okResult.Value);
-        Assert.NotNull(responseModel.PensionPolicies);
-        Assert.Empty(responseModel.PensionPolicies);  // Ensure the pension policies are empty
+        Assert.Null(responseModel.PensionPolicies);
     }
 
     [Fact]
@@ -379,8 +380,7 @@ public class PensionsDataControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseModel = Assert.IsType<PensionsDataResponseModel>(okResult.Value);
-        Assert.NotNull(responseModel.PensionPolicies);
-        Assert.Empty(responseModel.PensionPolicies);  // No pension policies should be mashed
+        Assert.Null(responseModel.PensionPolicies);
     }
     
     [Fact]

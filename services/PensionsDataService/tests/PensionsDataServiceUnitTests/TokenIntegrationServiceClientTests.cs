@@ -44,13 +44,13 @@ public class TokenIntegrationServiceClientTests
     [Fact]
     public async Task PostRpt_Should_Return_Response_When_Successful()
     {
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.UmaGrantType,
-            ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
-            ClaimToken = TokenQueryParams.ValidJwtToken,
-            Scope = TokenQueryParams.Owner,
-            Ticket = TokenQueryParams.ValidJwtToken
+            ClientId = TokenQueryParams.ValidClientId,
+            ClientSecret = TokenQueryParams.ValidClientSecret,
+            AuthorisationCode = TokenQueryParams.ValidCode,
+            RedirectUrl = Helper.ValidRedirectUri,
+            CodeVerifier = TokenQueryParams.ValidCodeVerifier
         };
 
         var response = new HttpResponseMessage
@@ -78,13 +78,13 @@ public class TokenIntegrationServiceClientTests
     [Fact]
     public async Task PostRpt_Should_Return_Response_When_PeisId_Is_Present_Successful()
     {
-        var request = new CdaTokenRequestModel
+        var request = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.UmaGrantType,
-            ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
-            ClaimToken = TokenQueryParams.ValidJwtToken,
-            Scope = TokenQueryParams.Owner,
-            Ticket = TokenQueryParams.ValidJwtToken
+            ClientId = TokenQueryParams.ValidClientId,
+            ClientSecret = TokenQueryParams.ValidClientSecret,
+            AuthorisationCode = TokenQueryParams.ValidCode,
+            RedirectUrl = Helper.ValidRedirectUri,
+            CodeVerifier = TokenQueryParams.ValidCodeVerifier
         };
 
         var response = new HttpResponseMessage
@@ -128,7 +128,7 @@ public class TokenIntegrationServiceClientTests
     [Fact]
     public async Task PostRpt_Should_Throw_ServiceCommunicationException_When_HttpRequestException_Occurs()
     {
-        var request = new CdaTokenRequestModel();
+        var request = new PensionsDataRequestModel();
 
         // Simulate HttpRequestException
         _handlerMoq.Protected()
@@ -149,7 +149,7 @@ public class TokenIntegrationServiceClientTests
     [Fact]
     public async Task PostRpt_Should_Throw_InvalidOperationException_When_Response_Content_Is_Null()
     {
-        var request = new CdaTokenRequestModel();
+        var request = new PensionsDataRequestModel();
 
         var response = new HttpResponseMessage
         {
@@ -174,7 +174,7 @@ public class TokenIntegrationServiceClientTests
     [Fact]
     public async Task PostRpt_Should_Throw_ServiceCommunicationException_When_Unexpected_Exception_Occurs()
     {
-        var request = new CdaTokenRequestModel();
+        var request = new PensionsDataRequestModel();
 
         // Simulate a generic exception
         _handlerMoq.Protected()

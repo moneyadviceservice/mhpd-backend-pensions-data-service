@@ -53,7 +53,7 @@ public class PensionsDataController(
 
         var response = new PensionsDataResponseModel
         {
-            PensionPolicies = new List<PensionPolicy>(),
+            PensionPolicies = null,
             PeiInformation = new PeiInformation
             {
                 PeiRetrievalComplete = retrievalRecordResult.PeiRetrievalComplete,
@@ -82,7 +82,7 @@ public class PensionsDataController(
                 response.PensionPolicies = GetMashedData(retrievedRecordResult);
 
                 // Update retrieval status
-                response.PeiInformation.PeiData = UpdateRetrievalStatus(retrievalRecordResult.PeiData);
+                response.PeiInformation.PeiData = UpdateRetrievalStatus(retrievalRecordResult.PeiData, retrievedRecordResult);
             }
         }
         
@@ -151,53 +151,55 @@ public class PensionsDataController(
         };
     }
     
-    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request, ILogger<PensionsDataController> logger)
+    private static PensionsDataRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request, ILogger<PensionsDataController> logger)
     {
-        var cdaTokenRequest = new CdaTokenRequestModel
+        var requestModel = new PensionsDataRequestModel
         {
-            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
-            ClientId = TokenQueryParams.ValidClientId,
-            ClientSecret = TokenQueryParams.ValidClientSecret,
-            Code = request.AuthorisationCode,
-            RedirectUri = request.RedirectUri,
+            ClientId = request.ClientId,
+            ClientSecret = request.ClientSecret,
+            AuthorisationCode = request.AuthorisationCode,
+            RedirectUrl = request.RedirectUrl,
             CodeVerifier = request.CodeVerifier
         };
         
-        // Log cdaTokenServiceRequest
-        logger.LogRequest(cdaTokenRequest);
+        logger.LogRequest(requestModel);
 
-        return cdaTokenRequest;
+        return requestModel;
     }
     
-    private static List<PensionPolicy>? GetMashedData(List<RetrievedPensionRecord> retrievedRecordResult)
+    private static List<PensionPolicy> GetMashedData(List<RetrievedPensionRecord> retrievedRecordResult)
     {
-        var groupedRecords = retrievedRecordResult
-            .Where(record => record.RetrievalResult?.ValueKind == JsonValueKind.Array) // Filter for records with array RetrievalResult
-            .SelectMany<RetrievedPensionRecord, JsonElement>(record => record.RetrievalResult?.EnumerateArray()!) // Flatten the arrays into a single sequence
-            .GroupBy(item =>
-            {
-                // Safely attempt to get the property
-                if (item.TryGetProperty(ExternalPensionPolicyId, out var externalPolicyId))
-                {
-                    return externalPolicyId.GetString();
-                }
-                return null;
-            })
-            .ToList();
+        var policies = new List<PensionPolicy>();
+        var mappedData = GetMappedRetrievalResults(retrievedRecordResult);
 
-        return groupedRecords.Select(group => new PensionPolicy { PensionArrangements = group.ToList() }).ToList();
-    }
-    
-    private static List<PeiDataModel> UpdateRetrievalStatus(List<PeiDataModel> data)
-    {
-        foreach (var peiData in data.Where(peiData => 
-                     data.Exists(p => p.Pei == peiData.Pei && 
-                                      p.RetrievalStatus == RetrievalStatusConstants.RetrievalRequested)))
+        foreach (var policy in mappedData.Item1)
         {
-            peiData.RetrievalStatus = RetrievalStatusConstants.RetrievalComplete;
+            if (policy.Value is JsonElement jsonElement)
+            {
+                policies.Add(new PensionPolicy
+                {
+                    PensionArrangements = new List<JsonElement> { jsonElement } // Add as a single-item list
+                });
+            }
         }
 
-        return data;
+        policies.AddRange(mappedData.Item2.Select(kvp => new PensionPolicy { PensionArrangements = kvp.Value }));
+
+        return policies;
+    }
+    
+    private static List<PeiDataModel> UpdateRetrievalStatus(List<PeiDataModel> peiDataList, List<RetrievedPensionRecord> retrievedPensionsRecords)
+    {
+        foreach (var peiData in peiDataList)
+        {
+            // Check if there is a matching pei in the retrievedPensionsRecords
+            var matchingRecord = retrievedPensionsRecords.Find(record => record.Pei == peiData.Pei);
+
+            // If there is a matching record, set status to RETRIEVAL_COMPLETE. Otherwise, retain the existing retrievalStatus
+            peiData.RetrievalStatus = matchingRecord != null ? RetrievalStatusConstants.RetrievalComplete : peiData.RetrievalStatus;
+        }
+
+        return peiDataList;
     }
     
     private static bool IsPensionsDataRetrievalComplete(bool peiRetrievalComplete, List<PeiDataModel> peiData)
@@ -210,5 +212,81 @@ public class PensionsDataController(
     
         // Return false if PensionsDataRetrievalComplete is false
         return false;
+    }
+
+    private static Tuple<Dictionary<int, dynamic>, Dictionary<string, List<JsonElement>>> GetMappedRetrievalResults(List<RetrievedPensionRecord> retrievedRecordResults)
+    { 
+        var policyList = new Dictionary<int, dynamic>();
+        var linkedExternalPolicies = new Dictionary<string, List<JsonElement>>();
+
+        var pensionPolicyId = 1;
+        foreach (var record in retrievedRecordResults)
+        {
+            ProcessRetrievalResults(record, ref policyList, ref linkedExternalPolicies, pensionPolicyId);
+            pensionPolicyId++;
+        }
+
+        return new Tuple<Dictionary<int, dynamic>, Dictionary<string, List<JsonElement>>>(policyList, linkedExternalPolicies);
+    }
+
+    private static int GetPolicyKey(string policyId, Dictionary<int, dynamic> policyList)
+    {
+       return policyList.FirstOrDefault(s =>
+       {
+           if (s.Value is string strValue)
+           {
+               return strValue == policyId;
+           }
+
+           return false;
+       }).Key;
+    }
+
+    private static void ProcessRetrievalResults(RetrievedPensionRecord record,
+        ref Dictionary<int, dynamic> policyList,
+        ref Dictionary<string, List<JsonElement>> linkedExternalPolicies,
+        int pensionPolicyId)
+    {
+        if (record.RetrievalResult is JsonElement { ValueKind: JsonValueKind.Array } retrievalResult)
+        {
+            foreach (var item in retrievalResult.EnumerateArray())
+            {
+                // Check if it has an externalPensionPolicyId
+                if (item.TryGetProperty(ExternalPensionPolicyId, out var policyId))
+                {
+                    ProcessRecord(policyId.ToString(), item, ref linkedExternalPolicies, ref policyList, ref pensionPolicyId);
+                }
+                else
+                {
+                    if (!policyList.TryAdd(pensionPolicyId, item))
+                    {
+                        var key = policyList.First(s => s.Key == pensionPolicyId).Value.ToString();
+                        string result = key as string ?? Convert.ToString(key);
+                        linkedExternalPolicies[result].Add(item);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void ProcessRecord(string policyId,
+        JsonElement item,
+        ref Dictionary<string, List<JsonElement>> linkedExternalPolicies, 
+        ref Dictionary<int, dynamic> policyList, 
+        ref int pensionPolicyId)
+    {
+        // Add it to the linkedExternalPolicies
+        if (linkedExternalPolicies.TryGetValue(policyId, out _))
+        {
+            linkedExternalPolicies[policyId].Add(item);
+
+            // Get pensionPolicyList key
+            pensionPolicyId = GetPolicyKey(policyId, policyList);
+        }
+        else
+        {
+            linkedExternalPolicies.Add(policyId, [item]);
+            policyList.Add(pensionPolicyId, policyId);
+        }
     }
 }

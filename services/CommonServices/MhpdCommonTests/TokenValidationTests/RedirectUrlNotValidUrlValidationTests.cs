@@ -5,20 +5,20 @@ using Moq;
 
 namespace MhpdCommonTests.TokenValidationTests;
 
-public class RedirectUriNotValidUrlValidationTests
+public class RedirectUrlNotValidUrlValidationTests
 {
-    private readonly RedirectUriNotValidUrlValidation _validator;
+    private readonly RedirectUrlNotValidUrlValidation _validator;
 
-    public RedirectUriNotValidUrlValidationTests()
+    public RedirectUrlNotValidUrlValidationTests()
     {
-        Mock<ILogger<RedirectUriNotValidUrlValidation>> loggerMock = new();
-        _validator = new RedirectUriNotValidUrlValidation(loggerMock.Object);
+        Mock<ILogger<RedirectUrlNotValidUrlValidation>> loggerMock = new();
+        _validator = new RedirectUrlNotValidUrlValidation(loggerMock.Object);
     }
 
     [Fact]
     public void Validate_ShouldReturnFailure_WhenRedirectUriIsInvalidUrl()
     {
-        var result = _validator.Validate(new CdaTokenRequestModel { RedirectUri = "htps://ww.example.com/api/1" });
+        var result = _validator.Validate(new CdaTokenRequestModel { RedirectUrl = "htps://ww.example.com/api/1" });
 
         Assert.False(result.IsValid);
         Assert.Equal(TokenValidationMessages.InvalidRedirectUri, result.ErrorMessage);
@@ -27,7 +27,7 @@ public class RedirectUriNotValidUrlValidationTests
     [Fact]
     public void Validate_ShouldReturnSuccess_WhenRedirectUriIsValidUrl()
     {
-        var result = _validator.Validate(new CdaTokenRequestModel { RedirectUri = Helper.ValidRedirectUri });
+        var result = _validator.Validate(new CdaTokenRequestModel { RedirectUrl = Helper.ValidRedirectUri });
         Assert.True(result.IsValid);
     }
 }

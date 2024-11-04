@@ -43,7 +43,7 @@ public class TokenRequestValidatorPipelineTests
             ClientSecret = TokenQueryParams.ValidClientSecret,
             Code = TokenQueryParams.ValidCode,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = Helper.ValidRedirectUri
+            RedirectUrl = Helper.ValidRedirectUri
         };
 
         // Get ordered validators
@@ -69,7 +69,7 @@ public class TokenRequestValidatorPipelineTests
             ClientSecret = TokenQueryParams.ValidClientSecret,
             Code = TokenQueryParams.ValidCode,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = Helper.ValidRedirectUri
+            RedirectUrl = Helper.ValidRedirectUri
         };
 
         // Get ordered validators

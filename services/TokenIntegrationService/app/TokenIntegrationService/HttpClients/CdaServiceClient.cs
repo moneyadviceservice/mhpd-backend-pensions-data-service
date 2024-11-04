@@ -10,13 +10,12 @@ namespace TokenIntegrationService.HttpClients;
 
 public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaServiceClient> logger) : ICdaServiceClient
 {
-    private readonly ILogger<CdaServiceClient> _logger = logger;
-
     public async Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request, RequestHeaderModel requestHeader)
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.CdaService);
+            
             // Add request ID header
             httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestHeader.XRequestId);
 
@@ -43,19 +42,19 @@ public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaS
         catch (HttpRequestException ex)
         {
             // Log the error and throw a more specific exception
-            _logger.LogError(ex, "An HTTP request error occurred while calling the CDA service");
+            logger.LogError(ex, "An HTTP request error occurred while calling the CDA service");
             throw new ServiceCommunicationException("Error communicating with CDA service", ex);
         }
         catch (InvalidOperationException ex)
         {
             // Log and handle specific invalid operation errors with contextual information
-            _logger.LogError(ex, "Invalid operation: {Message}", ex.Message);
+            logger.LogError(ex, "Invalid operation: {Message}", ex.Message);
             throw new InvalidOperationException("An invalid operation occurred during CDA service communication", ex);
         }
         catch (Exception ex)
         {
             // Log any other exceptions with context, but do not throw a generic Exception
-            _logger.LogError(ex, "An unexpected error occurred in PostRpt");
+            logger.LogError(ex, "An unexpected error occurred in PostRpt");
             throw new ServiceCommunicationException("An unexpected error occurred during CDA service communication.", ex);
         }
     }

@@ -28,7 +28,7 @@ public class TokenIntegrationServiceClient : ITokenIntegrationServiceClient
         _httpClient.BaseAddress = new Uri(endpoint);
     }
     
-    public async Task<PeiRetrievalDetailsResponseModel> PostAsync(CdaTokenRequestModel request, RequestHeaderModel requestHeader)
+    public async Task<PeiRetrievalDetailsResponseModel> PostAsync(PensionsDataRequestModel request, RequestHeaderModel requestHeader)
     {
         try
         {

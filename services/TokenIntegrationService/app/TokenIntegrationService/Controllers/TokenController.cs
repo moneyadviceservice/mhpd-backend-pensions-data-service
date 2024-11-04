@@ -16,7 +16,7 @@ public class TokenController(
     ILogger<TokenController> logger,
     IIdValidator idValidator,
     TokenIntegrationRequestValidatorPipeline validatorPipeline,
-    TokenRequestValidatorPipeline cdaRequestValidatorPipeline,
+    PensionsDataRequestValidatorPipeline cdaRequestValidatorPipeline,
     ITokenUtility tokenUtility)
     : ControllerBase
 {
@@ -54,7 +54,7 @@ public class TokenController(
 
     [HttpPost]
     [Route("pei_retrieval_details")]
-    public async Task<IActionResult> PostPeiRetrievalDetailsAsync([FromQuery] CdaTokenRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> PostPeiRetrievalDetailsAsync([FromQuery] PensionsDataRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {
         logger.LogRequest(request);
         
@@ -70,7 +70,8 @@ public class TokenController(
             return await Task.FromResult<IActionResult>(BadRequest(validation.ErrorMessage));
         }
         
-        var result = await iCdaServiceClient.PostAsync(request, requestHeader);
+        var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
+        var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest, requestHeader);
         var internalServerErrorResponse = Task.FromResult<IActionResult>(StatusCode(500, "Internal server error"));
         
         var response = new PeiRetrievalDetailsResponseModel();
@@ -117,6 +118,19 @@ public class TokenController(
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
             Scope = TokenQueryParams.Owner,
             Ticket = requestBody.Ticket,
+        };
+    }
+    
+    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request)
+    {
+        return new CdaTokenRequestModel
+        {
+            GrantType = TokenQueryParams.AuthorizationCodeGrantType,
+            ClientId = request.ClientId,
+            ClientSecret = request.ClientSecret,
+            Code = request.AuthorisationCode,
+            CodeVerifier = request.CodeVerifier,
+            RedirectUrl = request.RedirectUrl
         };
     }
 }

@@ -19,10 +19,14 @@ builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsReco
 
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
-builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUriNotValidUrlValidationPensionsData>();
-builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUriNotPresentValidationPensionsData>();
+builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUrlNotValidUrlValidationPensionsData>();
+builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUrlNotPresentValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, CodeVerifierNotPresentValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, CodeVerifierNotBase64StringPensionsData>();
+builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, ClientIdInvalidFormatValidationPensionData>();
+builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, ClientIdNotPresentValidationPensionData>();
+builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, ClientSecretNotGuidValidationPensionData>();
+builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, ClientSecretNotPresentValidationPensionData>();
 builder.Services.AddScoped<PensionsDataRequestValidatorPipeline>();
 builder.Services.AddMhpdServiceBusTools();
 builder.Services.AddMhpdHttpClients();

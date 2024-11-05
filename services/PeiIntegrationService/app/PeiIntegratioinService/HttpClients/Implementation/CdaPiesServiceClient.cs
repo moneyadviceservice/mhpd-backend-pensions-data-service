@@ -2,18 +2,22 @@
 using System.Web;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Extensions;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models.CdaPeisServiceClient;
 using PeiIntegrationService.Models.CdaPiesService;
 
 namespace PeiIntegrationService.HttpClients.Implementation;
 
-public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory) : ICdaPiesServiceClient
+public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaPiesServiceClient> logger) : ICdaPiesServiceClient
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly ILogger<CdaPiesServiceClient> _logger = logger;
 
     public async Task<CdaPiesServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request)
     {
+        _logger.LogRequest(request);
+
         var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, request.Rpt);
@@ -21,9 +25,12 @@ public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory) : ICdaPi
 
         var endPoint = string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId));
 
-        var response = await client!.GetAsync(endPoint);
+        var clientResponse = await client!.GetAsync(endPoint);
 
-        return CreateResponse(response).Result;
+        var response = CreateResponse(clientResponse).Result;
+
+        _logger.LogResponse(response);
+        return response;
     }
 
     private static async Task<CdaPiesServiceResponseModel> CreateResponse(HttpResponseMessage? response)

@@ -16,4 +16,7 @@ public class PeiIntegrationServiceRequestModel
 
     [FromHeader(Name = HeaderConstants.PeisId)]
     public string? PeisId { get; set; }
+
+    [FromHeader(Name = HeaderConstants.CorrelationId)]
+    public string CorrelationId { get; set; } = string.Empty;
 }

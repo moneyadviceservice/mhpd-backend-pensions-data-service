@@ -2,6 +2,7 @@
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Moq;
 using PeiIntegrationService.Controllers;
 using PeiIntegrationService.HttpClients.Interfaces;
@@ -24,11 +25,13 @@ public class PeiIntegrationServiceUnitTests
     public PeiIntegrationServiceUnitTests()
     {
         _httpContext = new DefaultHttpContext();
+        var logger = new Mock<ILogger<PeIController>>();
 
         _controller = new PeIController(_iCDAPiesServiceClient.Object,
                                         _iMapsCdaService.Object,
                                         _iTokenIntegrationService.Object,
-                                        _idValidator.Object)
+                                        _idValidator.Object,
+                                        logger.Object)
         {
             ControllerContext = new ControllerContext()
             {

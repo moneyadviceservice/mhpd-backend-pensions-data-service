@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using MhpdCommon.Constants.HttpClient;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using PeiIntegrationService.HttpClients.Implementation;
@@ -17,7 +18,8 @@ public class CDAPiesServiceClientUnitTests
 
     public CDAPiesServiceClientUnitTests()
     {
-        _sut = new CdaPiesServiceClient(_httpClientFactoryMock.Object);
+        var logger = new Mock<ILogger<CdaPiesServiceClient>>();
+        _sut = new CdaPiesServiceClient(_httpClientFactoryMock.Object, logger.Object);
     }
 
     [Fact]

@@ -1,7 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
+using Castle.Core.Logging;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
@@ -25,7 +27,9 @@ namespace PeiIntegrationService.UnitTests
 
             var options = Options.Create(config);
 
-            _sut = new TokenIntegrationServiceClient(_httpClientFactoryMock.Object, options);
+            var logger = new Mock<ILogger<TokenIntegrationServiceClient>>();
+
+            _sut = new TokenIntegrationServiceClient(_httpClientFactoryMock.Object, options, logger.Object);
         }
 
         [Fact]

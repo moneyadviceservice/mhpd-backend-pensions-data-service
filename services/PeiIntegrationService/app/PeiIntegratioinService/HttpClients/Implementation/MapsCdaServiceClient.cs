@@ -1,17 +1,21 @@
 ﻿using System.Text;
 using System.Text.Json;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Extensions;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models.MapsCdaService;
 
 namespace PeiIntegrationService.HttpClients.Implementation;
 
-public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory) : IMapsRqpServiceClient
+public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<MapsCdaServiceClient> logger) : IMapsRqpServiceClient
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly ILogger<MapsCdaServiceClient> _logger = logger;
 
     public async Task<MapsRqpServiceResponseModel> PostRqp(MapsRqpServiceRequestModel request)
     {
+        _logger.LogRequest(request);
+
         var client = _httpClientFactory.CreateClient(HttpClientNames.MapsCdaService);
 
         var payload = JsonSerializer.Serialize(request);
@@ -20,6 +24,8 @@ public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory) : IMapsR
         var responseMaPSCDA = await client!.PostAsync(HttpEndpoints.Internal.Rqp, content);
 
         var result = await responseMaPSCDA.Content.ReadFromJsonAsync<MapsRqpServiceResponseModel>();
+
+        _logger.LogResponse(result);
 
         return result!;
     }

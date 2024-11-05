@@ -1,7 +1,9 @@
 ﻿using MhpdCommon.Constants;
+using MhpdCommon.Extensions;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using PeiIntegrationService.HttpClients.Interfaces;
+using PeiIntegrationService.Models;
 using PeiIntegrationService.Models.CdaPiesService;
 using PeiIntegrationService.Models.MapsCdaService;
 using PeiIntegrationService.Models.PeiIntegrationService;
@@ -13,19 +15,24 @@ namespace PeiIntegrationService.Controllers;
 [Route("/")]
 [ApiController]
 public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServiceClient iMapsRqpService,
-    ITokenIntegrationServiceClient iTokenIntegrationService, IIdValidator validator) : ControllerBase
+    ITokenIntegrationServiceClient iTokenIntegrationService, IIdValidator validator, ILogger<PeIController> logger) : ControllerBase
 {
     private readonly ICdaPiesServiceClient _iCDAPiesService = iCDAPiesService;
     private readonly IMapsRqpServiceClient _iMapsRqpService = iMapsRqpService;
     private readonly IIdValidator _iIdValidator = validator;
+    private readonly ILogger<PeIController> _logger = logger;
     private readonly ITokenIntegrationServiceClient _iTokenIntegrationService = iTokenIntegrationService;
 
     [HttpGet]
     [Route("peis")]
     public async Task<IActionResult> GetAsync([FromHeader] PeiIntegrationServiceRequestModel requestModel)
     {
-        if (!ValidateRequestHeaders(requestModel))
-            return BadRequest("Bad Request");
+        if (!TryValidateRequestHeaders(requestModel, out var message))
+            return BadRequest(message);
+
+        using var scope = _logger.BeginCorrelationScope(requestModel.CorrelationId, Constants.LogSource);
+
+        _logger.LogRequest(requestModel);
 
         var cdaPeisRequest = new CdaPiesServiceRequestModel
         {
@@ -34,12 +41,26 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
             RequestId = Guid.NewGuid().ToString(),
         };
 
+        var peidData =  await FetchPeiData(requestModel, cdaPeisRequest);
+
+        _logger.LogResponse(peidData);
+
+        if (peidData == null)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError);
+        }
+
+        return Ok(peidData);
+    }
+
+    private async Task<IEnumerable<PeiModel>?> FetchPeiData(PeiIntegrationServiceRequestModel requestModel, CdaPiesServiceRequestModel cdaPeisRequest)
+    {
         var result = await CallCdaPiesService(cdaPeisRequest);
 
         if (result!.Peis != null)
         {
             CreateSuccessResponseHeaders(cdaPeisRequest);
-            return Ok(result!.Peis);
+            return result!.Peis;
         }
         else
         {
@@ -47,22 +68,47 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
             if (resultAuthorisationDance!.Peis != null)
             {
                 CreateSuccessResponseHeaders(cdaPeisRequest);
-                return Ok(resultAuthorisationDance!.Peis);
+                return resultAuthorisationDance!.Peis;
             }
         }
 
-        return StatusCode((int)HttpStatusCode.InternalServerError);
+        return null;
     }
 
     #region Private Methods
 
-    private bool ValidateRequestHeaders (PeiIntegrationServiceRequestModel request)
+    private bool TryValidateRequestHeaders (PeiIntegrationServiceRequestModel request, out string? message)
     {
-        if (string.IsNullOrWhiteSpace(request.Iss)) return false;
+        if (string.IsNullOrWhiteSpace(request.Iss))
+        {
+            message = Constants.ResponseType.Iss;
+            return false;
+        }
 
-        if(!_iIdValidator.IsValidGuid(request.PeisId) || 
-            !_iIdValidator.IsValidGuid(request.UserSessionId)) return false;
+        if (!_iIdValidator.IsValidGuid(request.PeisId))
+        {
+            message = Constants.ResponseType.PeisId;
+            return false;
+        }
 
+        if (!_iIdValidator.IsValidGuid(request.UserSessionId))
+        {
+            message = Constants.ResponseType.UserSessionId;
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(request.CorrelationId))
+        {
+            request.CorrelationId = Guid.NewGuid().ToString();
+        }
+
+        if (!_iIdValidator.IsValidGuid(request.CorrelationId))
+        {
+            message = Constants.ResponseType.CorrelationId;
+            return false;
+        }
+
+        message = null;
         return true;
     }
 
@@ -107,7 +153,7 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
 
     private async Task<MapsRqpServiceResponseModel> CallMapsRqpService(PeiIntegrationServiceRequestModel requestModel)
     {
-        MapsRqpServiceRequestModel mapsRqpServiceRequestModel = new MapsRqpServiceRequestModel
+        MapsRqpServiceRequestModel mapsRqpServiceRequestModel = new()
         {
             Iss = requestModel.Iss,
             UserSessionId = requestModel.UserSessionId

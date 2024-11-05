@@ -1,12 +1,15 @@
 ﻿using System.Net.Http.Headers;
 using MhpdCommon.Constants;
+using MhpdCommon.Extensions;
+using Microsoft.Extensions.Logging;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
 
 namespace PensionRequestFunction.HttpClient;
 
-public  class PdpViewDataClient(IHttpClientFactory httpClientFactory) : IPdpViewDataClient
+public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<PdpViewDataClient> logger) : IPdpViewDataClient
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+    private readonly ILogger<PdpViewDataClient> _logger = logger;
 
     public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt)       
     {
@@ -16,9 +19,13 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory) : IPdpView
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
 
-        var response = await client.GetAsync($"{viewDataUrl}/{assetGuid}?scope={scope}");
+        var viewDataresponse = await client.GetAsync($"{viewDataUrl}/{assetGuid}?scope={scope}");
         
-        return CreateResponse(response).Result;
+        var response = await CreateResponse(viewDataresponse);
+
+        _logger.LogResponse(response);
+
+        return response;
     }
 
     private static async Task<PdpServiceResponseModel> CreateResponse(HttpResponseMessage? response)

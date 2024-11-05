@@ -1,4 +1,5 @@
 ﻿using MhpdCommon.Constants.HttpClient;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using PensionRequestFunction.HttpClient.Implementation;
@@ -27,7 +28,8 @@ public class MapsCdaServiceClientTests
                 {
                     BaseAddress = new Uri("http://localhost:1234"!)
                 });
-        var client = new MapsCdaServiceClient(_httpClientFactory.Object);
+        var logger = new Mock<ILogger<MapsCdaServiceClient>>();
+        var client = new MapsCdaServiceClient(_httpClientFactory.Object, logger.Object);
 
         var request = new MapsRqpServiceRequestModel
         {

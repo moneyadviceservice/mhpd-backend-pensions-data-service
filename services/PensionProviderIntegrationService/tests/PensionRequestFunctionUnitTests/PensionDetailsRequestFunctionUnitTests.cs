@@ -25,7 +25,7 @@ namespace PensionRequestFunctionUnitTests
         {
             _viewDataOrchestratorMock = new Mock<IViewDataOrchestrator>();
             _viewDataOrchestratorMock.Setup(mock => mock.GetPensionViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<string>())).ReturnsAsync(string.Empty);
+                It.IsAny<string>())).ReturnsAsync("PdpViewDataPayload");
 
             var logger = new Mock<ILogger<PensionDetailsRequestFunction>>();
             var holderNameId = Guid.NewGuid().ToString();

@@ -1,5 +1,6 @@
 ﻿using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
@@ -36,7 +37,8 @@ public class TokenIntegrationServiceClientTests
                 {
                     BaseAddress = new Uri("http://localhost:1234"!)
                 });
-        var client = new TokenIntegrationServiceClient(_httpClientFactory.Object, options);
+        var logger = new Mock<ILogger<TokenIntegrationServiceClient>>();
+        var client = new TokenIntegrationServiceClient(_httpClientFactory.Object, options, logger.Object);
 
         var request = new TokenIntegrationServiceRequestModel
         {

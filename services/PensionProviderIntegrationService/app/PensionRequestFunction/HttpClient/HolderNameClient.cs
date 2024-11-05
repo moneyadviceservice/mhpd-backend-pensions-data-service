@@ -18,7 +18,11 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
     public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId)
     {
         var cachedModel = await _repository.GetByIdAsync(holderNameId, holderNameId);
-        if (cachedModel != null) return cachedModel;
+        if (cachedModel != null)
+        {
+            _logger.LogWarning("Cached version of holder name configuration found for {holderNameId}.", holderNameId);
+            return cachedModel;
+        }
 
         var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
@@ -45,13 +49,15 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
         return model;
     }
 
-    private static async Task<HolderNameConfigurationModel?> CreateResponse(HttpResponseMessage? httpResponse)
+    private async Task<HolderNameConfigurationModel?> CreateResponse(HttpResponseMessage? httpResponse)
     {
-        if (httpResponse!.StatusCode != System.Net.HttpStatusCode.OK) return null;
-
         var viewDataResponse = await httpResponse!.Content.ReadFromJsonAsync<HolderNameViewDataResponse>();
 
-        if (viewDataResponse == null || viewDataResponse.Configurations.Count != 1) return null;
+        if (viewDataResponse == null || viewDataResponse.Configurations.Count != 1)
+        {
+            _logger.LogWarning("The holder name endpoint did not respond with exactly one configuration record");
+            return null;
+        }
 
         return viewDataResponse.Configurations.Single();
     }

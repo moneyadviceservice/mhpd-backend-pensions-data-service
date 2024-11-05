@@ -1,7 +1,9 @@
 ﻿using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using PensionRequestFunction.HttpClient.Interfaces;
 using PensionRequestFunction.Models.TokenIntegrationServiceClient;
@@ -11,13 +13,16 @@ using System.Text.Json;
 
 namespace PensionRequestFunction.HttpClient.Implementation;
 
-public class TokenIntegrationServiceClient(IHttpClientFactory httpClientFactory, IOptions<CommonHttpConfiguration> configuration) : ITokenIntegrationServiceClient
+public class TokenIntegrationServiceClient(IHttpClientFactory httpClientFactory, IOptions<CommonHttpConfiguration> configuration,
+    ILogger<TokenIntegrationServiceClient> logger) : ITokenIntegrationServiceClient
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly CommonHttpConfiguration httpConfiguration = configuration.Value;
+    private readonly ILogger<TokenIntegrationServiceClient> _logger = logger;
 
     public async Task<TokenIntegrationResponseModel> PostRptAsync(TokenIntegrationServiceRequestModel request)
     {
+        _logger.LogRequest(request);
         var client = _httpClientFactory.CreateClient(HttpClientNames.TokenIntegrationService);
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 
@@ -25,7 +30,9 @@ public class TokenIntegrationServiceClient(IHttpClientFactory httpClientFactory,
         var payload = JsonSerializer.Serialize(request); 
         var content = new StringContent(payload, Encoding.UTF8, "application/json");
         var responseTokenInt = await client!.PostAsync(HttpEndpoints.Internal.Rpts, content);
-        var result = responseTokenInt.Content.ReadFromJsonAsync<TokenIntegrationResponseModel>().Result;
+        var result = await responseTokenInt.Content.ReadFromJsonAsync<TokenIntegrationResponseModel>();
+
+        _logger.LogResponse(result);
         return result!;
     }
 }

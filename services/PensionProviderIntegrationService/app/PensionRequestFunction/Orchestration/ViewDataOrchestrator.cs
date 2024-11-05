@@ -36,13 +36,9 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
             throw new FormatException(StatusConstants.InvalidPei);
         }
 
-        var viewDataUrl = await GetViewDataUrlAsync(holderNameGuid);
-
-        if (viewDataUrl == null)
-        {
+        var viewDataUrl = await GetViewDataUrlAsync(holderNameGuid) ?? 
             throw new InvalidOperationException(string.Format(StatusConstants.NoViewDataUrl, pei));
-        }
-        
+
         var viewDataToken = await GetViewDataAsync(correlationId, viewDataUrl, pei, iss, userSessionId, null);
 
         return _tokenUtility.RetrieveClaim(viewDataToken, "view_data");
@@ -64,7 +60,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
             .HandleResult<PdpServiceResponseModel>(r => r.ResponseMessage?.ResponseStatusCode == HttpStatusCode.Unauthorized.ToString())
             .WaitAndRetryAsync(1, retryAttempt => TimeSpan.Zero, async (result, timeSpan, retryCount, context) =>
             {
-                _logger.LogInformation(StatusConstants.FetchingRpt, correlationId);
+                _logger.LogWarning(StatusConstants.FetchingRpt, correlationId);
                 rpt = await DoAuthenticationDance(result.Result, iss, userSessionId);
             });
 
@@ -75,16 +71,14 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         });
 
         var responseDocument = JsonDocument.Parse(responseModel!.ViewDataToken!);
-        var viewDataTokenExists = responseDocument.RootElement.TryGetProperty("view_data_token", out JsonElement viewDataClaimValue);
 
-        if (!viewDataTokenExists || viewDataClaimValue.ValueKind == JsonValueKind.Undefined)
+        if(!responseDocument.RootElement.TryGetProperty("view_data_token", out JsonElement viewDataClaimValue) ||
+            viewDataClaimValue.ValueKind == JsonValueKind.Undefined)
         {
             return string.Empty;
         }
 
-        var viewDataString = viewDataClaimValue.ToString();
-
-        return viewDataString;
+        return viewDataClaimValue.ToString();
     }
 
     private async Task<string> DoAuthenticationDance(PdpServiceResponseModel viewDataResponse, string iss, string userSessionId)

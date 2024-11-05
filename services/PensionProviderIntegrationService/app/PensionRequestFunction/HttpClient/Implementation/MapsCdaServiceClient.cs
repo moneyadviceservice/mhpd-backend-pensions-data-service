@@ -1,4 +1,6 @@
 ﻿using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Extensions;
+using Microsoft.Extensions.Logging;
 using PensionRequestFunction.HttpClient.Interfaces;
 using PensionRequestFunction.Models.MapsRqpServiceClient;
 using System.Net.Http.Json;
@@ -7,12 +9,14 @@ using System.Text.Json;
 
 namespace PensionRequestFunction.HttpClient.Implementation
 {
-    public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory) : IMapsCdaServiceClient
+    public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<MapsCdaServiceClient> logger) : IMapsCdaServiceClient
     {
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+        private readonly ILogger<MapsCdaServiceClient> _logger = logger;
 
         public async Task<MapsRqpServiceResponseModel> PostRqpAsync(MapsRqpServiceRequestModel request)
         {
+            _logger.LogRequest(request);
             var client = _httpClientFactory.CreateClient(HttpClientNames.MapsCdaService);
 
             var payload = JsonSerializer.Serialize(request);
@@ -21,6 +25,7 @@ namespace PensionRequestFunction.HttpClient.Implementation
             var responseMaPSCDA = await client!.PostAsync(HttpEndpoints.Internal.Rqp, content);
 
             var result = await responseMaPSCDA.Content.ReadFromJsonAsync<MapsRqpServiceResponseModel>();
+            _logger.LogResponse(result);
 
             return result!;
         }

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using Azure.Identity;
 using MaPSCDAService;
 using MaPSCDAService.Utils;
+using MhpdCommon.Extensions;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,8 @@ builder.Services.AddOptions<UriSettings>()
     .ValidateOnStart();
 
 // Add services to the container.
+builder.Services.AddApplicationInsightsTelemetry();
+builder.Services.AddMhpdUtilities();
 builder.Services.AddScoped<IRqpTokenManager, RqpTokenManager>();
 builder.Services.AddControllers();
 builder.Services.AddTransient<IPkceGenerator, PkceGenerator>();

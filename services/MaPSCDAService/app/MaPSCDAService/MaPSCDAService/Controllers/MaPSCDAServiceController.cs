@@ -1,134 +1,176 @@
 ﻿using MaPSCDAService.Models;
 using MaPSCDAService.Utils;
-using MhpdCommon.Models.MHPDModels;
-using MhpdCommon.Models.MessageBodyModels;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Utils;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.DataProtection;
-using System.Globalization;
 
-namespace MaPSCDAService.Controllers
+namespace MaPSCDAService.Controllers;
+
+[Route("/")]
+[ApiController]
+public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
+    ILogger<MapsCdaServiceController> logger,
+    IPkceGenerator pkceGenerator,
+    IConfiguration configuration,
+    IRqpTokenManager tokenManager,
+    IIdValidator idValidator) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class MaPSCDAServiceController : ControllerBase
+    private readonly IConfiguration _configuration = configuration;
+    private readonly ILogger<MapsCdaServiceController> _logger = logger;
+    private readonly IPkceGenerator _pkceGenerator = pkceGenerator;
+    private readonly string? _redirectTargetUrl = uriSettings.Value.RedirectTargetUrl;
+    private readonly IRqpTokenManager _tokenManager = tokenManager;
+    private readonly IIdValidator _idValidator = idValidator;
+
+    [Route("rqp")]
+    [HttpPost]
+    public IActionResult PostRqp([FromBody] RPQRequestModel rqpquery, [FromHeader] RequestHeaderModel headerModel)
     {
-        private readonly IConfiguration _configuration;
-        private readonly ILogger<MaPSCDAServiceController> _logger;
-        private readonly IPkceGenerator _pkceGenerator;
-        private readonly string? _redirectTargetUrl;
-        private readonly IRqpTokenManager _tokenManager;
-
-        public MaPSCDAServiceController
-            (IOptions<UriSettings> uriSettings, 
-            ILogger<MaPSCDAServiceController> logger, 
-            IPkceGenerator pkceGenerator, 
-            IConfiguration configuration,
-            IRqpTokenManager tokenManager)
+        if (!TryValidateRqpRequest(rqpquery, headerModel, out var message))
         {
-            _configuration = configuration;
-            _logger = logger;
-            _pkceGenerator = pkceGenerator;
-            _redirectTargetUrl = uriSettings.Value.RedirectTargetUrl; 
-            _tokenManager = tokenManager;
+            return BadRequest(message);
         }
 
-        [Route("/rqp")]
-        [HttpPost]
-        public async Task<IActionResult> PostAsync([FromBody] RPQRequestModel rqpquery)
+        using var scope = _logger.BeginCorrelationScope(headerModel.CorrelationId!, $"{Constants.LogSource} Rqp");
+        _logger.LogRequest(rqpquery);
+
+        if (!GetSecret(out _))
         {
-            if (!rqpquery.Validate(rqpquery))
-                return BadRequest(Constants.BadRequest);
-
-            if (!GetSecret(out KeyVaultSecrets secrets))
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            if (string.IsNullOrEmpty(rqpquery.Iss))
-                return BadRequest("Issuer is required.");
-            if (string.IsNullOrEmpty(rqpquery.UserSessionId))
-                return BadRequest("UserSessionID is required.");
-            var rqpsToken = _tokenManager.GenerateToken(rqpquery.UserSessionId, rqpquery.Iss);
-
-            return Ok(new RQPResponseModel { Rqp = rqpsToken });
+            _logger.LogCritical(Constants.NoAccessToVault);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        private bool GetSecret(out KeyVaultSecrets secrets)
+        var rqpsToken = _tokenManager.GenerateToken(rqpquery.UserSessionId!, rqpquery.Iss!);
+
+        var response = new RQPResponseModel { Rqp = rqpsToken };
+        _logger.LogResponse(response);
+
+        return Ok(response);
+    }
+
+    [Route("redirect_details")]
+    [HttpPost]
+    public IActionResult RedirectDetails([FromBody] RedirectRequestPayload requestPayload, [FromHeader] RequestHeaderModel headerModel)
+    {
+        if (!TryValidateRedirectRequest(requestPayload, headerModel, out var message))
         {
-            var kId = _configuration["Kid"];
-            var aud = _configuration["Audience"];
-
-            secrets = new KeyVaultSecrets { Kid = kId, Audience = aud };
-
-            if (string.IsNullOrEmpty(kId) || string.IsNullOrEmpty(aud))
-                return false;
-
-            return true;
+            return BadRequest(message);
         }
 
-        [Route("/redirect_details")]
-        [HttpPost]
-        public IActionResult RedirectDetails([FromBody] RedirectRequestPayload requestPayload)
+        using var scope = _logger.BeginCorrelationScope(headerModel.CorrelationId!, $"{ Constants.LogSource} Redirect");
+        _logger.LogRequest(requestPayload);
+
+        if (!GetSecret(out _))
         {
-            _logger.LogRequest(requestPayload);
-
-            if (requestPayload == null)
-            {
-                return BadRequest(new { message = Constants.NoRequestBody });
-            }
-
-            if (string.IsNullOrEmpty(requestPayload.Iss))
-            {
-                _logger.LogError(Constants.MissingOrInvalidIss);
-                return BadRequest(Constants.MissingOrInvalidIss);
-            }
-
-            if (string.IsNullOrEmpty(requestPayload.UserSessionId))
-            {
-                _logger.LogError(Constants.MissingOrInvalidUserSessionId);
-                return BadRequest(Constants.MissingOrInvalidUserSessionId);
-            }
-
-            if (string.IsNullOrEmpty(requestPayload.RedirectPurpose))
-            {
-                _logger.LogError(Constants.MissingOrInvalidRedirectPurpose);
-                return BadRequest(Constants.MissingOrInvalidRedirectPurpose);
-            }
-            
-            
-            if (!GetSecret(out KeyVaultSecrets secrets))
-            {
-                _logger.LogError("Failed to retrieve secrets. Kid or Audience is null.");
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-
-            var fetchRqp = _tokenManager.GenerateToken(requestPayload.UserSessionId, requestPayload.Iss);
-
-            var response = CreateRedirectResponse(fetchRqp);
-
-            _logger.LogResponse(response);
-
-            return Ok(response);
+            _logger.LogCritical(Constants.NoAccessToVault);
+            return StatusCode(StatusCodes.Status500InternalServerError);
         }
 
-        private RedirectResponseModel CreateRedirectResponse(string fetchRqp)
-        {            
-            var (codeChallenge, codeVerifier) = _pkceGenerator.GeneratePkce();
-            return new RedirectResponseModel
-            {                
-                RedirectTargetUrl = _redirectTargetUrl,
-                Rqp = fetchRqp,
-                Scope = Constants.Scope,
-                ResponseType = Constants.ResponseType,
-                Prompt = Constants.Prompt,
-                Service = Constants.Service,
-                CodeChallengeMethod = Constants.CodeChallengeMethod,
-                CodeChallenge = codeChallenge,
-                CodeVerifier = codeVerifier,
-                RequestId = Guid.NewGuid().ToString()
-            };
+        var fetchRqp = _tokenManager.GenerateToken(requestPayload.UserSessionId!, requestPayload.Iss!);
+
+        var response = CreateRedirectResponse(fetchRqp);
+
+        _logger.LogResponse(response);
+
+        return Ok(response);
+    }
+
+    private bool TryValidateRqpRequest(RPQRequestModel request, RequestHeaderModel headerModel, out string? message)
+    {
+        if (string.IsNullOrWhiteSpace(request.Iss))
+        {
+            message = Constants.MissingOrInvalidIss;
+            return false;
         }
+
+        if (!_idValidator.IsValidGuid(request.UserSessionId))
+        {
+            message = Constants.MissingOrInvalidUserSessionId;
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(headerModel.CorrelationId))
+        {
+            headerModel.CorrelationId = Guid.NewGuid().ToString();
+        }
+
+        if (!_idValidator.IsValidGuid(headerModel.CorrelationId))
+        {
+            message = Constants.InvalidCorrelationId;
+            return false;
+        }
+
+        message = null;
+        return true;
+    }
+
+    private bool TryValidateRedirectRequest(RedirectRequestPayload request, RequestHeaderModel headerModel, out string? message)
+    {
+        if (string.IsNullOrWhiteSpace(request.Iss))
+        {
+            message = Constants.MissingOrInvalidIss;
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(request.RedirectPurpose))
+        {
+            message = Constants.MissingOrInvalidRedirectPurpose;
+            return false;
+        }
+
+        if (!_idValidator.IsValidGuid(request.UserSessionId))
+        {
+            message = Constants.MissingOrInvalidUserSessionId;
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(headerModel.CorrelationId))
+        {
+            headerModel.CorrelationId = Guid.NewGuid().ToString();
+        }
+
+        if (!_idValidator.IsValidGuid(headerModel.CorrelationId))
+        {
+            message = Constants.InvalidCorrelationId;
+            return false;
+        }
+
+        message = null;
+        return true;
+    }
+
+    private bool GetSecret(out KeyVaultSecrets secrets)
+    {
+        var kId = _configuration[Constants.Kid];
+        var aud = _configuration[Constants.Audience];
+
+        secrets = new KeyVaultSecrets { Kid = kId, Audience = aud };
+
+        if (string.IsNullOrEmpty(kId) || string.IsNullOrEmpty(aud))
+            return false;
+
+        return true;
+    }
+
+    private RedirectResponseModel CreateRedirectResponse(string fetchRqp)
+    {            
+        var (codeChallenge, codeVerifier) = _pkceGenerator.GeneratePkce();
+        return new RedirectResponseModel
+        {                
+            RedirectTargetUrl = _redirectTargetUrl,
+            Rqp = fetchRqp,
+            Scope = Constants.Scope,
+            ResponseType = Constants.ResponseType,
+            Prompt = Constants.Prompt,
+            Service = Constants.Service,
+            CodeChallengeMethod = Constants.CodeChallengeMethod,
+            CodeChallenge = codeChallenge,
+            CodeVerifier = codeVerifier,
+            RequestId = Guid.NewGuid().ToString()
+        };
     }
 }

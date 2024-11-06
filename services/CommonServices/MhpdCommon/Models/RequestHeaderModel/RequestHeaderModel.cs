@@ -13,4 +13,7 @@ public class RequestHeaderModel
     
     [FromHeader(Name = HeaderConstants.Iss)]
     public string? Iss { get; set; }
+
+    [FromHeader(Name = HeaderConstants.CorrelationId)]
+    public string? CorrelationId { get; set; }
 }

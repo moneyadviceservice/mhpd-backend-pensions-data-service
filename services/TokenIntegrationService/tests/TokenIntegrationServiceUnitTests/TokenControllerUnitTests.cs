@@ -18,6 +18,7 @@ public class TokenControllerUnitTests
     private readonly TokenController _controller;
     private readonly Mock<ICdaServiceClient> _iCdaToken = new();
     private readonly Mock<ITokenUtility> _mockTokenUtility = new();
+    private readonly Mock<IIdValidator> _mockIdValidator;
 
     private readonly RequestHeaderModel _requestHeaderModel = new() { XRequestId = ValidXRequestId };
 
@@ -38,8 +39,8 @@ public class TokenControllerUnitTests
     {
         // Arrange: Create the mocks
         Mock<ILogger<TokenController>> mockLogger = new();
-        Mock<IIdValidator> mockIdValidator = new();
-        mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        _mockIdValidator = new();
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
             
         // Get ordered validators
         var validators = Helper.GetOrderedValidatorsForTokenIntegrationRequest();
@@ -54,12 +55,12 @@ public class TokenControllerUnitTests
         Mock<PensionsDataRequestValidatorPipeline> mockCdaValidatorPipeline = new(cdaValidators);
         
         _iCdaToken
-            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>(), _requestHeaderModel))
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
             .Returns(Task.FromResult(new CdaTokenResponseModel { IdToken =  IdToken}));
         
         var httpContext = new DefaultHttpContext();
         _controller = new TokenController(_iCdaToken.Object, mockLogger.Object,
-            mockIdValidator.Object, mockValidatorPipeline.Object,
+            _mockIdValidator.Object, mockValidatorPipeline.Object,
             mockCdaValidatorPipeline.Object, _mockTokenUtility.Object)
         {
             ControllerContext = new ControllerContext()
@@ -70,7 +71,7 @@ public class TokenControllerUnitTests
     }
     
     [Fact]
-    public async void WhenControllerIsCalled_WithInValidXRequestedId_ThenItShouldReturn_BadRequest400Response()
+    public async void WhenControllerIsCalled_WithInvalidCorrelationId_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange           
         var request = new TokenIntegrationRequestModel
@@ -80,8 +81,11 @@ public class TokenControllerUnitTests
             AsUri = AsUriValue
         };
 
+        var correlationId = "string.Empty";
+        _mockIdValidator.Setup(v => v.IsValidGuid(correlationId)).Returns(false);
+
         // Act
-        var result = await _controller.PostAsync(request, new RequestHeaderModel { XRequestId = string.Empty}); 
+        var result = await _controller.PostAsync(request, new RequestHeaderModel { CorrelationId = correlationId }); 
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -101,7 +105,7 @@ public class TokenControllerUnitTests
         };
         
         _iCdaToken
-            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>(), _requestHeaderModel))
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
             .Returns(Task.FromResult(new CdaTokenResponseModel { AccessToken = RqpValue }));
 
         // Act
@@ -131,7 +135,7 @@ public class TokenControllerUnitTests
         };
         
         _iCdaToken
-            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>(), It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
             .ReturnsAsync(new CdaTokenResponseModel { IdToken = IdToken });
         
         // Simulate decoding of token
@@ -534,7 +538,7 @@ public class TokenControllerUnitTests
 
         // Simulate a response with a valid IdToken
         _iCdaToken
-            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>(), It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
             .ReturnsAsync(new CdaTokenResponseModel { IdToken = RqpValue });
 
         // Simulate decoding of token but missing "peis_id"
@@ -567,7 +571,7 @@ public class TokenControllerUnitTests
 
         // Simulate a response with a valid IdToken
         _iCdaToken
-            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>(), It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
             .ReturnsAsync(new CdaTokenResponseModel { IdToken = IdToken });
 
         // Simulate decoding of token but missing "peis_id"

@@ -32,6 +32,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     {
         if (!TryValidateRqpRequest(rqpquery, headerModel, out var message))
         {
+            _logger.LogWarning("Invalid request: {message}", message);
             return BadRequest(message);
         }
 
@@ -58,6 +59,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     {
         if (!TryValidateRedirectRequest(requestPayload, headerModel, out var message))
         {
+            _logger.LogWarning("Invalid request: {message}", message);
             return BadRequest(message);
         }
 

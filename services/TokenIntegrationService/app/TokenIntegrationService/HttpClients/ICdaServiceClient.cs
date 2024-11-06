@@ -5,5 +5,5 @@ namespace TokenIntegrationService.HttpClients;
 
 public interface ICdaServiceClient
 {
-    Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request, RequestHeaderModel requestHeader);
+    Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request);
 }

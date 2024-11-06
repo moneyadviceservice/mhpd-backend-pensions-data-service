@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.HttpLogging;
 using TokenIntegrationService.HttpClients;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddMhpdUtilities();
 builder.Services.AddMhpdHttpClients();
 builder.Services.AddScoped<ICdaServiceClient, CdaServiceClient>();

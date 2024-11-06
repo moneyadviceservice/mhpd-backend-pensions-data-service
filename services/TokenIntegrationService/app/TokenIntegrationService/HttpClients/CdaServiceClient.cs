@@ -1,8 +1,8 @@
 ﻿using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
 using TokenIntegrationService.Models;
 
@@ -10,14 +10,16 @@ namespace TokenIntegrationService.HttpClients;
 
 public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaServiceClient> logger) : ICdaServiceClient
 {
-    public async Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request, RequestHeaderModel requestHeader)
+    public async Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request)
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.CdaService);
+            var requestId = Guid.NewGuid().ToString();
+            logger.LogWarning("Sending request to token endpoint with request Id: {requestId}", requestId);
             
             // Add request ID header
-            httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestHeader.XRequestId);
+            httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestId);
 
             // Construct the endpoint based on the request type
             var endpoint = request switch
@@ -37,6 +39,7 @@ public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaS
 
             // Attempt to read the response content
             var result = await response.Content.ReadFromJsonAsync<CdaTokenResponseModel>();
+            logger.LogResponse(result);
             return result ?? throw new InvalidOperationException("Response content was null.");
         }
         catch (HttpRequestException ex)

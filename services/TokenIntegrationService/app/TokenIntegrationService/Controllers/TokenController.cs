@@ -24,22 +24,17 @@ public class TokenController(
     [Route("rpts")]
     public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {            
-        logger.LogRequest(request);
-            
-        if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
+        if (!TryValidateRequest(validatorPipeline, request, requestHeader, out var message))
         {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
+            logger.LogError("Error: {ErrorMessage}", message);
+            return await Task.FromResult<IActionResult>(BadRequest(message));
         }
 
-        var validation = validatorPipeline.Validate(request);
-        if (!validation.IsValid)
-        {
-            logger.LogError("Error: {ErrorMessage}", validation.ErrorMessage);
-            return await Task.FromResult<IActionResult>(BadRequest(validation.ErrorMessage));
-        }
-            
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} Rpts");
+        logger.LogRequest(request);
+
         var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
-        var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest, requestHeader);
+        var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
 
         var response = new TokenIntegrationResponseModel
         {
@@ -56,22 +51,17 @@ public class TokenController(
     [Route("pei_retrieval_details")]
     public async Task<IActionResult> PostPeiRetrievalDetailsAsync([FromQuery] PensionsDataRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {
-        logger.LogRequest(request);
-        
-        if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
+        if (!TryValidateRequest(cdaRequestValidatorPipeline, request, requestHeader, out var message))
         {
-            requestHeader.XRequestId = Guid.NewGuid().ToString();
+            logger.LogError("Error: {ErrorMessage}", message);
+            return await Task.FromResult<IActionResult>(BadRequest(message));
         }
 
-        var validation = cdaRequestValidatorPipeline.Validate(request);
-        if (!validation.IsValid)
-        {
-            logger.LogError("Error: {ErrorMessage}", validation.ErrorMessage);
-            return await Task.FromResult<IActionResult>(BadRequest(validation.ErrorMessage));
-        }
-        
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} - Retrieval Details");
+        logger.LogRequest(request);
+
         var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
-        var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest, requestHeader);
+        var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
         var internalServerErrorResponse = Task.FromResult<IActionResult>(StatusCode(500, "Internal server error"));
         
         var response = new PeiRetrievalDetailsResponseModel();
@@ -107,6 +97,30 @@ public class TokenController(
         
         logger.LogResponse(response);
         return Ok(response);
+    }
+
+    private bool TryValidateRequest<T>(IRequestValidator<T> validator, T request, RequestHeaderModel headerModel, out string? message)
+    {
+        var validation = validator.Validate(request);
+        if (!validation.IsValid)
+        {
+            message = validation.ErrorMessage;
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(headerModel.CorrelationId))
+        {
+            headerModel.CorrelationId = Guid.NewGuid().ToString();
+        }
+
+        if (!idValidator.IsValidGuid(headerModel.CorrelationId))
+        {
+            message = Constants.InvalidCorrelationId;
+            return false;
+        }
+
+        message = null;
+        return true;
     }
 
     private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(TokenIntegrationRequestModel requestBody)

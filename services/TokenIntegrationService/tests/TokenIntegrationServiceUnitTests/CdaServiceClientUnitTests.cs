@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.TokenValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -63,7 +62,7 @@ public class CdaServiceClientUnitTests
             .ReturnsAsync(response);
         
 
-        var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
+        var result = await _sut.PostAsync(request);
 
         // Asserting the result is not null and is of the correct type
         Assert.NotNull(result);
@@ -98,7 +97,7 @@ public class CdaServiceClientUnitTests
             .ReturnsAsync(response);
         
 
-        var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
+        var result = await _sut.PostAsync(request);
 
         // Asserting the result is not null and is of the correct type
         Assert.NotNull(result);
@@ -121,7 +120,7 @@ public class CdaServiceClientUnitTests
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request)
         );
 
         Assert.Equal("Error communicating with CDA service", ex.Message);
@@ -147,7 +146,7 @@ public class CdaServiceClientUnitTests
             .ReturnsAsync(response);
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request)
         );
 
         Assert.IsType<System.Text.Json.JsonException>(ex.InnerException);
@@ -167,7 +166,7 @@ public class CdaServiceClientUnitTests
             .ThrowsAsync(new Exception("Unexpected error"));
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request)
         );
 
         Assert.Equal("An unexpected error occurred during CDA service communication.", ex.Message);

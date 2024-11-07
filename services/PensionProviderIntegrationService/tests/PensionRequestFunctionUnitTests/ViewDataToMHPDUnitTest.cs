@@ -52,27 +52,6 @@ namespace PensionRequestFunctionUnitTests
         }
 
         [Fact]
-        public void WhenViewDataWithOutPossibleMatch_ThenThrowError()
-        {
-            // Assign            
-            var externalAssetId = "7f0763a9-ac18-43c3-b2e7-723a74eba292";
-            var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
-            var retrievalRecordId = Guid.NewGuid().ToString();
-            var viewDataPayload = GetViewDataPayloadWithOutPossibleMatch();
-            JsonObject requestJson = JsonSerializer.Deserialize<JsonObject>(viewDataPayload)!;
-            var newViewDataPayload = JsonSerializer.Serialize<JsonObject>(requestJson)!;
-
-            // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var exMatchType = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, newViewDataPayload, pei, retrievalRecordId));
-            var exRetirementDate = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, newViewDataPayload, pei, retrievalRecordId));
-
-            // Assert
-            Assert.Equal("MatchType not found", exMatchType.Message);
-
-        }
-
-        [Fact]
         public void WhenViewDataWithEmptyStatePensionDateAndPensionType_ThenItShouldReturnEmptyRetirementDate()
         {
             // Assign            

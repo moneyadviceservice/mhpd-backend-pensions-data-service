@@ -80,12 +80,35 @@ namespace PensionRequestFunction.Transformer
 
         private static string GetMatchType(JsonElement arrangement)
         {
-            if (arrangement.TryGetProperty(PensionConstants.PossibleMatch, out var possibleMatch))
+            // Check for temporary system error
+            if (arrangement.TryGetProperty(PensionConstants.TemporarySystemError, out var temporarySystemError) &&
+                temporarySystemError.GetBoolean())
             {
-                return possibleMatch.GetBoolean() ? PensionEnums.MatchType.POSS.ToString() : PensionEnums.MatchType.DEFN.ToString();
+                return PensionEnums.MatchType.SYS.ToString();
             }
 
-            throw new Exception("MatchType not found");
+            // Check for possible match
+            if (arrangement.TryGetProperty(PensionConstants.PossibleMatch, out var possibleMatch) &&
+                possibleMatch.GetBoolean())
+            {
+                return PensionEnums.MatchType.POSS.ToString();
+            }
+
+            // Definite match checks
+            if (arrangement.TryGetProperty(PensionConstants.ContactScheme, out var contactScheme) &&
+                contactScheme.GetBoolean())
+            {
+                return PensionEnums.MatchType.CONT.ToString();
+            }
+
+            if (arrangement.TryGetProperty(PensionConstants.AdministrativeDetailsNotAvailable, out var adminDetailsNotAvailable) &&
+                adminDetailsNotAvailable.GetBoolean())
+            {
+                return PensionEnums.MatchType.NEW.ToString();
+            }
+
+            // Default to definite match
+            return PensionEnums.MatchType.DEFN.ToString();
         }
         
         private static void AddPensionAdministrator(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
@@ -122,14 +145,44 @@ namespace PensionRequestFunction.Transformer
                 pensionArrangement.Add(PensionConstants.EmploymentMembershipPeriods, employmentMembershipPeriods);
             }
         }
-        
+
         private static void AddBenefitIllustrations(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
         {
-            var tokenExists = pdpArrangement.TryGetProperty(PensionConstants.BenefitIllustrations, out var pdpBenefitIllustrations);
-            if (tokenExists && pdpBenefitIllustrations.ValueKind != JsonValueKind.Undefined)
+            if (pdpArrangement.TryGetProperty(PensionConstants.BenefitIllustrations, out var pdpBenefitIllustrations) &&
+                pdpBenefitIllustrations.ValueKind != JsonValueKind.Undefined &&
+                JsonNode.Parse(pdpBenefitIllustrations.GetRawText()) is JsonArray benefitIllustrationsArray)
             {
-                var pdpBenefitsIllustrationsJsonNode = JsonNode.Parse(pdpBenefitIllustrations.GetRawText())!;
-                pensionArrangement.Add(PensionConstants.BenefitIllustrations, pdpBenefitsIllustrationsJsonNode);
+                foreach (var component in benefitIllustrationsArray.SelectMany(illustration =>
+                             illustration?[PensionConstants.IllustrationComponents]?.AsArray()!))
+                {
+                    
+                    if (component?[PensionConstants.PayableDetails] is not JsonObject payableDetails)
+                    {
+                        return; // Exit if PayableDetails is not a JsonObject
+                    }
+
+                    // Extract and parse the amount type
+                    var amountTypeString = payableDetails[PensionConstants.AmountType]?.ToString();
+                    var isValidAmountType = Enum.TryParse(amountTypeString, out PensionEnums.AmountTypes amountType) &&
+                                            new[] { PensionEnums.AmountTypes.INC, PensionEnums.AmountTypes.INCL, PensionEnums.AmountTypes.INCN }
+                                                .Contains(amountType);
+                    if (!isValidAmountType)
+                    {
+                        return; // Exit if amountType is not one of INC, INCL, or INCN
+                    }
+
+                    // Check for the presence of monthlyAmount and the validity of annualAmount
+                    var hasMonthlyAmount = payableDetails.ContainsKey(PensionConstants.MonthlyAmount);
+                    var hasValidAnnualAmount = payableDetails.TryGetPropertyValue(PensionConstants.AnnualAmount, out var annualAmountNode);
+
+                    if (!hasMonthlyAmount && hasValidAnnualAmount &&
+                        annualAmountNode?.GetValue<decimal>() is { } annualAmount)
+                    {
+                        payableDetails[PensionConstants.MonthlyAmount] = JsonValue.Create(Math.Round(annualAmount / 12));
+                    }
+                }
+
+                pensionArrangement.Add(PensionConstants.BenefitIllustrations, benefitIllustrationsArray);
             }
         }
 
@@ -167,12 +220,19 @@ namespace PensionRequestFunction.Transformer
 
         private static JsonObject GetPensionArrangement(string externalAssetId, ref JsonElement pdpArrangement)
         {
-            var pensionArrangement = new JsonObject
+            var pensionArrangement = new JsonObject();
+
+            // Check if the pension link exists in pdpArrangement
+            if (pdpArrangement.TryGetProperty(PensionConstants.PensionLink, out var pensionLink) && pensionLink.ValueKind != JsonValueKind.Undefined)
             {
-                { PensionConstants.ExternalAssetId, externalAssetId },
-                { PensionConstants.SchemeName, pdpArrangement.GetProperty(PensionConstants.PensionProviderSchemeName).GetString() },
-                { PensionConstants.MatchType, GetMatchType(pdpArrangement) }
-            };
+                // Add the external pension policy ID at the top
+                pensionArrangement.Add(PensionConstants.ExternalPensionPolicyId, pensionLink.GetString());
+            }
+
+            // Add other properties regardless of the pension link's existence
+            pensionArrangement.Add(PensionConstants.ExternalAssetId, externalAssetId);
+            pensionArrangement.Add(PensionConstants.SchemeName, pdpArrangement.GetProperty(PensionConstants.PensionProviderSchemeName).GetString());
+            pensionArrangement.Add(PensionConstants.MatchType, GetMatchType(pdpArrangement));
 
             if (TryGetElementValueWithValidation(pdpArrangement, PensionConstants.StatePensionDate, out var retirementDate) ||
                 TryGetElementValueWithValidation(pdpArrangement, PensionConstants.RetirementDate, out retirementDate))

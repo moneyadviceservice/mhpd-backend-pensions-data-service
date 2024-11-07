@@ -99,34 +99,6 @@ public class ViewDataToPensionArrangementTransformerTests
         Assert.NotNull(result);
         Assert.Contains("ABC", result);
     }
-
-    [Fact]
-    public void Transform_MissingRetirementDate_ThrowsException()
-    {
-        // Arrange
-        var externalAssetId = Guid.NewGuid().ToString();
-        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
-        var retrievalRecordId = Guid.NewGuid().ToString();
-        var jsonMissingRetirementDate = "{\"arrangements\": [{\"pensionProviderSchemeName\": \"Test Scheme\"}]}";
-
-        // Act & Assert
-        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, jsonMissingRetirementDate, pei, retrievalRecordId));
-        Assert.Equal("MatchType not found", ex.Message);
-    }
-
-    [Fact]
-    public void Transform_MissingMatchType_ThrowsException()
-    {
-        // Arrange
-        var externalAssetId = Guid.NewGuid().ToString();
-        var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
-        var retrievalRecordId = Guid.NewGuid().ToString();
-        var jsonMissingMatchType = "{\"arrangements\": [{\"pensionProviderSchemeName\": \"Test Scheme\", \"retirementDate\": \"2025-01-01\"}]}";
-
-        // Act & Assert
-        var ex = Assert.Throws<Exception>(() => _transformer.Transform(externalAssetId, jsonMissingMatchType, pei, retrievalRecordId));
-        Assert.Equal("MatchType not found", ex.Message);
-    }
     
     private string GetViewDataPayload()
     {

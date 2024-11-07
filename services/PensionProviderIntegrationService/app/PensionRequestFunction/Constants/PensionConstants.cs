@@ -5,6 +5,7 @@ public static class PensionConstants
     public static readonly string[] ValidPensionOrigins = { "A", "PC", "PM", "PT", "WC", "WM", "WT" };
     public static readonly string[] ValidPensionStatuses = { "A", "I", "IPPF", "IWU" };
         
+    public const string ExternalPensionPolicyId = "externalPensionPolicyId";
     public const string ExternalAssetId = "externalAssetId";
     public const string SchemeName = "schemeName";
     public const string PensionAdministrator = "pensionAdministrator";
@@ -24,6 +25,7 @@ public static class PensionConstants
     public const string PensionReference = "pensionReference";
     public const string DateOfBirth = "dateOfBirth";
     public const string PensionType = "pensionType";
+    public const string PensionLink = "pensionLink";
     public const string PensionStatus = "pensionStatus";
     public const string PensionOrigin = "pensionOrigin";
     public const string RetirementDate = "retirementDate";
@@ -37,4 +39,12 @@ public static class PensionConstants
     public const string RetrievalResult = "retrievalResult";
     public const string Pei = "pei";
     public const string PensionRetrievalRecordId = "pensionRetrievalRecordId";
+    public const string IllustrationComponents = "illustrationComponents";
+    public const string PayableDetails = "payableDetails";
+    public const string AmountType = "amountType";
+    public const string MonthlyAmount = "monthlyAmount";
+    public const string AnnualAmount = "annualAmount";
+    public const string ContactScheme = "contactScheme";
+    public const string AdministrativeDetailsNotAvailable = "administrativeDetailsNotAvailable";
+    public const string TemporarySystemError = "temporarySystemError";
 }

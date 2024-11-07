@@ -1,12 +1,10 @@
-using System.Diagnostics.CodeAnalysis;
 using MhpdCommon.Extensions;
-using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using PensionsDataService.HttpClients;
+using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +28,7 @@ builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, Cli
 builder.Services.AddScoped<PensionsDataRequestValidatorPipeline>();
 builder.Services.AddMhpdServiceBusTools();
 builder.Services.AddMhpdHttpClients();
+builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddControllers();
 

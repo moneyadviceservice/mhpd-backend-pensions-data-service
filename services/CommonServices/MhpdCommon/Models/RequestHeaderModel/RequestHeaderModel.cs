@@ -5,9 +5,6 @@ namespace MhpdCommon.Models.RequestHeaderModel;
 
 public class RequestHeaderModel
 {
-    [FromHeader(Name = HeaderConstants.RequestId)]
-    public string? XRequestId { get; set; }
-    
     [FromHeader(Name = HeaderConstants.UserSessionId)]
     public string? UserSessionId { get; set; }
     

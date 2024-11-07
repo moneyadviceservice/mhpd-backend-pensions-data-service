@@ -35,17 +35,14 @@ public class PensionsDataController(
     [Route("pensions-data")]
     public async Task<IActionResult> GetPensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
     {
+        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
+        {
+            logger.LogError("Error: {ErrorMessage}", validationMessage);
+            return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
+        }
+
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} GET");
         logger.LogRequest(requestHeader);
-        
-        if (string.IsNullOrEmpty(requestHeader.UserSessionId))
-        {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.MissingUserSessionId));
-        }
-        
-        if (!idValidator.IsValidGuid(requestHeader.UserSessionId))
-        {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidUserSessionId));
-        }
 
         // Get the pensions retrieval record associated with the passed userSessionId
         var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
@@ -100,31 +97,16 @@ public class PensionsDataController(
     [Route("pensions-data")]
     public async Task<IActionResult> PostPensionsDataAsync([FromBody] PensionsDataRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {
+        if (!TryValidateRequests(request, requestHeader, out var validationMessage))
+        {
+            logger.LogError("Error: {ErrorMessage}", validationMessage);
+            return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
+        }
+
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST");
         logger.LogRequest(requestHeader);
         logger.LogRequest(request);
-        
-        if (string.IsNullOrEmpty(requestHeader.Iss))
-        {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.MissingIss));
-        }
-        
-        if (string.IsNullOrEmpty(requestHeader.UserSessionId))
-        {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.MissingUserSessionId));
-        }
-        
-        if (!idValidator.IsValidGuid(requestHeader.UserSessionId))
-        {
-            return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidUserSessionId));
-        }
-        
-        var validationResult = requestValidators.Validate(request);
-        if (!validationResult.IsValid)
-        {
-            logger.LogError("Error: {ErrorMessage}", validationResult.ErrorMessage);
-            return await Task.FromResult<IActionResult>(BadRequest(validationResult.ErrorMessage));
-        }
-        
+
         // Get pei from the token integration service
         var result = await _tokenIntegrationServiceClient
             .PostAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader);
@@ -141,6 +123,53 @@ public class PensionsDataController(
         return await Task.FromResult<IActionResult>(response);
     }
     
+    private bool TryValidateRequests(PensionsDataRequestModel request, RequestHeaderModel requestHeader, out string? message)
+    {
+        if (!TryValidateRequestHeader(requestHeader, out message))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(requestHeader.Iss))
+        {
+            message = TokenValidationMessages.MissingIss;
+            return false;
+        }
+
+        var validationResult = requestValidators.Validate(request);
+        if (!validationResult.IsValid)
+        {
+            message = validationResult.ErrorMessage;
+            return false;
+        }
+
+        message = null;
+        return true;
+    }
+
+    private bool TryValidateRequestHeader(RequestHeaderModel requestHeader, out string? message)
+    {
+        if (!idValidator.IsValidGuid(requestHeader.UserSessionId))
+        {
+            message = TokenValidationMessages.InvalidUserSessionId;
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(requestHeader.CorrelationId))
+        {
+            requestHeader.CorrelationId = Guid.NewGuid().ToString();
+        }
+
+        if (!idValidator.IsValidGuid(requestHeader.CorrelationId))
+        {
+            message = Constants.InvalidCorrelationId;
+            return false;
+        }
+
+        message = null;
+        return true;
+    }
+
     private static PensionRetrievalPayload CreateRequestPayload(PeiRetrievalDetailsResponseModel response, RequestHeaderModel requestHeader)
     {
         return new PensionRetrievalPayload

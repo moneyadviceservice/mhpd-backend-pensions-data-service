@@ -81,9 +81,11 @@ public class PensionsDataControllerTests
     {
         // Arrange
         var request = new PensionsDataRequestModel();
-        var requestHeader = new RequestHeaderModel { Iss = null };  // Invalid Iss
+        var id = Guid.NewGuid().ToString();
+        var requestHeader = new RequestHeaderModel { Iss = null, UserSessionId = id, CorrelationId = id };  // Invalid Iss
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(false);
+        _mockIdValidator.Setup(v => v.IsValidGuid(id)).Returns(true);
 
         // Act
         var result = await _controller.PostPensionsDataAsync(request, requestHeader);
@@ -98,16 +100,18 @@ public class PensionsDataControllerTests
     {
         // Arrange
         var request = new PensionsDataRequestModel();
-        var requestHeader = new RequestHeaderModel { Iss = "valid-iss", UserSessionId = null };  // Invalid UserSessionId
+        var id = Guid.NewGuid().ToString();
+        var requestHeader = new RequestHeaderModel { Iss = "valid-iss", UserSessionId = null, CorrelationId = id };  // Invalid UserSessionId
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(false);
+        _mockIdValidator.Setup(v => v.IsValidGuid(id)).Returns(true);
 
         // Act
         var result = await _controller.PostPensionsDataAsync(request, requestHeader);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal(TokenValidationMessages.MissingUserSessionId, badRequestResult.Value);
+        Assert.Equal(TokenValidationMessages.InvalidUserSessionId, badRequestResult.Value);
     }
 
     [Fact]
@@ -238,7 +242,7 @@ public class PensionsDataControllerTests
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal(TokenValidationMessages.MissingUserSessionId, badRequestResult.Value);
+        Assert.Equal(TokenValidationMessages.InvalidUserSessionId, badRequestResult.Value);
     }
 
     [Fact]

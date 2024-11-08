@@ -69,7 +69,7 @@ public class PensionsDataController(
             var retrievedRecordResult = await _retrievedPensionsRecordClient.GetAsync(new PensionsRetrievalRecordIdModel
             {
                 PensionsRetrievalRecordId = retrievalRecordResult.Id
-            });
+            }, requestHeader);
             
             logger.LogResponse(retrievedRecordResult);
 
@@ -115,7 +115,7 @@ public class PensionsDataController(
         var message = CreateRequestPayload(result, requestHeader);
         logger.LogInformation("Post a message to initiate a process to retrieve the Pensions Data for the userSessionId {UserSessionId}",
             message.UserSessionId);
-        await messagingService.SendMessageAsync(message, serviceBusOptions.Value.OutboundQueue!, Guid.NewGuid().ToString());
+        await messagingService.SendMessageAsync(message, serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
 
         var response = StatusCode((int)HttpStatusCode.NoContent);
         logger.LogResponse(response);

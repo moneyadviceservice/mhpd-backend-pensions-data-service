@@ -14,9 +14,10 @@ public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, 
         {
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.PensionRetrievalService);
             
-            // Add request ID header
+            // Add request headers
             httpClient.DefaultRequestHeaders.Add(HeaderConstants.UserSessionId, requestHeader.UserSessionId);
-            
+            httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
+
             // Send the request to the constructed endpoint
             var response = await httpClient.GetAsync(HttpEndpoints.Internal.PensionsRetrievalRecords);
 

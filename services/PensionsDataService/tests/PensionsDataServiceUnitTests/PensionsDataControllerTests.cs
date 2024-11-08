@@ -28,7 +28,8 @@ public class PensionsDataControllerTests
     private readonly RequestHeaderModel _validRequestHeader = new()
     {
         Iss = "valid-iss", 
-        UserSessionId = "123e4567-e89b-12d3-a456-426614174000"
+        UserSessionId = "123e4567-e89b-12d3-a456-426614174000",
+        CorrelationId = "bc8174f0-5ff8-40a1-aa4b-d15c235dd2c5"
     };
 
     public PensionsDataControllerTests()
@@ -229,6 +230,8 @@ public class PensionsDataControllerTests
         // Assert
         var statusCodeResult = Assert.IsType<StatusCodeResult>(result);
         Assert.Equal((int)HttpStatusCode.NoContent, statusCodeResult.StatusCode);
+        _mockTokenIntegrationServiceClient.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
+            It.Is<RequestHeaderModel>(model => model.CorrelationId == _validRequestHeader.CorrelationId)), Times.Once);
     }
     
     [Fact]
@@ -326,7 +329,7 @@ public class PensionsDataControllerTests
         // Simulate an empty response from the retrieval record function client
         var retrievalRecord = new PensionsRetrievalRecord
         {
-            PeiData = new List<PeiDataModel>(),
+            PeiData = [],
             PeiRetrievalComplete = true
         };
 
@@ -337,7 +340,7 @@ public class PensionsDataControllerTests
             .ReturnsAsync(retrievalRecord);
         
         _mockRetrievedPensionsRecordClient
-            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>()))
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(retrievedRecord);
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -355,14 +358,18 @@ public class PensionsDataControllerTests
     public async Task GetPensionsDataAsync_WhenRetrievalStatusIsRequested_ThenReturnsOkWithAppropriateResponse()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+        var requestHeader = new RequestHeaderModel 
+        { 
+            UserSessionId = "123e4567-e89b-12d3-a456-426614174000",
+            CorrelationId = "21138f64-4fea-4326-8c32-aca5950ed2b2"
+        };
         
         var retrievalRecord = new PensionsRetrievalRecord
         {
-            PeiData = new List<PeiDataModel>
-            {
+            PeiData =
+            [
                 new() { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }
-            },
+            ],
             PeiRetrievalComplete = true
         };
         
@@ -373,7 +380,7 @@ public class PensionsDataControllerTests
             .ReturnsAsync(retrievalRecord);
         
         _mockRetrievedPensionsRecordClient
-            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>()))
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(retrievedRecord);
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -385,6 +392,11 @@ public class PensionsDataControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseModel = Assert.IsType<PensionsDataResponseModel>(okResult.Value);
         Assert.Null(responseModel.PensionPolicies);
+        _mockRetrievalRecordFunctionClient.Verify(client => client.GetAsync(
+            It.Is<RequestHeaderModel>(model => model.CorrelationId == requestHeader.CorrelationId)), Times.Once);
+        _mockRetrievedPensionsRecordClient
+            .Verify(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(),
+            It.Is<RequestHeaderModel>(model => model.CorrelationId == requestHeader.CorrelationId)), Times.Once);
     }
     
     [Fact]
@@ -415,7 +427,7 @@ public class PensionsDataControllerTests
             .ReturnsAsync(retrievalRecord);
         
         _mockRetrievedPensionsRecordClient
-            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>()))
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(retrievedRecord);
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -457,7 +469,7 @@ public class PensionsDataControllerTests
             .ReturnsAsync(retrievalRecord);
         
         _mockRetrievedPensionsRecordClient
-            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>()))
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(retrievedRecord);
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -500,7 +512,7 @@ public class PensionsDataControllerTests
             .ReturnsAsync(retrievalRecord);
         
         _mockRetrievedPensionsRecordClient
-            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>()))
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(retrievedRecord);
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);

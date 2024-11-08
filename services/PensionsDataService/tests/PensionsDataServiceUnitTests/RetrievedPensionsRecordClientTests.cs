@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.RequestHeaderModel;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -17,12 +18,17 @@ public class RetrievedPensionsRecordClientTests
     private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
     private readonly Mock<ILogger<RetrievedPensionsRecordClient>> _mockLogger;
     private readonly RetrievedPensionsRecordClient _client;
+    private readonly RequestHeaderModel _requestHeaderModel;
 
     public RetrievedPensionsRecordClientTests()
     {
         _mockHttpClientFactory = new Mock<IHttpClientFactory>();
         _mockLogger = new Mock<ILogger<RetrievedPensionsRecordClient>>();
         Mock<IConfiguration> mockConfiguration = new();
+        _requestHeaderModel = new RequestHeaderModel
+        {
+            CorrelationId = Guid.NewGuid().ToString(),
+        };
 
         // Mock the HttpClient
         var handlerMock = new Mock<HttpMessageHandler>();
@@ -74,7 +80,7 @@ public class RetrievedPensionsRecordClientTests
         var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
         
         // Act
-        var result = await client.GetAsync(request);
+        var result = await client.GetAsync(request, _requestHeaderModel);
 
         // Assert
         Assert.IsType<List<RetrievedPensionRecord>>(result);
@@ -101,7 +107,7 @@ public class RetrievedPensionsRecordClientTests
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(request));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(request, _requestHeaderModel));
         Assert.Equal("An invalid operation occurred during retrieved record service communication", exception.Message);
     }
 
@@ -126,7 +132,7 @@ public class RetrievedPensionsRecordClientTests
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(request));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetAsync(request, _requestHeaderModel));
         Assert.Equal("An invalid operation occurred during retrieved record service communication", exception.Message);
     }
 
@@ -156,7 +162,7 @@ public class RetrievedPensionsRecordClientTests
         var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request));
+        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request, _requestHeaderModel));
         Assert.Equal("An unexpected error occurred during retrieved record service communication", exception.Message);
     }
 
@@ -189,7 +195,7 @@ public class RetrievedPensionsRecordClientTests
         var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request));
+        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request, _requestHeaderModel));
         Assert.Equal("Error communicating with retrieved record endpoint", exception.Message);
     }
 }

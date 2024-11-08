@@ -1,6 +1,8 @@
+using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
 using PensionsDataService.Models;
 
@@ -8,11 +10,12 @@ namespace PensionsDataService.HttpClients;
 
 public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory, ILogger<RetrievedPensionsRecordClient> logger) : IRetrievedPensionsRecordClient
 {
-    public async Task<List<RetrievedPensionRecord>> GetAsync(PensionsRetrievalRecordIdModel request)
+    public async Task<List<RetrievedPensionRecord>> GetAsync(PensionsRetrievalRecordIdModel request, RequestHeaderModel requestHeader)
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.RetrievedPensionsService);
+            httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
             
             // Send the request to the constructed endpoint
             var response = await httpClient.GetAsync(

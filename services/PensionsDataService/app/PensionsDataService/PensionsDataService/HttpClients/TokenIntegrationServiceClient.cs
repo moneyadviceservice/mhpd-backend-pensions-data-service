@@ -32,8 +32,8 @@ public class TokenIntegrationServiceClient : ITokenIntegrationServiceClient
     {
         try
         {
-            // Add request ID header
-            _httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestHeader.XRequestId);
+            // Add request headers
+            _httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
 
             // Construct the endpoint based on the request type
             var endpoint = UrlHelper.ConstructEndPoint(request, HttpEndpoints.Internal.PeiRetrievalDetails);

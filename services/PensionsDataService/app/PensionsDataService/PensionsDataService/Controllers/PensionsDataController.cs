@@ -48,9 +48,14 @@ public class PensionsDataController(
         var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
         logger.LogResponse(retrievalRecordResult);
 
+        if (string.IsNullOrEmpty(retrievalRecordResult.Id))
+        {
+            return new JsonResult(null) { StatusCode = StatusCodes.Status200OK };
+        }
+
         var response = new PensionsDataResponseModel
         {
-            PensionPolicies = null,
+            PensionPolicies = new List<PensionPolicy>(),
             PeiInformation = new PeiInformation
             {
                 PeiRetrievalComplete = retrievalRecordResult.PeiRetrievalComplete,

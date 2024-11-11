@@ -67,7 +67,7 @@ public class TokenIntegrationServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
 
-        var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
+        var result = await _sut.PostAsync(request, new RequestHeaderModel());
 
         // Asserting the result is not null and is of the correct type
         Assert.NotNull(result);
@@ -101,7 +101,7 @@ public class TokenIntegrationServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
         
-        var result = await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123e4567-e89b-12d3-a456-426614174000" });
+        var result = await _sut.PostAsync(request, new RequestHeaderModel());
 
         // Asserting the result is not null and is of the correct type
         Assert.NotNull(result);
@@ -139,7 +139,7 @@ public class TokenIntegrationServiceClientTests
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request, new RequestHeaderModel())
         );
 
         Assert.Equal("Error communicating with token integration service", ex.Message);
@@ -165,7 +165,7 @@ public class TokenIntegrationServiceClientTests
             .ReturnsAsync(response);
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request, new RequestHeaderModel())
         );
 
         Assert.IsType<System.Text.Json.JsonException>(ex.InnerException);
@@ -185,7 +185,7 @@ public class TokenIntegrationServiceClientTests
             .ThrowsAsync(new Exception("Unexpected error"));
 
         var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
-            await _sut.PostAsync(request, new RequestHeaderModel { XRequestId = "123" })
+            await _sut.PostAsync(request, new RequestHeaderModel())
         );
 
         Assert.Equal("An unexpected error occurred during token integration service communication.", ex.Message);

@@ -281,7 +281,7 @@ public class PensionsDataControllerTests
         var result = await _controller.GetPensionsDataAsync(requestHeader);
 
         // Assert
-        Assert.IsType<OkObjectResult>(result);
+        Assert.IsType<JsonResult>(result);
     }
 
     [Fact]
@@ -329,6 +329,7 @@ public class PensionsDataControllerTests
         // Simulate an empty response from the retrieval record function client
         var retrievalRecord = new PensionsRetrievalRecord
         {
+            Id = Guid.NewGuid().ToString(),
             PeiData = [],
             PeiRetrievalComplete = true
         };
@@ -351,7 +352,8 @@ public class PensionsDataControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseModel = Assert.IsType<PensionsDataResponseModel>(okResult.Value);
-        Assert.Null(responseModel.PensionPolicies);
+        Assert.NotNull(responseModel.PensionPolicies);
+        Assert.Empty(responseModel.PensionPolicies);
     }
 
     [Fact]
@@ -366,6 +368,7 @@ public class PensionsDataControllerTests
         
         var retrievalRecord = new PensionsRetrievalRecord
         {
+            Id = Guid.NewGuid().ToString(),
             PeiData =
             [
                 new() { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }
@@ -391,12 +394,41 @@ public class PensionsDataControllerTests
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseModel = Assert.IsType<PensionsDataResponseModel>(okResult.Value);
-        Assert.Null(responseModel.PensionPolicies);
+        Assert.NotNull(responseModel.PensionPolicies);
+        Assert.Empty(responseModel.PensionPolicies);
         _mockRetrievalRecordFunctionClient.Verify(client => client.GetAsync(
             It.Is<RequestHeaderModel>(model => model.CorrelationId == requestHeader.CorrelationId)), Times.Once);
         _mockRetrievedPensionsRecordClient
             .Verify(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(),
-            It.Is<RequestHeaderModel>(model => model.CorrelationId == requestHeader.CorrelationId)), Times.Once);
+                It.Is<RequestHeaderModel>(model => model.CorrelationId == requestHeader.CorrelationId)), Times.Once);
+    }
+    
+    [Fact]
+    public async Task GetPensionsDataAsync_WhenRetrievalStatusIsRequested_And_NoUserSessionIdFound_ThenReturnsOkJsonObjectWithNullResponse()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+        
+        var retrievalRecord = new PensionsRetrievalRecord();
+        
+        var retrievedRecord = new List<RetrievedPensionRecord>();
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievalRecord);
+        
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), requestHeader))
+            .ReturnsAsync(retrievedRecord);
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionsDataAsync(requestHeader);
+
+        // Assert
+        var okResult = Assert.IsType<JsonResult>(result);
+        Assert.Null(okResult.Value);
     }
     
     [Fact]
@@ -407,6 +439,7 @@ public class PensionsDataControllerTests
         
         var retrievalRecord = new PensionsRetrievalRecord
         {
+            Id = Guid.NewGuid().ToString(),
             PeiData = new List<PeiDataModel>
             {
                 new() { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }
@@ -453,6 +486,7 @@ public class PensionsDataControllerTests
         
         var retrievalRecord = new PensionsRetrievalRecord
         {
+            Id = Guid.NewGuid().ToString(),
             PeiData = [new PeiDataModel { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }],
             PeiRetrievalComplete = true
         };
@@ -496,6 +530,7 @@ public class PensionsDataControllerTests
         
         var retrievalRecord = new PensionsRetrievalRecord
         {
+            Id = Guid.NewGuid().ToString(),
             PeiData = [new PeiDataModel { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }],
             PeiRetrievalComplete = true
         };

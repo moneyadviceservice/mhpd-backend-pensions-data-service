@@ -42,9 +42,9 @@ public class HolderNameClientTests
         _repository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(model);
 
         var client = new HolderNameClient(_httpClientFactory.Object, _repository.Object, _logger.Object);
-
+        var correlationId = Guid.NewGuid().ToString();
         // Act
-        var result = await client.GetViewDataUrlAsync(Guid.NewGuid().ToString());
+        var result = await client.GetViewDataUrlAsync(Guid.NewGuid().ToString(), correlationId);
 
         //Assert
         Assert.True(isNullExpected ? result == null : result != null);
@@ -73,12 +73,14 @@ public class HolderNameClientTests
             Id = Guid.NewGuid().ToString(),
             ViewDataUrl = "https://viewdata.pdp.com",
         };
+
         _repository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(model);
 
         var client = new HolderNameClient(_httpClientFactory.Object, _repository.Object, _logger.Object);
+        var correlationId = Guid.NewGuid().ToString();
 
         // Act
-        var result = await client.GetViewDataUrlAsync(Guid.NewGuid().ToString());
+        var result = await client.GetViewDataUrlAsync(Guid.NewGuid().ToString(), correlationId);
 
         //Assert
         Assert.NotNull(result);

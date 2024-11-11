@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using PeiIntegrationService.HttpClients.Interfaces;
@@ -17,6 +18,7 @@ public class MapsCdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<
         _logger.LogRequest(request);
 
         var client = _httpClientFactory.CreateClient(HttpClientNames.MapsCdaService);
+        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
 
         var payload = JsonSerializer.Serialize(request);
         var content = new StringContent(payload, Encoding.UTF8, "application/json");

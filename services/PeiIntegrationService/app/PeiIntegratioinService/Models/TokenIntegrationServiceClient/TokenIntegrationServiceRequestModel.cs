@@ -7,5 +7,7 @@
         public string? Ticket { get; set; }
         
         public string? As_Uri { get; set; }
+
+        public string CorrelationId { get; set; } = string.Empty;
     }
 }

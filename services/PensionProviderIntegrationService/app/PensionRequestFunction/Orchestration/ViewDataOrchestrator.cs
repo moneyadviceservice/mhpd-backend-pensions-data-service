@@ -36,7 +36,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
             throw new FormatException(StatusConstants.InvalidPei);
         }
 
-        var viewDataUrl = await GetViewDataUrlAsync(holderNameGuid) ?? 
+        var viewDataUrl = await GetViewDataUrlAsync(holderNameGuid, correlationId) ?? 
             throw new InvalidOperationException(string.Format(StatusConstants.NoViewDataUrl, pei));
 
         var viewDataToken = await GetViewDataAsync(correlationId, viewDataUrl, pei, iss, userSessionId, null);
@@ -44,9 +44,9 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         return _tokenUtility.RetrieveClaim(viewDataToken, "view_data");
     }
 
-    private async Task<string?> GetViewDataUrlAsync(string holderNameGuid)
+    private async Task<string?> GetViewDataUrlAsync(string holderNameGuid, string correlationId)
     {
-        var viewData = await _holderNameClient.GetViewDataUrlAsync(holderNameGuid);
+        var viewData = await _holderNameClient.GetViewDataUrlAsync(holderNameGuid, correlationId);
 
         return viewData?.ViewDataUrl;
     }
@@ -61,12 +61,12 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
             .WaitAndRetryAsync(1, retryAttempt => TimeSpan.Zero, async (result, timeSpan, retryCount, context) =>
             {
                 _logger.LogWarning(StatusConstants.FetchingRpt, correlationId);
-                rpt = await DoAuthenticationDance(result.Result, iss, userSessionId);
+                rpt = await DoAuthenticationDance(result.Result, iss, userSessionId, correlationId);
             });
 
         await retryPolicy.ExecuteAsync(async () =>
         {
-            responseModel = await _pdpViewDataClient.GetPdpViewDataAsync(externalAssetId, viewDataUrl, rpt);
+            responseModel = await _pdpViewDataClient.GetPdpViewDataAsync(externalAssetId, viewDataUrl, rpt, correlationId);
             return responseModel;
         });
 
@@ -81,15 +81,15 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         return viewDataClaimValue.ToString();
     }
 
-    private async Task<string> DoAuthenticationDance(PdpServiceResponseModel viewDataResponse, string iss, string userSessionId)
+    private async Task<string> DoAuthenticationDance(PdpServiceResponseModel viewDataResponse, string iss, string userSessionId, string correlationId)
     {
-        var rqpResponse = await _iMapsRqpService.PostRqpAsync(new MapsRqpServiceRequestModel { Iss = iss, UserSessionId = userSessionId });
+        var rqpResponse = await _iMapsRqpService.PostRqpAsync(new MapsRqpServiceRequestModel { Iss = iss, UserSessionId = userSessionId, CorrelationId = correlationId });
 
-        var rptResponse = await RetrieveRptAsync(viewDataResponse, rqpResponse.Rqp);
+        var rptResponse = await RetrieveRptAsync(viewDataResponse, rqpResponse.Rqp, correlationId);
         return rptResponse.Rpt!;
     }
 
-    private async Task<TokenIntegrationResponseModel> RetrieveRptAsync(PdpServiceResponseModel pdpServiceResponseModel, string? rqp)
+    private async Task<TokenIntegrationResponseModel> RetrieveRptAsync(PdpServiceResponseModel pdpServiceResponseModel, string? rqp, string correlationId)
     {
         var ticketValue = ExtractWWWAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
         var asUriValue = ExtractWWWAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
@@ -98,7 +98,8 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         {
             Ticket = ticketValue,
             Rqp = rqp,
-            As_Uri = asUriValue
+            As_Uri = asUriValue,
+            CorrelationId = correlationId
         };
 
         var tokenIntegrationResponseModel = await _iTokenIntegrationService.PostRptAsync(tokenIntegrationServiceRequestModel);

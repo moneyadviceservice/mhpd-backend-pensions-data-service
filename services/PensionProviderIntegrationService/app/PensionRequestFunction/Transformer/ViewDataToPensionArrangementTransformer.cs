@@ -189,9 +189,18 @@ namespace PensionRequestFunction.Transformer
         private static void AddAdditionalDataSources(ref JsonElement pdpArrangement, ref JsonObject pensionArrangement)
         {
             var additionalDataSources = new JsonArray();
-            if (pdpArrangement.TryGetProperty(PensionConstants.AdditionalDataSources, out var pdpAdditionalDataSources))
+            if (pdpArrangement.TryGetProperty(PensionConstants.AdditionalDataSources, out var pdpAdditionalDataSources) &&
+                pdpAdditionalDataSources.ValueKind != JsonValueKind.Undefined &&
+                JsonNode.Parse(pdpAdditionalDataSources.GetRawText()) is JsonArray pdpAdditionalDataSourcesArray)
             {
-                additionalDataSources.Add(pdpAdditionalDataSources);
+                foreach (var dataSource in pdpAdditionalDataSourcesArray)
+                {
+                    if (dataSource != null)
+                    {
+                        additionalDataSources.Add(dataSource.DeepClone());
+                    }
+                }
+
                 pensionArrangement.Add(PensionConstants.AdditionalDataSources, additionalDataSources);
             }
         }

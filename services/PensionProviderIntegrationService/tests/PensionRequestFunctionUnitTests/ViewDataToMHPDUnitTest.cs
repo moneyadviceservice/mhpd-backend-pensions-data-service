@@ -167,8 +167,8 @@ namespace PensionRequestFunctionUnitTests
             var pensionAdministratorNumber3Value = pensionArrangement[0]![PensionConstants.PensionAdministrator]!["contactMethods"]![3]!["contactMethodDetails"]!["number"]!.ToString();
             var pensionAdministratorUsageValue = pensionArrangement[0]![PensionConstants.PensionAdministrator]!["contactMethods"]![2]!["contactMethodDetails"]!["usage"]!.ToString();
             var pensionAdministratorResultName = pensionArrangement[0]![PensionConstants.PensionAdministrator]!["name"]!.ToString();
-            var additionalDataSourcesUrlValue = pensionadditionalDataSources[0]![0]!["url"]!.ToString();
-            var additionalDataSourcesInformationType = pensionadditionalDataSources[0]![0]!["informationType"]!.ToString();
+            var additionalDataSourcesUrlValue = pensionadditionalDataSources[0]!["url"]!.ToString();
+            var additionalDataSourcesInformationType = pensionadditionalDataSources[0]!["informationType"]!.ToString();
             var pensionStatePensionMessageEng = pensionArrangement[0]!["statePensionMessageEng"]!.ToString();
             var pensionStatePensionMessageWelsh = pensionArrangement[0]!["statePensionMessageWelsh"]!.ToString();
 
@@ -425,8 +425,8 @@ namespace PensionRequestFunctionUnitTests
             var pensionAdministratorNumber3Value = pensionArrangement[0]![PensionConstants.PensionAdministrator]!["contactMethods"]![3]!["contactMethodDetails"]!["number"]!.ToString();
             var pensionAdministratorUsageValue = pensionArrangement[0]![PensionConstants.PensionAdministrator]!["contactMethods"]![2]!["contactMethodDetails"]!["usage"]!.ToString();
             var pensionAdministratorResultName = pensionArrangement[0]![PensionConstants.PensionAdministrator]!["name"]!.ToString();
-            var additionalDataSourcesUrlValue = pensionadditionalDataSources[0]![0]!["url"]!.ToString();
-            var additionalDataSourcesInformationType = pensionadditionalDataSources[0]![0]!["informationType"]!.ToString();
+            var additionalDataSourcesUrlValue = pensionadditionalDataSources[0]!["url"]!.ToString();
+            var additionalDataSourcesInformationType = pensionadditionalDataSources[0]!["informationType"]!.ToString();
             var pensionStatePensionMessageEng = pensionArrangement[0]!["statePensionMessageEng"]!.ToString();
             var pensionStatePensionMessageWelsh = pensionArrangement[0]!["statePensionMessageWelsh"]!.ToString();
 

@@ -24,9 +24,9 @@ public class TokenIntegrationServiceClient(IHttpClientFactory httpClientFactory,
 
         var client = _httpClientFactory.CreateClient(HttpClientNames.TokenIntegrationService);
         
-        // Add request ID header
+        // Add correlation ID header
         // Note: this should be passed in from the entrypoint ot the backend services
-        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
 
         request.As_Uri = _cdaTokenServicesEndpoint; // <<<======== this should come in through via wwwAuthenticate header as_uri
         var payload = JsonSerializer.Serialize(request);

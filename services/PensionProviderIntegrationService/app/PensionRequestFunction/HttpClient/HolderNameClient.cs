@@ -15,7 +15,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
     private readonly ILogger<HolderNameClient> _logger = logger;
     private readonly IHolderNameConfigurationRepository<HolderNameConfigurationModel> _repository = repository;
 
-    public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId)
+    public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId, string correlationId)
     {
         var cachedModel = await _repository.GetByIdAsync(holderNameId, holderNameId);
         if (cachedModel != null)
@@ -27,6 +27,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
         var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
 
         var response = await client.GetAsync($"{HttpEndpoints.External.HolderNameViewConfigurations}?{QueryParams.Cda.HolderName.Guid}={holderNameId}");
 

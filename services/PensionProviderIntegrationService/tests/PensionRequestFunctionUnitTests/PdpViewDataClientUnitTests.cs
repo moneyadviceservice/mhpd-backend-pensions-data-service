@@ -36,9 +36,10 @@ namespace PensionRequestFunctionUnitTests
                 {
                     BaseAddress = new Uri("http://localhost:1234"!)
                 });
+            var correlationId = Guid.NewGuid().ToString();
 
             // Act
-            var result = await _sut.GetPdpViewDataAsync(assetGuid, viewDataUrl, string.Empty); 
+            var result = await _sut.GetPdpViewDataAsync(assetGuid, viewDataUrl, string.Empty, correlationId); 
 
             // Assert
             Assert.NotNull(result);

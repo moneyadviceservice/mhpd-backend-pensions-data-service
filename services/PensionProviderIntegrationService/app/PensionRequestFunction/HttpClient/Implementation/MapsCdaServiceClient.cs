@@ -1,4 +1,5 @@
-﻿using MhpdCommon.Constants.HttpClient;
+﻿using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using Microsoft.Extensions.Logging;
 using PensionRequestFunction.HttpClient.Interfaces;
@@ -18,6 +19,7 @@ namespace PensionRequestFunction.HttpClient.Implementation
         {
             _logger.LogRequest(request);
             var client = _httpClientFactory.CreateClient(HttpClientNames.MapsCdaService);
+            client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
 
             var payload = JsonSerializer.Serialize(request);
             var content = new StringContent(payload, Encoding.UTF8, "application/json");

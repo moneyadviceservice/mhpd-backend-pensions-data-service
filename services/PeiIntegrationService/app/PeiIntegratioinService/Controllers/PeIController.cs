@@ -38,7 +38,7 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
         {
             Rpt = requestModel.Rpt,
             PeisId = requestModel.PeisId,
-            RequestId = Guid.NewGuid().ToString(),
+            CorrelationId = requestModel.CorrelationId,
         };
 
         var peidData =  await FetchPeiData(requestModel, cdaPeisRequest);
@@ -121,8 +121,8 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
     private async Task<CdaPiesServiceResponseModel?> PerformAuthorisationDance(CdaPiesServiceResponseModel cdaPiesServiceResponseModel, 
         CdaPiesServiceRequestModel cdaPeisRequest, PeiIntegrationServiceRequestModel requestModel)
     {
-        var mapsRqpServiceRqpResponseModel = CallMapsRqpService(requestModel).Result;
-        var tokenIntegrationResponseModel = CallTokenIntegrationService(cdaPiesServiceResponseModel, mapsRqpServiceRqpResponseModel).Result;
+        var mapsRqpServiceRqpResponseModel = await CallMapsRqpService(requestModel);
+        var tokenIntegrationResponseModel = await CallTokenIntegrationService(cdaPiesServiceResponseModel, mapsRqpServiceRqpResponseModel, requestModel.CorrelationId);
 
         cdaPeisRequest!.Rpt = tokenIntegrationResponseModel!.Rpt;
 
@@ -134,7 +134,8 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
         return await _iCDAPiesService.GetPiesAsync(cdaPiesServiceRequestModel);
     }
 
-    private async Task<TokenIntegrationResponseModel> CallTokenIntegrationService(CdaPiesServiceResponseModel cdaServiceResponseModel, MapsRqpServiceResponseModel mapsCdaServiceResponseModel)
+    private async Task<TokenIntegrationResponseModel> CallTokenIntegrationService(CdaPiesServiceResponseModel cdaServiceResponseModel, 
+        MapsRqpServiceResponseModel mapsCdaServiceResponseModel, string correlationId)
     {
         var ticketValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
         var asUriValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
@@ -143,7 +144,8 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
         {
             Ticket = ticketValue,
             Rqp = mapsCdaServiceResponseModel!.Rqp,
-            As_Uri = asUriValue
+            As_Uri = asUriValue,
+            CorrelationId = correlationId
         };
 
         var tokenIntegrationResponseModel = await _iTokenIntegrationService.PostRpt(tokenIntegrationServiceRequestModel);
@@ -156,7 +158,8 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
         MapsRqpServiceRequestModel mapsRqpServiceRequestModel = new()
         {
             Iss = requestModel.Iss,
-            UserSessionId = requestModel.UserSessionId
+            UserSessionId = requestModel.UserSessionId,
+            CorrelationId = requestModel.CorrelationId,
         };
 
         var mapsRqpServiceResponseModel = await _iMapsRqpService.PostRqp(mapsRqpServiceRequestModel);

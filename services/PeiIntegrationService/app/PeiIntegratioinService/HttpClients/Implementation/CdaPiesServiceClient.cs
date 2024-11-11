@@ -21,7 +21,8 @@ public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory, ILogger<
         var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, request.Rpt);
-        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, request.RequestId);
+        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
 
         var endPoint = string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId));
 

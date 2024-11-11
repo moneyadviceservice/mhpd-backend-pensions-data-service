@@ -24,7 +24,7 @@ public class TokenIntegrationServiceClient(IHttpClientFactory httpClientFactory,
     {
         _logger.LogRequest(request);
         var client = _httpClientFactory.CreateClient(HttpClientNames.TokenIntegrationService);
-        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
 
         request.As_Uri = UrlHelper.ConstructPath(httpConfiguration.CdaServiceUrl, HttpEndpoints.External.CdaTokenServiceEndpoint);
         var payload = JsonSerializer.Serialize(request); 

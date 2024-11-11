@@ -30,12 +30,12 @@ public class ViewDataOrchestratorUnitTests
         _mockPdpViewDataClient = new Mock<IPdpViewDataClient>();
         _mockLogger = new Mock<ILogger<ViewDataOrchestrator>>();
 
-        _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => string.IsNullOrEmpty(x))))
+        _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => string.IsNullOrEmpty(x)), It.IsAny<string>()))
             .ReturnsAsync(new PdpServiceResponseModel { ViewDataToken = null, 
                                                         ResponseMessage = new ResponseMessage { ResponseStatusCode = "Unauthorized", 
                                                             WWWAuthenticateResponseHeader = responseHeader } } );
 
-        _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => !string.IsNullOrEmpty(x))))
+        _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => !string.IsNullOrEmpty(x)), It.IsAny<string>()))
             .ReturnsAsync(new PdpServiceResponseModel
             {
                 ViewDataToken = GetViewDataToken(),
@@ -58,7 +58,7 @@ public class ViewDataOrchestratorUnitTests
         parser.Setup(mock => mock.ToPensionRequestPayload(It.IsAny<string>())).Returns(new PensionRequestPayload());
 
         var holderNameClient = new Mock<IHolderNameClient>();
-        holderNameClient.Setup(x => x.GetViewDataUrlAsync(holderNameId)).ReturnsAsync(new HolderNameConfigurationModel
+        holderNameClient.Setup(x => x.GetViewDataUrlAsync(holderNameId, It.IsAny<string>())).ReturnsAsync(new HolderNameConfigurationModel
         {
             ViewDataUrl = "https://viewdata.com"
         });

@@ -6,6 +6,6 @@
 
         public string? PeisId { get; set; }
 
-        public string? RequestId { get; set; }
-   }
+        public string CorrelationId { get; set; } = string.Empty;
+    }
 }

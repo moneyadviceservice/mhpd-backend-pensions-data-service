@@ -4,5 +4,5 @@ namespace PensionRequestFunction.HttpClient;
 
 public interface IHolderNameClient
 {
-    Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId);
+    Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId, string correlationId);
 }

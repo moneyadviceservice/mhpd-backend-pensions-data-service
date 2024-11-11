@@ -4,8 +4,8 @@ public static class Constants
 {
     internal static class LogSource
     {
-        public const string Queue = "Retrieved Pensions Message Queue";
-        public const string Http = "Retrieved Pensions Http GET";
+        public const string Queue = "Pensions Retrieval Message Queue";
+        public const string Http = "Pensions Retrieval Http GET";
     }
 
     internal static class RetrievalStatus

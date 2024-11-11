@@ -28,7 +28,7 @@ public class CDAPiesServiceClientUnitTests
         var request = new CdaPiesServiceRequestModel
         {
             PeisId = "cd0e4fdc-8586-4483-9899-17dd85af9074",
-            RequestId = "askdj902139012ekasdlasdj",
+            CorrelationId = Guid.NewGuid().ToString(),
             Rpt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI",
         };
 

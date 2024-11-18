@@ -24,11 +24,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\app\PeiIntegratioinService\PeiIntegrationService.csproj" />
+    <ProjectReference Include="..\..\app\PeiIntegrationService\PeiIntegrationService\PeiIntegrationService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\app\PeiIntegratioinService\PeiIntegrationService.csproj" />
+    <ProjectReference Include="..\..\app\PeiIntegrationService\PeiIntegrationService\PeiIntegrationService.csproj" />
   </ItemGroup>
 
 </Project>

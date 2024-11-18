@@ -30,11 +30,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\app\PensionRequestFunction\PensionRequestFunction.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
+  
+  <!-- <ItemGroup>
     <Reference Include="CommonServices">
-      <HintPath>..\..\..\..\..\..\..\..\Projects\MHPD.CloudServices\CommonServices\CommonServices\bin\Debug\net8.0\CommonServices.dll</HintPath>
+      <HintPath>..\..\..\..\..\..\..\..\Projects\mhpd-backend\services\CommonServices\bin\Debug\net8.0\CommonServices.dll</HintPath>
     </Reference>
-  </ItemGroup>
+  </ItemGroup> -->
 
 </Project>

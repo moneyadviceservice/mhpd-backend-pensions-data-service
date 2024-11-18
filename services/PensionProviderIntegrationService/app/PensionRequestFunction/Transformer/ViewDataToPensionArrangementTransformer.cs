@@ -5,21 +5,38 @@ using System.Text.Json.Serialization;
 using PensionRequestFunction.Enums;
 using PensionRequestFunction.Extensions;
 using PensionRequestFunction.Constants;
+using MhpdCommon.Utils;
 
 namespace PensionRequestFunction.Transformer
 {
-    public class ViewDataToPensionArrangementTransformer : IVewDataToPensionArrangementTransformer
+    public class ViewDataToPensionArrangementTransformer(IIdValidator idValidator) : IVewDataToPensionArrangementTransformer
     {
+        public string Transform(string errorCode, string pei, string retrievalRecordId)
+        {
+            var errorNode = new JsonObject
+            {
+                { PensionConstants.ErrorCode, errorCode }
+            };
+            var retrievedPensionDetailsPayload = new JsonObject
+            {
+                { PensionConstants.PensionRetrievalRecordId, retrievalRecordId },
+                { PensionConstants.Pei, pei },
+                { PensionConstants.RetrievalResult, errorNode }
+            };
+
+            return ConvertRetrievedPensionDetailsPayload(retrievedPensionDetailsPayload);
+        }
+
         public string Transform(string externalAssetId, string pdpViewData, string pei, string retrievalRecordId)
         {
-            if (string.IsNullOrEmpty(externalAssetId) || !Guid.TryParse(externalAssetId, out _))
+            if (!idValidator.IsValidGuid(externalAssetId))
             {
-                throw new Exception("Invalid externalAssetId. It must be a valid GUID.");
+                throw new InvalidDataException(StatusConstants.InvalidExternalAssetId);
             }
             
             if (string.IsNullOrEmpty(pdpViewData))
             {
-                throw new Exception("No arrangements present");
+                throw new InvalidDataException("No arrangements present");
             }
 
             var pdpPensionArrangementsDocument = JsonDocument.Parse(pdpViewData);
@@ -62,7 +79,7 @@ namespace PensionRequestFunction.Transformer
                 AddEmploymentMembershipPeriods(ref currentPdpArrangementJsonElement, ref currentPensionArrangement);
             }
 
-            return ConvertRetrievedPensionDetailsPayload(retrievedPensionDetailsPayload);;
+            return ConvertRetrievedPensionDetailsPayload(retrievedPensionDetailsPayload);
         }
 
         private static string ConvertRetrievedPensionDetailsPayload(JsonObject retrievedPensionDetailsPayload)

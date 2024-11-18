@@ -18,5 +18,10 @@
     "id": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
     "holdernameGuid": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
     "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+  },
+  {
+    "id": "cd2770ad-3928-4023-9d25-03e745b41648",
+    "holdernameGuid": "cd2770ad-3928-4023-9d25-03e745b41648",
+    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
   }
 ]

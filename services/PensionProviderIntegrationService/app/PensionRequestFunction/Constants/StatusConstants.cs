@@ -8,5 +8,7 @@ public static class StatusConstants
     public const string PayloadInvalid = "Invalid pension details request payload";
     public const string InvalidPei = "Pei value is missing or invalid";
     public const string FetchingRpt = "Fetching rpt to access view data for request with correlationId {correlationId}";
-    public const string NoViewDataUrl = "No view data Url was returned from PDP for this Pei: {0}";
+    public const string NoViewDataUrl = "No view data Url was returned from PDP for this pei: {0}";
+    public const string MalformedArrangement = "A valid arrangement could not be formed for the pei: {0}";
+    public const string InvalidExternalAssetId = "Invalid externalAssetId. It must be a valid GUID";
 }

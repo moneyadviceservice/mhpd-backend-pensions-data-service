@@ -1,5 +1,8 @@
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Utils;
+using Moq;
 using PensionRequestFunction.Constants;
+using PensionRequestFunction.Transformer;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -7,6 +10,16 @@ namespace PensionRequestFunctionUnitTests
 {
     public class ViewDataToMHPDUnitTest
     {
+        private readonly ViewDataToPensionArrangementTransformer transformer;
+        private static readonly MessageParser _messageParser = new();
+
+        public ViewDataToMHPDUnitTest()
+        {
+            var validator = new Mock<IIdValidator>();
+            validator.Setup(mock => mock.IsValidGuid(It.IsAny<string>())).Returns(true);
+            transformer = new ViewDataToPensionArrangementTransformer(validator.Object);
+        }
+
         [Fact]
         public void WhenTransformerIsCalled_AndNoPdpArrangesmenrtsAreProvided_ThenItThrowsException()
         {
@@ -20,8 +33,7 @@ namespace PensionRequestFunctionUnitTests
             var pdpPensionArrangementsString = JsonSerializer.Serialize<JsonObject>(pdpPensionArrangementsJson)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
-            var ex = Assert.Throws<Exception>(() => transformer.Transform(externalAssetId, string.Empty, pei, retrievalRecordId)); ;
+            var ex = Assert.Throws<InvalidDataException>(() => transformer.Transform(externalAssetId, string.Empty, pei, retrievalRecordId)); ;
 
             // Assert
             Assert.Equal("No arrangements present", ex.Message);
@@ -40,7 +52,6 @@ namespace PensionRequestFunctionUnitTests
             var pdpPensionArrangementsString = JsonSerializer.Serialize<JsonObject>(pdpPensionArrangementsJson)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var actual = transformer.Transform(externalAssetId, pdpPensionArrangementsString, pei, retrievalRecordId);
             var doc = JsonDocument.Parse(actual);
             var root = doc.RootElement;
@@ -66,7 +77,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
 
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
@@ -97,7 +107,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
 
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
@@ -148,7 +157,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
 
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
@@ -209,7 +217,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
             var pensionArrangement = pensionArrangementNode[PensionConstants.RetrievalResult]!;
@@ -232,9 +239,6 @@ namespace PensionRequestFunctionUnitTests
             var pei = $"{Guid.NewGuid}:{Guid.NewGuid}";
             var retrievalRecordId = Guid.NewGuid().ToString();
             var viewDataPayload = GetEmptyViewDataPayload();
-
-            // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
 
             // Act & Assert
             var ex = Assert.Throws<JsonException>(() => transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId));
@@ -272,7 +276,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
             var pensionArrangement = pensionArrangementNode[PensionConstants.RetrievalResult]!;
@@ -337,7 +340,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;
             var pensionArrangement = pensionArrangementNode[PensionConstants.RetrievalResult]!;
@@ -407,7 +409,6 @@ namespace PensionRequestFunctionUnitTests
             PensionRequestPayload pensionRequestPayloadDeserialized = JsonSerializer.Deserialize<PensionRequestPayload>(pensionRequestPayload)!;
 
             // Act
-            var transformer = new PensionRequestFunction.Transformer.ViewDataToPensionArrangementTransformer();
             var result = transformer.Transform(externalAssetId, viewDataPayload, pei, retrievalRecordId);
 
             JsonNode pensionArrangementNode = JsonNode.Parse(result)!;

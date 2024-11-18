@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
@@ -29,7 +30,14 @@ public class PensionsDataController(
     private readonly IRetrievalRecordServiceClient _retrievalRecordServiceClient = serviceClients.RetrievalRecordServiceClient;
     private readonly IRetrievedPensionsRecordClient _retrievedPensionsRecordClient = serviceClients.RetrievedPensionsRecordClient;
 
+    private const string ErrorCode = "errorCode";
     private const string ExternalPensionPolicyId = "externalPensionPolicyId";
+
+    private static readonly IEnumerable<string> CompletedStates =
+    [
+        PensionProviderConstants.RetrievalStatus.RetrievalComplete,
+        PensionProviderConstants.RetrievalErrorCodes.SystemError
+    ];
     
     [HttpGet]
     [Route("pensions-data")]
@@ -65,7 +73,7 @@ public class PensionsDataController(
         };
         
         // Check pensions-retrieval-records response has any PeiData items with retrievalStatus = RETRIEVAL_REQUESTED
-        if (retrievalRecordResult.PeiData.Exists(s => s.RetrievalStatus == RetrievalStatusConstants.RetrievalRequested)) // Move this to the MHPD common services
+        if (retrievalRecordResult.PeiData.Exists(s => s.RetrievalStatus == PensionProviderConstants.RetrievalStatus.RetrievalRequested))
         {
             logger.LogRequest(retrievalRecordResult.Id);
             
@@ -229,19 +237,35 @@ public class PensionsDataController(
             // Check if there is a matching pei in the retrievedPensionsRecords
             var matchingRecord = retrievedPensionsRecords.Find(record => record.Pei == peiData.Pei);
 
-            // If there is a matching record, set status to RETRIEVAL_COMPLETE. Otherwise, retain the existing retrievalStatus
-            peiData.RetrievalStatus = matchingRecord != null ? RetrievalStatusConstants.RetrievalComplete : peiData.RetrievalStatus;
+            // If there is a matching record, set the retrieved status. Otherwise, retain the existing retrievalStatus
+            peiData.RetrievalStatus = GetPeiStatus(matchingRecord, peiData.RetrievalStatus);
         }
 
         return peiDataList;
     }
+
+    private static string? GetPeiStatus(RetrievedPensionRecord? record, string? retrievalStatus)
+    {
+        if (record != null && record.RetrievalResult is JsonElement { ValueKind: JsonValueKind.Object } retrievalResult && 
+            retrievalResult.TryGetProperty(ErrorCode, out var errorCode))
+        {
+            return errorCode.ToString();
+        }
+
+        if (record != null && record.RetrievalResult is JsonElement { ValueKind: JsonValueKind.Array })
+        {
+            return PensionProviderConstants.RetrievalStatus.RetrievalComplete;
+        }
+
+        return retrievalStatus;
+    }
     
     private static bool IsPensionsDataRetrievalComplete(bool peiRetrievalComplete, List<PeiDataModel> peiData)
     {
-        // Return true if PeiRetrievalComplete is true and either no PeiData or all PeiData have status "RETRIEVAL_COMPLETE"
+        // Return true if PeiRetrievalComplete is true and either no PeiData or all PeiData have a status indicating retrieval was completed
         if (peiRetrievalComplete)
         {
-            return peiData.Count == 0 || peiData.TrueForAll(p => p.RetrievalStatus == RetrievalStatusConstants.RetrievalComplete);
+            return peiData.Count == 0 || peiData.TrueForAll(p => CompletedStates.Contains(p.RetrievalStatus));
         }
     
         // Return false if PensionsDataRetrievalComplete is false

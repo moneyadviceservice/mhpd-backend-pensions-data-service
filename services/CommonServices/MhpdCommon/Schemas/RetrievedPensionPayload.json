@@ -958,10 +958,14 @@
       "type": "object",
       "title": "arrangementsRetrievalError",
       "properties": {
-        "id": {
-          "type": "string"
+        "errorCode": {
+          "const": "SYSTEM_ERROR",
+          "description": "Categorisation of the reason that the arrangements for a pei could not be provided"
         }
-      }
+      },
+      "required": [
+        "errorCode"
+      ]
     }
   }
 }

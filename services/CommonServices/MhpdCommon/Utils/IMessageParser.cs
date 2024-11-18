@@ -30,4 +30,13 @@ public interface IMessageParser
     /// <returns>A pension request instance</returns>
     /// <exception cref="AggregateException">Thrown if the message is not in compliance with the schema</exception>
     PensionRequestPayload? ToPensionRequestPayload(string message);
+
+    /// <summary>
+    /// Attempts to parse the message body from a pension provider to a view data object.<br/>
+    /// The message is validated against the schema for a view data response.<br/>
+    /// </summary>
+    /// <param name="message">The message body to parse</param>
+    /// <returns>A view data instance</returns>
+    /// <exception cref="AggregateException">Thrown if the message is not in compliance with the schema</exception>
+    ViewDataPayload? ToViewDataPayload(string message);
 }

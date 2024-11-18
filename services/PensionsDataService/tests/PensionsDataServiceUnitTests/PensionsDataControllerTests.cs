@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
@@ -113,6 +114,25 @@ public class PensionsDataControllerTests
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
         Assert.Equal(TokenValidationMessages.InvalidUserSessionId, badRequestResult.Value);
+    }
+
+    [Fact]
+    public async Task PostPensionsDataAsync_WhenCorrelationIdInvalid_ThenReturnsBadRequest()
+    {
+        // Arrange
+        var request = new PensionsDataRequestModel();
+        var id = Guid.NewGuid().ToString();
+        var requestHeader = new RequestHeaderModel { Iss = "valid-iss", UserSessionId = id, CorrelationId = "NotAGuid" };
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(false);
+        _mockIdValidator.Setup(v => v.IsValidGuid(id)).Returns(true);
+
+        // Act
+        var result = await _controller.PostPensionsDataAsync(request, requestHeader);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(Constants.InvalidCorrelationId, badRequestResult.Value);
     }
 
     [Fact]
@@ -371,7 +391,7 @@ public class PensionsDataControllerTests
             Id = Guid.NewGuid().ToString(),
             PeiData =
             [
-                new() { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }
+                new() { RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested }
             ],
             PeiRetrievalComplete = true
         };
@@ -442,7 +462,7 @@ public class PensionsDataControllerTests
             Id = Guid.NewGuid().ToString(),
             PeiData = new List<PeiDataModel>
             {
-                new() { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }
+                new() { RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested }
             },
             PeiRetrievalComplete = true
         };
@@ -487,7 +507,7 @@ public class PensionsDataControllerTests
         var retrievalRecord = new PensionsRetrievalRecord
         {
             Id = Guid.NewGuid().ToString(),
-            PeiData = [new PeiDataModel { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }],
+            PeiData = [new PeiDataModel { RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested }],
             PeiRetrievalComplete = true
         };
         
@@ -531,7 +551,7 @@ public class PensionsDataControllerTests
         var retrievalRecord = new PensionsRetrievalRecord
         {
             Id = Guid.NewGuid().ToString(),
-            PeiData = [new PeiDataModel { RetrievalStatus = RetrievalStatusConstants.RetrievalRequested }],
+            PeiData = [new PeiDataModel { RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested }],
             PeiRetrievalComplete = true
         };
         
@@ -565,5 +585,73 @@ public class PensionsDataControllerTests
         Assert.Equal("D9267759822", responseModel.PensionPolicies[0].PensionArrangements?[0].GetProperty("externalPensionPolicyId").GetString());
         Assert.Equal("D9267759823", responseModel.PensionPolicies[1].PensionArrangements?[0].GetProperty("externalPensionPolicyId").GetString());
         Assert.Equal("D9267759824", responseModel.PensionPolicies[2].PensionArrangements?[0].GetProperty("externalPensionPolicyId").GetString());
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, false)]
+    public async Task GetPensionsDataAsync_WhenPeiStatusMixed_ReturnsCorrectRetrievalStatus(bool allPeisMatch, bool expectedStatus)
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+        var arrangementPei1 = $"{Guid.NewGuid()}:{Guid.NewGuid()}";
+        var arrangementPei2 = $"{Guid.NewGuid()}:{Guid.NewGuid()}";
+        var arrangementPei3 = $"{Guid.NewGuid()}:{Guid.NewGuid()}";
+
+        var retrievalRecord = new PensionsRetrievalRecord
+        {
+            Id = Guid.NewGuid().ToString(),
+            PeiData = [
+                new PeiDataModel {
+                    Pei = arrangementPei1,
+                    RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested
+                },
+                new PeiDataModel {
+                    Pei = arrangementPei2,
+                    RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested
+                },
+                new PeiDataModel {
+                    Pei = allPeisMatch ? arrangementPei3 : $"{Guid.NewGuid()}:{Guid.NewGuid()}",
+                    RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested
+                }
+            ],
+            PeiRetrievalComplete = true
+        };
+
+        var retrievedRecord = new List<RetrievedPensionRecord>
+        {
+            new() { 
+                Pei = arrangementPei1,
+                RetrievalResult = JsonSerializer.Deserialize<JsonElement>("[{\"externalPensionPolicyId\": \"D9267759822\"}]") 
+            },
+            new() { 
+                Pei = arrangementPei2,
+                RetrievalResult = JsonSerializer.Deserialize<JsonElement>("{\"errorCode\": \"" + PensionProviderConstants.RetrievalErrorCodes.SystemError + "\"}") 
+            },
+            new() { 
+                Pei = allPeisMatch ? arrangementPei3 : $"{Guid.NewGuid()}:{Guid.NewGuid()}",
+                RetrievalResult = JsonSerializer.Deserialize<JsonElement>("[{\"externalPensionPolicyId\": \"D9267759824\"}]") 
+            }
+        };
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievalRecord);
+
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetAsync(It.IsAny<PensionsRetrievalRecordIdModel>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievedRecord);
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionsDataAsync(requestHeader);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var responseModel = Assert.IsType<PensionsDataResponseModel>(okResult.Value);
+
+        // Verify the mashed data output
+        Assert.True(responseModel.PensionsDataRetrievalComplete == expectedStatus);
     }
 }

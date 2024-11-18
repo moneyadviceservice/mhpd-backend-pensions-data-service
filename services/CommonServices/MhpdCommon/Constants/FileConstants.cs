@@ -7,4 +7,5 @@ public class FileConstants
     public const string PensionsRetrievalPayloadSchema = @"Schemas.PensionsRetrievalPayload.json";
     public const string PensionsRetrievalRecordSchema = @"Schemas.PensionsRetrievalRecord.json";
     public const string PensionDetailsRequestPayloadSchema = "Schemas.PensionDetailsRequestPayload.json";
+    public const string ViewDataPayloadSchema = "Schemas.ViewDataPayload.json";
 }

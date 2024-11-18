@@ -109,6 +109,19 @@
         ]
     },
     {
+        "id": "0009",
+        "peisIdStartCode": "0009",
+        "dataPoints": [
+            {
+                "availableAt": 0,
+                "responsePayload": {
+                    "peiList": [
+                    ]
+                }
+            }
+        ]
+    },
+    {
         "id": "0020",
         "peisIdStartCode": "0020",
         "dataPoints": [
@@ -129,17 +142,19 @@
                         }
                     ]
                 }
-            }
-        ]
-    },
-    {
-        "id": "0009",
-        "peisIdStartCode": "0009",
-        "dataPoints": [
-            {
-                "availableAt": 0,
+            },
+			{
+                "availableAt": 20,
                 "responsePayload": {
                     "peiList": [
+						{
+                            "pei": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029:63ab8af1-2004-4a0b-bad0-629cca220757",
+                            "description": "My Company Direct Contribution Scheme"
+                        },
+                        {
+                            "pei": "cd2770ad-3928-4023-9d25-03e745b41648:4dc9cd07-d193-4e9e-96ec-753338237f0a",
+                            "description": "My Apex Scheme"
+                        }
                     ]
                 }
             }

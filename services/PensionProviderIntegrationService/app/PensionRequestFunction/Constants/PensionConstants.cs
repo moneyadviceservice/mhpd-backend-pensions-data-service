@@ -47,4 +47,5 @@ public static class PensionConstants
     public const string ContactScheme = "contactScheme";
     public const string AdministrativeDetailsNotAvailable = "administrativeDetailsNotAvailable";
     public const string TemporarySystemError = "temporarySystemError";
+    public const string ErrorCode = "errorCode";
 }

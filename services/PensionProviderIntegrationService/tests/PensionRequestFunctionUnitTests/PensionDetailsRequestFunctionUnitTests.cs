@@ -1,4 +1,5 @@
 using Azure.Messaging.ServiceBus;
+using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Utils;
@@ -20,6 +21,8 @@ namespace PensionRequestFunctionUnitTests
         private readonly Mock<IMessageParser> _messageParser;
         private readonly Mock<IIdValidator> _idValidatorMock;
         private readonly Mock<IViewDataOrchestrator> _viewDataOrchestratorMock;
+        private readonly Mock<IMessagingService> _messagingServiceMock;
+        private readonly Mock<IVewDataToPensionArrangementTransformer> _transformerMock;
 
         public PensionDetailsRequestFunctionUnitTests()
         {
@@ -37,22 +40,26 @@ namespace PensionRequestFunctionUnitTests
 
             _messageParser = new Mock<IMessageParser>();
             _messageParser.Setup(mock => mock.ToPensionRequestPayload(It.IsAny<string>())).Returns(new PensionRequestPayload());
+            _messageParser.Setup(mock => mock.ToViewDataPayload(It.IsAny<string>())).Returns(new ViewDataPayload());
+            _messageParser.Setup(mock => mock.ToRetrievedPensionPayload(It.IsAny<string>())).Returns(new RetrievedPensionDetailsPayload());
 
-            var messaging = new Mock<IMessagingService>();
-            messaging.Setup(m => m.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+            _messagingServiceMock = new Mock<IMessagingService>();
+            _messagingServiceMock.Setup(m => m.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Verifiable();
 
             var config = new CommonServiceBusConfiguration();
             var options = Options.Create(config);
 
-            var transformer = new Mock<IVewDataToPensionArrangementTransformer>();
-            transformer.Setup(m => m.Transform(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(string.Empty);
+            _transformerMock = new Mock<IVewDataToPensionArrangementTransformer>();
+            _transformerMock.Setup(m => m.Transform(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(string.Empty);
+            _transformerMock.Setup(m => m.Transform(PensionProviderConstants.RetrievalErrorCodes.SystemError, 
+                It.IsAny<string>(), It.IsAny<string>())).Returns(PensionProviderConstants.RetrievalErrorCodes.SystemError);
 
             _function = new PensionDetailsRequestFunction(logger.Object, 
                 _idValidatorMock.Object,
                 _messageParser.Object,
-                messaging.Object,
+                _messagingServiceMock.Object,
                 _viewDataOrchestratorMock.Object,
-                transformer.Object,
+                _transformerMock.Object,
                 options);
 
             _actionsMock = new Mock<ServiceBusMessageActions>();
@@ -151,6 +158,38 @@ namespace PensionRequestFunctionUnitTests
             // Assert
             _actionsMock.Verify(r => r.DeadLetterMessageAsync(message, null,
             It.IsAny<string>(), null, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public void WhenViewDataReceivedWithValidationErrors_ThenErrorCodeIsSent()
+        {
+            // Arrange
+            var message = ServiceBusModelFactory.ServiceBusReceivedMessage(body: new BinaryData(ValidPayload));
+            _messageParser.Setup(mock => mock.ToViewDataPayload(It.IsAny<string>())).Throws<AggregateException>();
+
+            // Act
+            var result = _function.Run(message, _actionsMock.Object);
+
+            // Assert
+            _transformerMock.Verify(m => m.Transform(PensionProviderConstants.RetrievalErrorCodes.SystemError, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _messagingServiceMock.Verify(m => m.SendMessageAsync(PensionProviderConstants.RetrievalErrorCodes.SystemError, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _actionsMock.Verify(r => r.CompleteMessageAsync(message, It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public void WhenTransformCompletesWithValidationErrors_ThenErrorCodeIsSent()
+        {
+            // Arrange
+            var message = ServiceBusModelFactory.ServiceBusReceivedMessage(body: new BinaryData(ValidPayload));
+            _messageParser.Setup(mock => mock.ToRetrievedPensionPayload(It.IsAny<string>())).Throws<AggregateException>();
+
+            // Act
+            var result = _function.Run(message, _actionsMock.Object);
+
+            // Assert
+            _transformerMock.Verify(m => m.Transform(PensionProviderConstants.RetrievalErrorCodes.SystemError, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _messagingServiceMock.Verify(m => m.SendMessageAsync(PensionProviderConstants.RetrievalErrorCodes.SystemError, It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            _actionsMock.Verify(r => r.CompleteMessageAsync(message, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         private static string ValidPayload => """

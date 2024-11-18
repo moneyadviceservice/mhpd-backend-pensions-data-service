@@ -26,6 +26,7 @@ public class MessageParserTests
     [InlineData(@"TestData/RetrievedPensions/EmptyArrangementsPayload.json")]
     [InlineData(@"TestData/RetrievedPensions/ValidRetrievedPensionPayload.json")]
     [InlineData(@"TestData/RetrievedPensions/EmptyGuidRecordIdPayload.json")]
+    [InlineData(@"TestData/RetrievedPensions/FailedRetrieval.json")]
     public void WhenAValidPayloadIsParsed_ItReturnsARecord(string payloadFile)
     {
         var payloadData = File.ReadAllText(payloadFile);
@@ -80,5 +81,28 @@ public class MessageParserTests
         var payload = _messageParser.ToPensionRequestPayload(payloadData);
 
         Assert.NotNull(payload);
+    }
+
+    [Theory]
+    [InlineData(@"TestData/PensionRequest/ValidDefiniteMatchViewData.json")]
+    [InlineData(@"TestData/PensionRequest/ValidPossibleMatchViewData.json")]
+    public void WhenAValidViewDataPayloadIsParsed_ItReturnsARecord(string payloadFile)
+    {
+        var payloadData = File.ReadAllText(payloadFile);
+
+        var payload = _messageParser.ToViewDataPayload(payloadData);
+
+        Assert.NotNull(payload);
+    }
+
+    [Theory]
+    [InlineData(@"TestData/PensionRequest/InvalidPensionTypeViewData.json")]
+    [InlineData(@"TestData/PensionRequest/InvalidPensionStatusViewData.json")]
+    [InlineData(@"TestData/PensionRequest/BlankAdministratorNameViewData.json")]
+    public void WhenAnInvalidViewDataPayloadIsParsed_ItThrowsAnException(string payloadFile)
+    {
+        var payloadData = File.ReadAllText(payloadFile);
+
+        Assert.Throws<AggregateException>(() => _messageParser.ToViewDataPayload(payloadData));
     }
 }

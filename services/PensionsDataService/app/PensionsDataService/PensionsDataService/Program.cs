@@ -28,6 +28,7 @@ builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, Cli
 builder.Services.AddScoped<PensionsDataRequestValidatorPipeline>();
 builder.Services.AddMhpdServiceBusTools();
 builder.Services.AddMhpdHttpClients();
+builder.Services.AddCommonConfigurations();
 builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddControllers();

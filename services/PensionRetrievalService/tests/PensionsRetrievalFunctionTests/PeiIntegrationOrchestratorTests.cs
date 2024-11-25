@@ -39,8 +39,8 @@ public class PeiIntegrationOrchestratorTests
         //Arrange
         var apiConfiguration = new PeiOrchestrationSettings
         {
-            PeiRetryInterval = 2,
-            PeiRetryTimeout = timeout
+            PeiPollingInterval = 2,
+            PeiRetrievalDuration = timeout
         };
 
         var sbConfiguration = new CommonServiceBusConfiguration

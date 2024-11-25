@@ -12,4 +12,5 @@ public static class HeaderConstants
     public const string PeisId = "peisId";
     public const string UserSessionId = "userSessionId";
     public const string CorrelationId = "mhpdCorrelationId";
+    public const string ProvidderUrl = "providerUrl";
 }

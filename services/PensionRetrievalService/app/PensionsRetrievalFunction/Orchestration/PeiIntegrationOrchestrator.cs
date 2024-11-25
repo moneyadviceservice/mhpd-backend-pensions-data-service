@@ -47,7 +47,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
                 retryCount: _settings.RetryLimit,
                 sleepDurationProvider: retryAttempt =>
                 {
-                    return TimeSpan.FromSeconds(_settings.PeiRetryInterval);
+                    return TimeSpan.FromSeconds(_settings.PeiPollingInterval);
                 },
                 onRetry: (outcome, lapse, attemptCount, context) =>
                 {

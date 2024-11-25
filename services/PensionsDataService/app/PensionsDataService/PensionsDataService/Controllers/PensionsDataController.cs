@@ -1,4 +1,3 @@
-using System.Net;
 using System.Text.Json;
 using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
@@ -23,12 +22,14 @@ public class PensionsDataController(
     PensionsDataRequestValidatorPipeline requestValidators,
     PensionServiceClients serviceClients,
     IOptions<CommonServiceBusConfiguration> serviceBusOptions,
+    IOptions<PeiOrchestrationSettings> peiRetrievalOptions,
     IMessagingService messagingService)
     : ControllerBase
 {
     private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClient = serviceClients.TokenIntegrationServiceClient;
     private readonly IRetrievalRecordServiceClient _retrievalRecordServiceClient = serviceClients.RetrievalRecordServiceClient;
     private readonly IRetrievedPensionsRecordClient _retrievedPensionsRecordClient = serviceClients.RetrievedPensionsRecordClient;
+    private readonly int _predictedTotalDataRetrievalTime = peiRetrievalOptions.Value.TotalPensionRetrievalDuration;
 
     private const string ErrorCode = "errorCode";
     private const string ExternalPensionPolicyId = "externalPensionPolicyId";
@@ -63,13 +64,14 @@ public class PensionsDataController(
 
         var response = new PensionsDataResponseModel
         {
-            PensionPolicies = new List<PensionPolicy>(),
+            PensionPolicies = [],
             PeiInformation = new PeiInformation
             {
                 PeiRetrievalComplete = retrievalRecordResult.PeiRetrievalComplete,
                 PeiData = retrievalRecordResult.PeiData
             },
-            PensionsDataRetrievalComplete = retrievalRecordResult.PeiRetrievalComplete
+            PensionsDataRetrievalComplete = retrievalRecordResult.PeiRetrievalComplete,
+            PredictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime
         };
         
         // Check pensions-retrieval-records response has any PeiData items with retrievalStatus = RETRIEVAL_REQUESTED
@@ -96,10 +98,12 @@ public class PensionsDataController(
             }
         }
         
-        response.PensionsDataRetrievalComplete = response.PensionsDataRetrievalComplete = IsPensionsDataRetrievalComplete(
+        response.PensionsDataRetrievalComplete = IsPensionsDataRetrievalComplete(
             retrievalRecordResult.PeiRetrievalComplete,
             retrievalRecordResult.PeiData
         );
+
+        response.PredictedRemainingDataRetrievalTime = GetRemainingRetrievalTime(retrievalRecordResult, _predictedTotalDataRetrievalTime);
         
         logger.LogResponse(response);
 
@@ -130,10 +134,27 @@ public class PensionsDataController(
             message.UserSessionId);
         await messagingService.SendMessageAsync(message, serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
 
-        var response = StatusCode((int)HttpStatusCode.NoContent);
+        var response = Accepted(new
+        {
+            predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime
+        });
+
         logger.LogResponse(response);
         
         return await Task.FromResult<IActionResult>(response);
+    }
+
+    private static int GetRemainingRetrievalTime(PensionsRetrievalRecord retrievalRecord, int totalEstimatedDuration)
+    {
+        if (retrievalRecord.PeiRetrievalComplete)
+        {
+            return 0;
+        }
+
+        var estimatedCompletionTime = retrievalRecord.JobStartTimestamp.AddSeconds(totalEstimatedDuration);
+        var remainingDuration = (estimatedCompletionTime - DateTime.UtcNow).Seconds;
+
+        return Math.Max(remainingDuration, 1);
     }
     
     private bool TryValidateRequests(PensionsDataRequestModel request, RequestHeaderModel requestHeader, out string? message)

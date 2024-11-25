@@ -99,7 +99,24 @@ namespace MhpdCommon.Extensions
             return services;
         }
 
-        public static IServiceCollection AddMhpdHttpClient(IServiceCollection services, IConfiguration configuration, string serviceName, string serviceUrlVariable)
+        public static IServiceCollection AddCommonConfigurations(this IServiceCollection services, IConfiguration? configuration = null)
+        {
+            configuration = GetConfiguration(services, configuration);
+
+            services.AddOptions<PeiOrchestrationSettings>().Configure(option =>
+            {
+                option.PeiRetrievalDuration = TryParseNumeric(configuration[PeiOrchestrationSettings.PeiRetrievalDurationVariable], 
+                    PeiOrchestrationSettings.DefaultPeiRetrievalDuration);
+                option.PeiPollingInterval = TryParseNumeric(configuration[PeiOrchestrationSettings.PeiPollingIntervalVariable], 
+                    PeiOrchestrationSettings.DefaultPeiPollingInterval);
+                option.ViewDataRetrievalDuration = TryParseNumeric(configuration[PeiOrchestrationSettings.ViewDataDurationVariable],
+                    PeiOrchestrationSettings.DefaultViewDataDuration);
+            });
+
+            return services;
+        }
+
+        private static IServiceCollection AddMhpdHttpClient(IServiceCollection services, IConfiguration configuration, string serviceName, string serviceUrlVariable)
         {
             var serviceUrl = configuration[serviceUrlVariable];
 
@@ -120,6 +137,12 @@ namespace MhpdCommon.Extensions
 
             var serviceProvider = services.BuildServiceProvider();
             return serviceProvider.GetRequiredService<IConfiguration>();
+        }
+
+        private static int TryParseNumeric(string? value, int defaultValue)
+        {
+            if (int.TryParse(value, out var result)) return result;
+            return defaultValue;
         }
     }
 }

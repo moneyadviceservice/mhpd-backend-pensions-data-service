@@ -39,7 +39,8 @@ public class PensionsDataControllerTests
         _mockIdValidator = new Mock<IIdValidator>();
         Mock<IMessagingService> mockMessagingService = new();
         Mock<IOptions<CommonServiceBusConfiguration>> mockServiceBusOptions = new();
-        
+        Mock<IOptions<PeiOrchestrationSettings>> mockOrchestrationSettings = new();
+
         // Arrange: Set up the mocks for the dependencies
         _mockTokenIntegrationServiceClient = new Mock<ITokenIntegrationServiceClient>();
         _mockRetrievalRecordFunctionClient = new Mock<IRetrievalRecordServiceClient>();
@@ -59,8 +60,15 @@ public class PensionsDataControllerTests
             OutboundQueue = "mhpd-pensions-retrieval-job-sb-queue-dev"
         };
 
+        var peiOrchestrationSettings = new PeiOrchestrationSettings
+        {
+            PeiRetrievalDuration = 60,
+            ViewDataRetrievalDuration = 10
+        };
+
         // Return this configuration when accessing the Value property
         mockServiceBusOptions.Setup(s => s.Value).Returns(serviceBusConfig);
+        mockOrchestrationSettings.Setup(s => s.Value).Returns(peiOrchestrationSettings);
 
         // Get ordered validators
         var validators = Helper.GetOrderedValidators();
@@ -74,6 +82,7 @@ public class PensionsDataControllerTests
             mockValidatorPipeline.Object, 
             mockServiceClients.Object,
             mockServiceBusOptions.Object, 
+            mockOrchestrationSettings.Object,
             mockMessagingService.Object
         );
     }
@@ -248,8 +257,8 @@ public class PensionsDataControllerTests
         var result = await _controller.PostPensionsDataAsync(request, _validRequestHeader);
 
         // Assert
-        var statusCodeResult = Assert.IsType<StatusCodeResult>(result);
-        Assert.Equal((int)HttpStatusCode.NoContent, statusCodeResult.StatusCode);
+        var statusCodeResult = Assert.IsType<AcceptedResult>(result);
+        Assert.Equal((int)HttpStatusCode.Accepted, statusCodeResult.StatusCode);
         _mockTokenIntegrationServiceClient.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
             It.Is<RequestHeaderModel>(model => model.CorrelationId == _validRequestHeader.CorrelationId)), Times.Once);
     }
@@ -460,11 +469,12 @@ public class PensionsDataControllerTests
         var retrievalRecord = new PensionsRetrievalRecord
         {
             Id = Guid.NewGuid().ToString(),
-            PeiData = new List<PeiDataModel>
-            {
+            JobStartTimestamp = DateTime.UtcNow,
+            PeiData =
+            [
                 new() { RetrievalStatus = PensionProviderConstants.RetrievalStatus.RetrievalRequested }
-            },
-            PeiRetrievalComplete = true
+            ],
+            PeiRetrievalComplete = false
         };
         
         var retrievedRecord = new List<RetrievedPensionRecord>

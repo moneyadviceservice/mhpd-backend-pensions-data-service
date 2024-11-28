@@ -1,8 +1,10 @@
 ﻿using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
+using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -22,11 +24,12 @@ public class CdaTokenController(
 {
     [HttpPost]
     [Route("token")]
-    public async Task<IActionResult> GenerateTokenAsync([FromQuery] CdaTokenRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> GenerateTokenAsync([FromQuery] CdaTokenRequestModel request,
+        [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
     {
         LogInfoWithJsonObject("Request received: ", request);
-            
-        if (string.IsNullOrEmpty(requestHeader.XRequestId) || !idValidator.IsValidGuid(requestHeader.XRequestId))
+        
+        if (string.IsNullOrEmpty(xRequestId) || !idValidator.IsValidGuid(xRequestId))
         {
             return await Task.FromResult<IActionResult>(BadRequest(TokenValidationMessages.InvalidXRequestId));
         }
@@ -78,11 +81,17 @@ public class CdaTokenController(
 
     private string? GetIdToken(string peisStartCode)
     {
-        if (peisStartCode == Constants.TokenConstants.NullIdTokenCode) return null;
-        if (peisStartCode == Constants.TokenConstants.InvalidIdTokenCode) return "ThisStringIsNotAValidJwtToken";
-        if (peisStartCode == Constants.TokenConstants.MissingPeisTokenCode) return tokenUtility.GenerateJwt(null); //return a Jwt with no PeisId claim
-
-        return tokenUtility.GenerateJwt(peisStartCode);
+        return peisStartCode switch
+        {
+            Constants.TokenConstants.NullIdTokenCode => null,
+            Constants.TokenConstants.InvalidIdTokenCode => "ThisStringIsNotAValidJwtToken",
+            Constants.TokenConstants.MissingPeisTokenCode => tokenUtility.GenerateJwt(new CustomClaimDataModel()),
+            _ => tokenUtility.GenerateJwt(new CustomClaimDataModel 
+                { 
+                    Name = QueryParams.Cda.Token.PeisId,
+                    Data = peisStartCode + Guid.NewGuid().ToString()[4..]
+                })
+        };
     }
 
     private void LogInfoWithJsonObject<T>(string type, T data)

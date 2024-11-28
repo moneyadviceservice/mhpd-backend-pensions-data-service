@@ -8,23 +8,20 @@ namespace PensionRequestFunction.HttpClient;
 
 public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<PdpViewDataClient> logger) : IPdpViewDataClient
 {
-    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-    private readonly ILogger<PdpViewDataClient> _logger = logger;
-
     public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt, string correlationId)       
     {
         var scope = "owner";
-        var client = _httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient();
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
 
-        var viewDataresponse = await client.GetAsync($"{viewDataUrl}/{assetGuid}?scope={scope}");
+        var viewDataResponse = await client.GetAsync($"{viewDataUrl}/{assetGuid}?scope={scope}");
         
-        var response = await CreateResponse(viewDataresponse);
+        var response = await CreateResponse(viewDataResponse);
 
-        _logger.LogResponse(response);
+        logger.LogResponse(response);
 
         return response;
     }

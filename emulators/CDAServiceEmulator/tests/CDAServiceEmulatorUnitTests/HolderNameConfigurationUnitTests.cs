@@ -4,7 +4,6 @@ using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.HolderConfiguration;
 using CDAServiceEmulatorUnitTests.Mock;
 using MhpdCommon.Constants;
-using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,20 +16,20 @@ namespace CDAServiceEmulatorUnitTests
     {
         private readonly HolderNameController _controller;
         private readonly Mock<IIdValidator> _idValidator;
-        private readonly Mock<IHolderNameViewDataRepository<HolderNameConfigurationModel>> _repository;
+        private readonly string _xRequestId = Guid.NewGuid().ToString();
 
         public HolderNameConfigurationUnitTests()
         {
             var httpContext = new DefaultHttpContext();
-            httpContext.Request.Headers[HeaderConstants.RequestId] = Guid.NewGuid().ToString();
+            httpContext.Request.Headers[HeaderConstants.RequestId] = _xRequestId;
             _idValidator = new Mock<IIdValidator>();
             _idValidator.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
 
-            _repository = new Mock<IHolderNameViewDataRepository<HolderNameConfigurationModel>>();
-            _repository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((string id, string key) => HolderConfigurationMock.FilterConfigurations(id));
-            _repository.Setup(x => x.GetHolderNameConfigurationsAsync()).ReturnsAsync(HolderConfigurationMock.GetHolderConfiguration());
+            Mock<IHolderNameViewDataRepository<HolderNameConfigurationModel>> repository = new();
+            repository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((string id, string key) => HolderConfigurationMock.FilterConfigurations(id));
+            repository.Setup(x => x.GetHolderNameConfigurationsAsync()).ReturnsAsync(HolderConfigurationMock.GetHolderConfiguration());
 
-            _controller = new HolderNameController(_idValidator.Object, _repository.Object)
+            _controller = new HolderNameController(_idValidator.Object, repository.Object)
             {
                 ControllerContext = new ControllerContext()
                 {
@@ -47,7 +46,7 @@ namespace CDAServiceEmulatorUnitTests
             string? holderNameGuid = null;
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel { XRequestId = "requestId" }, holderNameGuid);
+            var result = await _controller.GetAsync(holderNameGuid, _xRequestId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -63,7 +62,7 @@ namespace CDAServiceEmulatorUnitTests
             const string holderNameGuid = HolderConfigurationMock.MatchingId;
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel { XRequestId = holderNameGuid }, holderNameGuid);
+            var result = await _controller.GetAsync(holderNameGuid, _xRequestId);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
@@ -80,7 +79,7 @@ namespace CDAServiceEmulatorUnitTests
             _idValidator.Setup(x => x.IsValidGuid(holderNameGuid)).Returns(false);
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel { XRequestId = "ImNotAGuid" }, holderNameGuid);
+            var result = await _controller.GetAsync(holderNameGuid, _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result); // Ensure it's a 400 Bad Request
@@ -98,7 +97,7 @@ namespace CDAServiceEmulatorUnitTests
             string holderNameGuid = "550e8400-e29b-41d4-a716-446655440001"; // Use a GUID that is not in the mock data
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel { XRequestId = holderNameGuid }, holderNameGuid);
+            var result = await _controller.GetAsync(holderNameGuid, _xRequestId);
             // Assert
             var notFoundResult = Assert.IsType<NotFoundObjectResult>(result); // Ensure it's a 404 NotFound
             Assert.NotNull(notFoundResult);
@@ -117,7 +116,7 @@ namespace CDAServiceEmulatorUnitTests
             _controller.ControllerContext = new ControllerContext() { HttpContext = httpContext };
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel(), null);
+            var result = await _controller.GetAsync(null, _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -136,7 +135,7 @@ namespace CDAServiceEmulatorUnitTests
             _controller.ControllerContext = new ControllerContext() { HttpContext = httpContext };
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel { XRequestId = string.Empty }, null);
+            var result = await _controller.GetAsync(null, _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -156,7 +155,7 @@ namespace CDAServiceEmulatorUnitTests
             _controller.ControllerContext = new ControllerContext() { HttpContext = httpContext };
 
             // Act
-            var result = await _controller.GetAsync(new RequestHeaderModel { XRequestId = requestId }, null);
+            var result = await _controller.GetAsync(null, _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);

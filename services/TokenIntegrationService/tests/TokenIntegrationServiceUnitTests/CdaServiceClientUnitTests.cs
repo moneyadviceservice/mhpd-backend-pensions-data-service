@@ -123,7 +123,7 @@ public class CdaServiceClientUnitTests
             await _sut.PostAsync(request)
         );
 
-        Assert.Equal("Error communicating with CDA service", ex.Message);
+        Assert.Equal("Error during CDA Service Token POST", ex.Message);
         Assert.IsType<HttpRequestException>(ex.InnerException);
     }
 
@@ -169,7 +169,7 @@ public class CdaServiceClientUnitTests
             await _sut.PostAsync(request)
         );
 
-        Assert.Equal("An unexpected error occurred during CDA service communication.", ex.Message);
+        Assert.Equal("An unexpected error occurred during CDA Service Token POST.", ex.Message);
         Assert.IsType<Exception>(ex.InnerException);
     }
 }

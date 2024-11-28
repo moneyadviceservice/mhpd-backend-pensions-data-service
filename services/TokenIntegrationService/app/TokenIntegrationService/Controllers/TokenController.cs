@@ -17,7 +17,8 @@ public class TokenController(
     IIdValidator idValidator,
     TokenIntegrationRequestValidatorPipeline validatorPipeline,
     PensionsDataRequestValidatorPipeline cdaRequestValidatorPipeline,
-    ITokenUtility tokenUtility)
+    ITokenUtility tokenUtility,
+    IJwtUtility jwtUtility)
     : ControllerBase
 {
     [HttpPost]
@@ -72,7 +73,7 @@ public class TokenController(
             logger.LogError("IdToken is null in the response");
             return await internalServerErrorResponse;
         }
-
+        
         try
         {
             // Attempt to decode the IdToken
@@ -88,13 +89,16 @@ public class TokenController(
                 logger.LogError("id_token missing peis_id");
                 return await internalServerErrorResponse;
             }
-        }
+            
+            // Validate the Jwt token signature
+            await jwtUtility.ValidateJwtTokenWithKidAsync(result.IdToken, logger);
+        } 
         catch (Exception ex)
         {
             logger.LogError(ex, "id_token signature invalid");
             return await internalServerErrorResponse;
         }
-        
+    
         logger.LogResponse(response);
         return Ok(response);
     }

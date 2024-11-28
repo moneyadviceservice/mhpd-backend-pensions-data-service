@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using MhpdCommonTests.TokenValidationTests;
 using Microsoft.Extensions.Options;
@@ -10,20 +11,23 @@ namespace MhpdCommonTests.Utils;
 
 public class TokenUtilityTests
 {
-    private readonly MhpdCommon.Utils.TokenUtility _tokenUtility;
+    private readonly TokenUtility _tokenUtility;
 
     public TokenUtilityTests()
     {
         var configuration = new JwtSettings
         {
             PrivateKey = Helper.GeneratedRsaPrivateKeyPem,
-            ExpiryInSeconds = "600"
+            ExpiryInSeconds = "600",
+            Audience = "https://pdp/ig/token",
+            Subject = "cf668d47-ee58-4e33-bc05-feb7058de58d",
+            Issuer = "https://emulators.maps.org.uk/am/oauth2"
         };
 
         Mock<IOptions<JwtSettings>> mockJwtSettingsOptions = new();
         mockJwtSettingsOptions.Setup(x => x.Value).Returns(configuration);
 
-        _tokenUtility = new MhpdCommon.Utils.TokenUtility(mockJwtSettingsOptions.Object);
+        _tokenUtility = new TokenUtility(mockJwtSettingsOptions.Object);
     }
 
     [Theory]
@@ -31,10 +35,13 @@ public class TokenUtilityTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(null)]
-    public void GenerateJwt_ShouldReturnValidJwt_WithExpectedClaims(string? peisStartCode)
+    public void GenerateJwt_ShouldReturnValidJwt_WithExpectedClaims(string? data)
     {
+        // Arrange
+        var model = new CustomClaimDataModel { Name = QueryParams.Cda.Token.PeisId, Data = data };
+        
         // Act
-        var jwtToken = _tokenUtility.GenerateJwt(peisStartCode);
+        var jwtToken = _tokenUtility.GenerateJwt(model);
         var handler = new JwtSecurityTokenHandler();
         var token = handler.ReadJwtToken(jwtToken);
 
@@ -56,7 +63,7 @@ public class TokenUtilityTests
         Assert.NotNull(expClaim);
         Assert.NotNull(jtiClaim);
 
-        if (string.IsNullOrWhiteSpace(peisStartCode))
+        if (string.IsNullOrWhiteSpace(model.Data))
         {
             Assert.Null(peisIdClaim);
         }
@@ -65,7 +72,7 @@ public class TokenUtilityTests
             Assert.NotNull(peisIdClaim);
 
             // Validate that peis_id starts with peisStartCode
-            Assert.StartsWith(peisStartCode, peisIdClaim.Value);
+            Assert.StartsWith(model.Data, peisIdClaim.Value);
         }
     }
     
@@ -252,10 +259,10 @@ public class TokenUtilityTests
     public void DecodeJwt_ShouldReturnCorrectClaims()
     {
         // Arrange
-        string peisStartCode = "PEIS123";
+        var model = new CustomClaimDataModel { Name = QueryParams.Cda.Token.PeisId, Data = "PEIS123" };
         
         // Generate a JWT
-        string token = _tokenUtility.GenerateJwt(peisStartCode);
+        string token = _tokenUtility.GenerateJwt(model);
         
         // Act
         var claims = _tokenUtility.DecodeJwt(token);
@@ -280,7 +287,7 @@ public class TokenUtilityTests
         Assert.False(string.IsNullOrEmpty(claims["jti"]));
 
         Assert.True(claims.ContainsKey("peis_id"));
-        Assert.StartsWith(peisStartCode, claims["peis_id"]);
+        Assert.StartsWith(model.Data, claims["peis_id"]);
     }
 
     [Fact]

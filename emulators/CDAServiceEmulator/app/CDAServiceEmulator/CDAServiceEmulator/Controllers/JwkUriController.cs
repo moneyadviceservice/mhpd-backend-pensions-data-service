@@ -1,5 +1,5 @@
-using CDAServiceEmulator.Models.JwkUri;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels.JwkUri;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CDAServiceEmulator.Controllers;
@@ -9,7 +9,7 @@ namespace CDAServiceEmulator.Controllers;
 public class JwkUriController(ILogger<JwkUriController> logger) : ControllerBase
 {
     [HttpGet]
-    [Route("jwk-uri")]
+    [Route("jwk_uri")]
     public Task<IActionResult> GetAsync()
     {
         var response = new JwkUriResponseModel();

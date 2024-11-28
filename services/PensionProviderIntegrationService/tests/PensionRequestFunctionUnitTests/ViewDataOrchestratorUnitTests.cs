@@ -16,10 +16,9 @@ public class ViewDataOrchestratorUnitTests
 {
     private readonly ViewDataOrchestrator _orchestrator;
 
-    private readonly Mock<IPdpViewDataClient> _mockPdpViewDataClient = new();
     private readonly Mock<IMapsCdaServiceClient> _mockMapsRqpService = new();
+    private readonly Mock<IJwtUtility> _jwtUtilityMock = new();
     private readonly Mock<ITokenIntegrationServiceClient> _mockTokenIntegrationService = new();
-    private readonly Mock<ILogger<ViewDataOrchestrator>> _mockLogger;
 
     public ViewDataOrchestratorUnitTests()
     {
@@ -27,15 +26,15 @@ public class ViewDataOrchestratorUnitTests
         var rqp = GetRqp();
         var rpt = GetRpt();
 
-        _mockPdpViewDataClient = new Mock<IPdpViewDataClient>();
-        _mockLogger = new Mock<ILogger<ViewDataOrchestrator>>();
+        Mock<IPdpViewDataClient> mockPdpViewDataClient = new();
+        Mock<ILogger<ViewDataOrchestrator>> mockLogger = new();
 
-        _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => string.IsNullOrEmpty(x)), It.IsAny<string>()))
+        mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => string.IsNullOrEmpty(x)), It.IsAny<string>()))
             .ReturnsAsync(new PdpServiceResponseModel { ViewDataToken = null, 
                                                         ResponseMessage = new ResponseMessage { ResponseStatusCode = "Unauthorized", 
                                                             WWWAuthenticateResponseHeader = responseHeader } } );
 
-        _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => !string.IsNullOrEmpty(x)), It.IsAny<string>()))
+        mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => !string.IsNullOrEmpty(x)), It.IsAny<string>()))
             .ReturnsAsync(new PdpServiceResponseModel
             {
                 ViewDataToken = GetViewDataToken(),
@@ -65,14 +64,20 @@ public class ViewDataOrchestratorUnitTests
 
         var messaging = new Mock<ITokenUtility>();
         messaging.Setup(m => m.RetrieveClaim(It.IsAny<string>(), It.IsAny<string>())).Returns("viewDataClaim");
+        
+        // Create an instance of PensionServiceClients with mocked dependencies
+        Mock<ViewDataOrchestratorClients> mockServiceClients = new(
+            holderNameClient.Object,
+            mockPdpViewDataClient.Object,
+            _mockTokenIntegrationService.Object,
+            _mockMapsRqpService.Object
+        );
 
-        _orchestrator = new ViewDataOrchestrator(_mockLogger.Object, 
+        _orchestrator = new ViewDataOrchestrator(mockLogger.Object, 
                                                        validator.Object,
-                                                       holderNameClient.Object,
-                                                       _mockPdpViewDataClient.Object,
-                                                       _mockTokenIntegrationService.Object,
-                                                       _mockMapsRqpService.Object,
-                                                       messaging.Object);
+                                                       messaging.Object,
+                                                       _jwtUtilityMock.Object,
+                                                       mockServiceClients.Object);
     }
 
     [Fact]

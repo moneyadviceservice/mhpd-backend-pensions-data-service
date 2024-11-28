@@ -7,6 +7,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
+using MhpdCommon.SharedHttpClient;
 
 namespace MhpdCommon.Extensions
 {
@@ -18,6 +19,8 @@ namespace MhpdCommon.Extensions
             services.AddScoped<IIdValidator, IdValidator>();
             services.AddScoped<IMessageParser, MessageParser>();
             services.AddScoped<ITokenUtility, TokenUtility>();
+            services.AddScoped<IJwtUtility, JwtUtility>();
+            services.AddScoped<ISharedHttpClient, SharedHttpClient.SharedHttpClient>();
 
             return services;
         }

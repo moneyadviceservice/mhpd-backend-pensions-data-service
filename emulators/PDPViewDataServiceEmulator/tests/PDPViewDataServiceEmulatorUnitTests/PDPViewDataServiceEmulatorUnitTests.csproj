@@ -10,6 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Mock\ViewDataPayload\view_data_sample_1.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MhpdCommon" Version="1.2.53" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="xunit" Version="2.4.2" />
@@ -24,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\app\PDPViewDataServicedEmulator\PDPViewDataServicedEmulator.csproj" />
+    <ProjectReference Include="..\..\app\PDPViewDataServiceEmulator\PDPViewDataServiceEmulator.csproj" />
   </ItemGroup>
 
 </Project>

@@ -2,8 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
@@ -28,60 +28,52 @@ public partial class TokenUtility : ITokenUtility
         _expiryInSeconds = int.TryParse(_jwtSettings.ExpiryInSeconds, out var expiry) ? expiry : 600;
     }
     
-    public string GenerateJwt(string? peisStartCode)
+    public string GenerateJwt(CustomClaimDataModel claimDataModel)
     {
-        // Step 1: Create GUID for peis_id and jti
-        var random = Guid.NewGuid().ToString()[4..];
-
-        var peisId = peisStartCode + random;
-        var jti = Guid.NewGuid();
-
-        // Step 2: Set values for claims
-        const string subject = "cf668d47-ee58-4e33-bc05-feb7058de58d";
-        const string issuer = "https://emulators.maps.org.uk/am/oauth2";
-        const string audience = "https://pdp/ig/token";
-        
-        // Step 3: Get current UTC timestamp for iat
+        // Step 1: Get current UTC timestamp for iat
         var iat = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-        // Step 4: Set expiration time (iat + 600 seconds)
+        // Step 2: Set expiration time (iat + 600 seconds)
         var exp = iat + _expiryInSeconds;
 
-        // Step 5: Define JWT claims
+        // Step 3: Define JWT claims
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, subject),
-            new(JwtRegisteredClaimNames.Iss, issuer),
-            new(JwtRegisteredClaimNames.Aud, audience),
+            new(JwtRegisteredClaimNames.Sub, _jwtSettings.Subject),
+            new(JwtRegisteredClaimNames.Iss, _jwtSettings.Issuer),
+            new(JwtRegisteredClaimNames.Aud, _jwtSettings.Audience),
             new(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
             new(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
-            new(JwtRegisteredClaimNames.Jti, jti.ToString()) // Random 36-character GUID for jti
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Random 36-character GUID for jti
         };
 
-        if (!string.IsNullOrWhiteSpace(peisStartCode))
+        if (!string.IsNullOrWhiteSpace(claimDataModel.Name) && !string.IsNullOrWhiteSpace(claimDataModel.Data))
         {
-            claims.Add(new(QueryParams.Cda.Token.PeisId, peisId)); // Custom claim for peis_id
+            claims.Add(new Claim(claimDataModel.Name, claimDataModel.Data)); // Add custom claim for peis_id or view_data_token
         }
         
-        // Step 6: Define signing credentials (for example, using HS256 symmetric key)
+        // Step 4: Define signing credentials (for example, using HS256 symmetric key)
         var rsa = RSA.Create();
         rsa.ImportFromPem(_jwtSettings.PrivateKey);
 
         var credentials = new SigningCredentials(
-            new RsaSecurityKey(rsa),
-            SecurityAlgorithms.RsaSha256Signature
+            new RsaSecurityKey(rsa)
+            {
+                KeyId = _jwtSettings.Kid // Set the kid
+            },
+            SecurityAlgorithms.RsaSha256
         );
         
-        // Step 7: Create the JWT
+        // Step 5: Create the JWT
         var token = new JwtSecurityToken(
-            issuer: issuer,
-            audience: audience,
+            issuer: _jwtSettings.Issuer,
+            audience: _jwtSettings.Audience,
             claims: claims,
             expires: DateTimeOffset.FromUnixTimeSeconds(exp).UtcDateTime, // Set expiration
             signingCredentials: credentials
         );
 
-        // Step 8: Return the generated JWT
+        // Step 6: Return the generated JWT
         var jwtHandler = new JwtSecurityTokenHandler();
         return jwtHandler.WriteToken(token);
     }
@@ -149,7 +141,7 @@ public partial class TokenUtility : ITokenUtility
 
             if (jsonToken!.Claims.FirstOrDefault(claim => claim.Type == requiredClaimName) != null)
             {
-                return jsonToken!.Claims.First(claim => claim.Type == requiredClaimName).Value;
+                return jsonToken.Claims.First(claim => claim.Type == requiredClaimName).Value;
             }
         }
         catch (Exception)

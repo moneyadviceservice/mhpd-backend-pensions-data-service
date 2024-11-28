@@ -3,11 +3,12 @@ using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
+using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
-using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
@@ -17,74 +18,85 @@ using Moq;
 namespace CDAServiceEmulatorUnitTests;
 
 public class CdaTokenControllerTests
-{
-    private readonly Mock<IIdValidator> _mockIdValidator;
-    private readonly CdaTokenController _controller;
-    private readonly Mock<Container> _mockScenarioModelContainer;
+{    private readonly Mock<IIdValidator> _mockIdValidator;
+     private readonly CdaTokenController _controller;
+     private readonly Mock<Container> _mockScenarioModelContainer;
+     private readonly string _xRequestId = Guid.NewGuid().ToString();
 
-    public CdaTokenControllerTests()
-    {
-        var configuration = new MhpdCosmosConfiguration
-        {
-            DatabaseName = "TestDatabase",
-            TokenEmulatorPiesIdScenarioModelsContainerName = "TokenEmulatorPiesIdScenarioModelsRepository",
-        };
-        
-        Mock<ILogger<CdaTokenController>> mockLogger = new();
-        _mockIdValidator = new Mock<IIdValidator>();
-        
-        Mock<CosmosClient> mockCosmosClient = new();
-        _mockScenarioModelContainer = new();
-        Mock<Database> mockDatabase = new();
-        
-        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseName))
-            .Returns(mockDatabase.Object);
-
-        mockDatabase.Setup(mock => mock.GetContainer(configuration.TokenEmulatorPiesIdScenarioModelsContainerName))
-            .Returns(_mockScenarioModelContainer.Object);
-                
-        Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
-        mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
-        
-        // Instantiate the TokenEmulatorPiesIdScenarioModelsRepository with the mocked CosmosClient and configuration
-        var mockScenarioModelRepository = new Mock<TokenEmulatorPiesIdScenarioModelsRepository>(
-            mockCosmosClient.Object, 
-            configuration.DatabaseName, 
-            configuration.TokenEmulatorPiesIdScenarioModelsContainerName
-        );
-
-        // Get ordered validators
-        var validators = Helper.GetOrderedValidators();
-
-        // Create the TokenRequestValidatorPipeline with the mock validators
-        Mock<TokenRequestValidatorPipeline> mockValidatorPipeline = new(validators);
-
-        // Setup Jwt private key mock
-        var jwtConfiguration = new JwtSettings
-        {
-            PrivateKey = Helper.GeneratedRsaPrivateKeyPem
-        };
-
-        Mock<IOptions<JwtSettings>> mockJwtSettingsOptions = new();
-        mockJwtSettingsOptions.Setup(x => x.Value).Returns(jwtConfiguration);
-
-        var utils = new TokenUtility(mockJwtSettingsOptions.Object);        
-
-        // Create the controller with real TokenRequestValidatorPipeline instance
-        _controller = new CdaTokenController(mockLogger.Object, _mockIdValidator.Object, mockValidatorPipeline.Object, mockScenarioModelRepository.Object, utils);
-    }
+     public CdaTokenControllerTests()
+     {
+         var configuration = new MhpdCosmosConfiguration
+         {
+             DatabaseName = "TestDatabase",
+             TokenEmulatorPiesIdScenarioModelsContainerName = "TokenEmulatorPiesIdScenarioModelsRepository",
+         };
+         
+         Mock<ILogger<CdaTokenController>> mockLogger = new();
+         _mockIdValidator = new Mock<IIdValidator>();
+         
+         Mock<CosmosClient> mockCosmosClient = new();
+         _mockScenarioModelContainer = new();
+         Mock<Database> mockDatabase = new();
+         
+         mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseName))
+             .Returns(mockDatabase.Object);
+ 
+         mockDatabase.Setup(mock => mock.GetContainer(configuration.TokenEmulatorPiesIdScenarioModelsContainerName))
+             .Returns(_mockScenarioModelContainer.Object);
+                 
+         Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
+         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
+         
+         // Instantiate the TokenEmulatorPiesIdScenarioModelsRepository with the mocked CosmosClient and configuration
+         var mockScenarioModelRepository = new Mock<TokenEmulatorPiesIdScenarioModelsRepository>(
+             mockCosmosClient.Object, 
+             configuration.DatabaseName, 
+             configuration.TokenEmulatorPiesIdScenarioModelsContainerName
+         );
+ 
+         // Get ordered validators
+         var validators = Helper.GetOrderedValidators();
+ 
+         // Create the TokenRequestValidatorPipeline with the mock validators
+         Mock<TokenRequestValidatorPipeline> mockValidatorPipeline = new(validators);
+ 
+         // Setup Jwt private key mock
+         var jwtConfiguration = new JwtSettings
+         {
+             PrivateKey = Helper.GeneratedRsaPrivateKeyPem,
+             Subject = "cf668d47-ee58-4e33-bc05-feb7058de58d",
+             Audience = "https://pdp/ig/token",
+             Kid = "bb4475c6-b014-4ff9-ba4c-22eef0291d9e",
+             Issuer = "https://emulators.maps.org.uk/am/oauth2"
+         };
+ 
+         Mock<IOptions<JwtSettings>> mockJwtSettingsOptions = new();
+         mockJwtSettingsOptions.Setup(x => x.Value).Returns(jwtConfiguration);
+ 
+         var utils = new TokenUtility(mockJwtSettingsOptions.Object);
+         
+         // Create the controller with real TokenRequestValidatorPipeline instance
+         _controller = new CdaTokenController(mockLogger.Object, _mockIdValidator.Object, mockValidatorPipeline.Object, mockScenarioModelRepository.Object, utils);
+         
+         // Mock HttpContext
+         var httpContext = new DefaultHttpContext();
+         _controller.ControllerContext = new ControllerContext
+         {
+             HttpContext = httpContext
+         };
+     }
 
     [Fact]
     public async Task GenerateTokenAsync_InvalidXRequestId_ReturnsBadRequest()
     {
         // Arrange
         var request = new CdaTokenRequestModel();
-        var requestHeader = new RequestHeaderModel { XRequestId = null };  // Invalid XRequestId
-
+        _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, string.Empty);
+        
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(false);
 
         // Act
-        var result = await _controller.GenerateTokenAsync(request, requestHeader);
+        var result = await _controller.GenerateTokenAsync(request, _xRequestId);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -96,8 +108,8 @@ public class CdaTokenControllerTests
     {
         // Arrange
         var request = new CdaTokenRequestModel { GrantType = "Unknown" };
-        var requestHeader = new RequestHeaderModel { XRequestId = "valid-guid" };
-
+        _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+        
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Set up a mock validator to return a failure
@@ -106,7 +118,7 @@ public class CdaTokenControllerTests
             .Returns(ValidationResult.Failure(TokenValidationMessages.InvalidGrantType));
         
         // Act
-        var result = await _controller.GenerateTokenAsync(request, requestHeader);
+        var result = await _controller.GenerateTokenAsync(request, _xRequestId);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -118,7 +130,7 @@ public class CdaTokenControllerTests
     {
         // Arrange
         var request = new CdaTokenRequestModel { GrantType = "Unknown" };
-        var requestHeader = new RequestHeaderModel { XRequestId = "valid-guid" };
+        _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
@@ -128,7 +140,7 @@ public class CdaTokenControllerTests
             .Returns(ValidationResult.Failure(TokenValidationMessages.UnsupportedGrantType));
         
         // Act
-        var result = await _controller.GenerateTokenAsync(request, requestHeader);
+        var result = await _controller.GenerateTokenAsync(request, _xRequestId);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -147,7 +159,7 @@ public class CdaTokenControllerTests
             Scope = TokenQueryParams.Owner,
             Ticket = TokenQueryParams.ValidJwtToken
         };
-        var requestHeader = new RequestHeaderModel { XRequestId = "valid-guid" };
+        _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
@@ -157,7 +169,7 @@ public class CdaTokenControllerTests
             .Returns(ValidationResult.Success());
 
         // Act
-        var result = await _controller.GenerateTokenAsync(request, requestHeader);
+        var result = await _controller.GenerateTokenAsync(request, _xRequestId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -181,9 +193,9 @@ public class CdaTokenControllerTests
             ClientSecret = TokenQueryParams.ValidClientSecret,
             Code = TokenQueryParams.ValidCode,
             CodeVerifier = TokenQueryParams.ValidCodeVerifier,
-            RedirectUri = Helper.ValidRedirectUri,
+            RedirectUrl = Helper.ValidRedirectUri,
         };
-        var requestHeader = new RequestHeaderModel { XRequestId = "valid-guid" };
+        _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
@@ -191,7 +203,6 @@ public class CdaTokenControllerTests
         var mockValidator = new Mock<ITokenRequestValidator<CdaTokenRequestModel>>();
         mockValidator.Setup(v => v.Validate(It.IsAny<CdaTokenRequestModel>()))
             .Returns(ValidationResult.Success());
-        
         
         var testModel = new TokenEmulatorPiesIdScenarioModel
         {
@@ -208,7 +219,7 @@ public class CdaTokenControllerTests
             .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
 
         // Act
-        var result = await _controller.GenerateTokenAsync(request, requestHeader);
+        var result = await _controller.GenerateTokenAsync(request, _xRequestId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);

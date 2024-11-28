@@ -2,7 +2,6 @@
 using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.HolderConfiguration;
 using MhpdCommon.Constants;
-using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,25 +13,26 @@ public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataR
 {
     [HttpGet]
     [Route("holdername-view-configurations")]
-    public async Task<IActionResult> GetAsync([FromHeader] RequestHeaderModel headerModel, [FromQuery] string? holdername_guid)
+    public async Task<IActionResult> GetAsync([FromQuery] string? holderNameGuid,
+        [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
     {
-        if (!idValidator.IsValidGuid(headerModel.XRequestId))
+        if (!idValidator.IsValidGuid(xRequestId))
         {
             return BadRequest(Constants.HolderNameConstants.InvalidRequestId);
         }
 
-        if (holdername_guid == null)
+        if (holderNameGuid == null)
         {
             var allConfigurations = await viewDataRepository.GetHolderNameConfigurationsAsync();
             return Ok(new HolderNameViewDataResponse { Configurations = allConfigurations });
         }
 
-        if (!idValidator.IsValidGuid(holdername_guid))
+        if (!idValidator.IsValidGuid(holderNameGuid))
         {
             return BadRequest(Constants.HolderNameConstants.InvalidHolderNameId);
         }
 
-        var filteredConfigurations = await viewDataRepository.GetByIdAsync(holdername_guid, holdername_guid);
+        var filteredConfigurations = await viewDataRepository.GetByIdAsync(holderNameGuid, holderNameGuid);
 
         if (filteredConfigurations == null)
         {

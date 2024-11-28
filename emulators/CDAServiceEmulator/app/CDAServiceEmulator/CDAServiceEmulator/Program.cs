@@ -2,10 +2,10 @@ using System.Diagnostics.CodeAnalysis;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.HolderConfiguration;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.TokenValidation;
-using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
@@ -13,8 +13,8 @@ using Microsoft.Extensions.Options;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddTransient<IIdValidator, IdValidator>();
-builder.Services.AddTransient<ITokenUtility, TokenUtility>();
+builder.Services.AddHttpClient();
+builder.Services.AddMhpdUtilities();
 builder.Services.AddControllers();
 
 builder.Services.AddApplicationInsightsTelemetry();
@@ -94,8 +94,8 @@ builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeNot
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeInvalidFormatValidation>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeVerifierNotBase64String>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, CodeVerifierNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUriNotPresentValidation>();
-builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUriNotValidUrlValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUrlNotPresentValidation>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, RedirectUrlNotValidUrlValidation>();
 builder.Services.AddScoped<TokenRequestValidatorPipeline>();
 
 builder.Services.AddHttpLogging(logging =>
@@ -111,7 +111,6 @@ builder.Services.AddHttpLogging(logging =>
 
 // Bind JwtSettings
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
-builder.Services.AddScoped<TokenUtility>();
 
 var app = builder.Build();
 

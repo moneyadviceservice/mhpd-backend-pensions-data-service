@@ -1,8 +1,10 @@
+using MhpdCommon.Models.MHPDModels;
+
 namespace MhpdCommon.Utils;
 
 public interface ITokenUtility
 {
-    public string GenerateJwt(string? peisStartCode);
+    public string GenerateJwt(CustomClaimDataModel claimDataModel);
 
     public bool DoesRegexMatch(string input, string pattern);
 

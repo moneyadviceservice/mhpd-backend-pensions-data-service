@@ -1,7 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
-using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Constants;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Net.Http.Headers;
@@ -10,39 +10,33 @@ namespace CDAServiceEmulator.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class PeisController : ControllerBase
+public class PeisController(
+    CdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
+    CdaPeisEmulatorTestInstanceDataRepository cdaPeisEmulatorTestInstanceDataRepository,
+    IIdValidator idValidator)
+    : ControllerBase
 {
-    private readonly CdaPeisEmulatorScenarioModelRepository _cdaPeisEmulatorScenarioModelRepository;
-    private readonly CdaPeisEmulatorTestInstanceDataRepository _cdaPeisEmulatorTestInstanceDataRepository;
     private const string BadRequestPeisIdInvalidResponse = "Invalid peis_id";
     private const string BadRequestXRequestIdInvalidResponse = "Invalid X-Request-Id";
     private const string BadRequestUnknownTestScenarioResponse = "Unknown test scenario";
     private const string UnauthorisedResponse = "Unauthorized";
-    private readonly IIdValidator _idValidator;
-
-    public PeisController(CdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
-        CdaPeisEmulatorTestInstanceDataRepository cdaPeisEmulatorTestInstanceDataRepository, IIdValidator idValidator)
-    {
-        _cdaPeisEmulatorScenarioModelRepository = cdaPeisEmulatorScenarioModelRepository;
-        _cdaPeisEmulatorTestInstanceDataRepository = cdaPeisEmulatorTestInstanceDataRepository;
-        _idValidator = idValidator;
-    }
 
     [HttpGet]
     [Route("/peis/{peis_id}")]
-    public async Task<IActionResult> GetAsync([FromRoute] string peis_id, [FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> GetAsync([FromRoute] string peis_id,
+        [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
     {
         if (!ValidateAuthHeader())
         {
             return Unauthorized(UnauthorisedResponse);
         }
         
-        if (string.IsNullOrEmpty(requestHeader.XRequestId) || !_idValidator.IsValidGuid(requestHeader.XRequestId))
+        if (string.IsNullOrEmpty(xRequestId) || !idValidator.IsValidGuid(xRequestId))
         {
             return BadRequest(BadRequestXRequestIdInvalidResponse);
         }
         
-        if (string.IsNullOrEmpty(peis_id) || !_idValidator.IsValidGuid(peis_id))
+        if (string.IsNullOrEmpty(peis_id) || !idValidator.IsValidGuid(peis_id))
         {
             return BadRequest(BadRequestPeisIdInvalidResponse);
         }
@@ -50,7 +44,7 @@ public class PeisController : ControllerBase
         // Extract first 4 characters from the Peis_id
         var peisStartCode = GetPeisStartCode(peis_id);
         
-        var scenarioModelData = await _cdaPeisEmulatorScenarioModelRepository.GetByIdAsync(peisStartCode, peisStartCode);
+        var scenarioModelData = await cdaPeisEmulatorScenarioModelRepository.GetByIdAsync(peisStartCode, peisStartCode);
 
         if (scenarioModelData?.DataPoints == null)
         {
@@ -60,10 +54,10 @@ public class PeisController : ControllerBase
         var result = scenarioModelData.DataPoints?[0].ResponsePayload;
         
         // Check if the record exists in the cdaPeisEmulatorTestInstanceData container
-        var testInstanceData = await _cdaPeisEmulatorTestInstanceDataRepository.GetByIdAsync(peisStartCode, peis_id);
+        var testInstanceData = await cdaPeisEmulatorTestInstanceDataRepository.GetByIdAsync(peisStartCode, peis_id);
         if (testInstanceData == null)
         {
-            await _cdaPeisEmulatorTestInstanceDataRepository.InsertItemAsync(new CdaPeisEmulatorTestInstanceDataModel
+            await cdaPeisEmulatorTestInstanceDataRepository.InsertItemAsync(new CdaPeisEmulatorTestInstanceDataModel
             {
                 Id = peisStartCode,
                 PeisId = peis_id,

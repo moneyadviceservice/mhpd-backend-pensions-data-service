@@ -6,19 +6,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace MaPSCDAService.Utils;
 
-public class RqpTokenManager : IRqpTokenManager
+public class RqpTokenManager(IConfiguration config) : IRqpTokenManager
 {
     private const string Role = "owner";
-    private readonly string? _kid;
-    private readonly string? _audience;
-    private readonly string? _privateKey;
-
-    public RqpTokenManager(IConfiguration config)
-    {
-        _privateKey = config["privateKey"];
-        _kid = config["Kid"];
-        _audience = config["Audience"];
-    }
+    private readonly string? _kid = config["Kid"];
+    private readonly string? _audience = config["Audience"];
+    private readonly string? _privateKey = config["privateKey"];
 
     public string GenerateToken(string userSessionId, string iss)
     {
@@ -27,7 +20,7 @@ public class RqpTokenManager : IRqpTokenManager
 
         var mySecurityKey = new SigningCredentials(
             new RsaSecurityKey(rsa) { KeyId = _kid }, 
-            SecurityAlgorithms.RsaSha256Signature
+            SecurityAlgorithms.RsaSha256
         );
 
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -41,7 +34,6 @@ public class RqpTokenManager : IRqpTokenManager
                 new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.UtcNow.AddSeconds(60)).ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("Role", Role)
-
 			}),
             IssuedAt = DateTime.UtcNow,
             Expires = DateTime.UtcNow.AddSeconds(60),

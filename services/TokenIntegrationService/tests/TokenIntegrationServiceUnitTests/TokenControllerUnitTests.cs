@@ -18,9 +18,10 @@ public class TokenControllerUnitTests
     private readonly TokenController _controller;
     private readonly Mock<ICdaServiceClient> _iCdaToken = new();
     private readonly Mock<ITokenUtility> _mockTokenUtility = new();
+    private readonly Mock<IJwtUtility> _mockJwtUtility = new();
     private readonly Mock<IIdValidator> _mockIdValidator;
 
-    private readonly RequestHeaderModel _requestHeaderModel = new() { XRequestId = ValidXRequestId };
+    private readonly RequestHeaderModel _requestHeaderModel = new() { CorrelationId = ValidXRequestId };
 
     private const string RqpValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
     private const string TicketValue = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
@@ -61,7 +62,7 @@ public class TokenControllerUnitTests
         var httpContext = new DefaultHttpContext();
         _controller = new TokenController(_iCdaToken.Object, mockLogger.Object,
             _mockIdValidator.Object, mockValidatorPipeline.Object,
-            mockCdaValidatorPipeline.Object, _mockTokenUtility.Object)
+            mockCdaValidatorPipeline.Object, _mockTokenUtility.Object, _mockJwtUtility.Object)
         {
             ControllerContext = new ControllerContext()
             {

@@ -33,6 +33,7 @@ var host = new HostBuilder()
         services.AddTransient<IViewDataOrchestrator, ViewDataOrchestrator>();
         services.AddTransient<IVewDataToPensionArrangementTransformer, ViewDataToPensionArrangementTransformer>();
         services.AddTransient<IHolderNameConfigurationRepository<HolderNameConfigurationModel>, HolderNameConfigurationRepository>();
+        services.AddTransient<ViewDataOrchestratorClients>();
     })
     .Build();
 

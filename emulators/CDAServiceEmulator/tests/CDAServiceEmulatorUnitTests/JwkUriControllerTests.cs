@@ -1,6 +1,6 @@
 using System.Net;
 using CDAServiceEmulator.Controllers;
-using CDAServiceEmulator.Models.JwkUri;
+using MhpdCommon.Models.MHPDModels.JwkUri;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -26,9 +26,8 @@ public class JwkUriControllerTests
 
         var responseModel = result.Value as JwkUriResponseModel;
         Assert.NotNull(responseModel);
-        Assert.Single(responseModel.Keys);
 
-        var key = responseModel.Keys[0];
+        var key = responseModel.Keys.First(k => k.KeyId == expectedKeyId);
         Assert.Equal(expectedKeyType, key.KeyType);
         Assert.Equal(expectedKeyId, key.KeyId);
         Assert.Equal(expectedModulus, key.Modulus);

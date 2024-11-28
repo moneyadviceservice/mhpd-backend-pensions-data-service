@@ -4,7 +4,7 @@ using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulatorUnitTests.Mock.ScenarioModelData;
-using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Constants;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,11 +19,11 @@ public class PeisControllerTests
 {
     private readonly DefaultHttpContext _httpContext;
     private readonly PeisController _controller;
-    private readonly Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions;
-    private readonly Mock<Container> mockScenarioModelContainer;
-    private readonly Mock<Container> mockTestInstanceContainer;
-    private readonly Mock<IIdValidator> mockIdValidatorMock;
-    
+    private readonly Mock<Container> _mockScenarioModelContainer;
+    private readonly Mock<Container> _mockTestInstanceContainer;
+    private readonly Mock<IIdValidator> _mockIdValidatorMock;
+    private readonly string _xRequestId = Guid.NewGuid().ToString();
+
     public PeisControllerTests()
     {
         var configuration = new MhpdCosmosConfiguration
@@ -34,24 +34,24 @@ public class PeisControllerTests
         };
 
         Mock<CosmosClient> mockCosmosClient = new();
-        mockScenarioModelContainer = new();
-        mockTestInstanceContainer = new();
+        _mockScenarioModelContainer = new();
+        _mockTestInstanceContainer = new();
         Mock<Database> mockDatabase = new();
 
         mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseName))
             .Returns(mockDatabase.Object);
 
         mockDatabase.Setup(mock => mock.GetContainer(configuration.CdaPeisEmulatorScenarioModelContainerName))
-            .Returns(mockScenarioModelContainer.Object);
+            .Returns(_mockScenarioModelContainer.Object);
         
         mockDatabase.Setup(mock => mock.GetContainer(configuration.CdaPeisEmulatorTestInstanceDataContainerName))
-            .Returns(mockTestInstanceContainer.Object);
+            .Returns(_mockTestInstanceContainer.Object);
         
-        mockIdValidatorMock = new Mock<IIdValidator>();
-        mockIdValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-        mockIdValidatorMock.Setup(x => x.IsValidPeI(It.IsAny<string>())).Returns(false);
+        _mockIdValidatorMock = new Mock<IIdValidator>();
+        _mockIdValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
+        _mockIdValidatorMock.Setup(x => x.IsValidPeI(It.IsAny<string>())).Returns(false);
         
-        mockCosmosConfigOptions = new Mock<IOptions<MhpdCosmosConfiguration>>();
+        Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
         
         // Instantiate the CdaPeisEmulatorScenarioModelRepository with the mocked CosmosClient and configuration
@@ -68,9 +68,10 @@ public class PeisControllerTests
         );
 
         _httpContext = new DefaultHttpContext();
+        _httpContext.Request.Headers[HeaderConstants.RequestId] = Guid.NewGuid().ToString();
 
         // Inject mocks into the controller
-        _controller = new PeisController(mockScenarioModelRepository.Object, mockTestInstanceRepository.Object, mockIdValidatorMock.Object)
+        _controller = new PeisController(mockScenarioModelRepository.Object, mockTestInstanceRepository.Object, _mockIdValidatorMock.Object)
         {
             ControllerContext = new ControllerContext()
             {
@@ -84,14 +85,13 @@ public class PeisControllerTests
     {
         // Arrange
         AddAuthorisationHeader();
-        var xRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
         string peis_id = "?><>(*)&&-8586-4483-9899-17dd85af9074";
         
-        mockIdValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-        mockIdValidatorMock.Setup(x => x.IsValidGuid(peis_id)).Returns(false);
+        _mockIdValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
+        _mockIdValidatorMock.Setup(x => x.IsValidGuid(peis_id)).Returns(false);
         
         // Act
-        var result = await _controller.GetAsync("", new RequestHeaderModel { XRequestId = xRequestId });
+        var result = await _controller.GetAsync("", _xRequestId);
         BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -106,31 +106,13 @@ public class PeisControllerTests
     {
         // Arrange
         AddInCorrectAuthorisationHeader();
-        var xRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
         string peis_id = "8586-4483-9899-17dd85af9074";
 
         // Act
-        var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = xRequestId });
+        var result = await _controller.GetAsync(peis_id, _xRequestId);
 
         // Assert
         Assert.True(result.GetType() == typeof(UnauthorizedObjectResult));
-    }
-
-    [Fact]
-    public async void WhenControllerIsCalled_WithCorrectHeaders_CorrectPath_No_X_Request_Id_ThenItShouldReturn_BadRequest400Response()
-    {
-        // Arrange
-        AddAuthorisationHeader();
-        string peis_id = "8586-4483-9899-17dd85af9074";
-
-        // Act
-        var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = null });
-        BadRequestObjectResult badResult = (BadRequestObjectResult)result;
-
-        // Assert
-        Assert.True(result.GetType() == typeof(BadRequestObjectResult));
-        Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
-        Assert.True((string)badResult.Value! == "Invalid X-Request-Id");
     }
 
     [Fact]
@@ -138,11 +120,10 @@ public class PeisControllerTests
     {
         // Arrange
         string peis_id = "8586-4483-9899-17dd85af9074";
-        var xRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
         var responseHeaderValue = "realm=\"PensionDashboard\", as_uri=\"https://as.pdp.com\", ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
 
         // Act
-        var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = xRequestId });
+        var result = await _controller.GetAsync(peis_id, _xRequestId);
         UnauthorizedObjectResult unAuthorizedResult = (UnauthorizedObjectResult)result;
         _httpContext.Response.Headers.TryGetValue("WWW-Authenticate", out var wwwAuthenticate);
 
@@ -158,16 +139,15 @@ public class PeisControllerTests
     {
         // Arrange
         AddAuthorisationHeader();
-        var xRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
         string peis_id = "cd0e4fdc-8586-4483-9899-17dd85af9074";
         
         // Arrange
-        mockScenarioModelContainer
+        _mockScenarioModelContainer
             .Setup(c => c.ReadItemAsync<CdaPeisEmulatorScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
             .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, "", 0)); // Mock a not found exception
 
         // Act
-        var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = xRequestId });
+        var result = await _controller.GetAsync(peis_id, _xRequestId);
         BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -181,8 +161,7 @@ public class PeisControllerTests
     {
         // Arrange
         AddAuthorisationHeader();
-        var xRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
-        string peis_id = "0001fdcd-8586-4483-9899-17dd85af9074";
+        const string peisId = "0001fdcd-8586-4483-9899-17dd85af9074";
 
         // Load the JSON data as payload
         var data = DataProvider.GetPayload<CdaPeisEmulatorScenarioModel>("0002.json");
@@ -197,20 +176,20 @@ public class PeisControllerTests
             mockItemResponse.Setup(x => x.Resource).Returns(data);
 
             // Set up the mockContainer to return the mocked ItemResponse
-            mockScenarioModelContainer
+            _mockScenarioModelContainer
                 .Setup(c => c.ReadItemAsync<CdaPeisEmulatorScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(),
                     null, default))
                 .ReturnsAsync(mockItemResponse.Object); // Return the mock ItemResponse object
 
             // Arrange
-            mockTestInstanceContainer
+            _mockTestInstanceContainer
                 .Setup(c => c.ReadItemAsync<CdaPeisEmulatorTestInstanceDataModel>(It.IsAny<string>(),
                     It.IsAny<PartitionKey>(), null, default))
                 .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, "",
                     0)); // Mock a not found exception
 
             // Act
-            var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = xRequestId });
+            var result = await _controller.GetAsync(peisId, _xRequestId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result); // Check if the result is an OkObjectResult
@@ -239,7 +218,6 @@ public class PeisControllerTests
     {
         // Arrange
         AddAuthorisationHeader();
-       var xRequestId = "b7301d11-f166-499a-9bf1-0598c2f1af52";
         string peis_id = scenarioName + "fdcd-8586-4483-9899-17dd85af9074";
 
         // Load the JSON data as payload
@@ -255,7 +233,7 @@ public class PeisControllerTests
             mockItemResponse.Setup(x => x.Resource).Returns(data);
 
             // Set up the mockContainer to return the mocked ItemResponse
-            mockScenarioModelContainer
+            _mockScenarioModelContainer
                 .Setup(c => c.ReadItemAsync<CdaPeisEmulatorScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(),
                     null, default))
                 .ReturnsAsync(mockItemResponse.Object); // Return the mock ItemResponse object
@@ -272,13 +250,13 @@ public class PeisControllerTests
             var mockItemTestInstanceResponse = new Mock<ItemResponse<CdaPeisEmulatorTestInstanceDataModel>>();
             mockItemTestInstanceResponse.Setup(x => x.Resource).Returns(testInstanceData);
 
-            mockTestInstanceContainer
+            _mockTestInstanceContainer
                 .Setup(c => c.ReadItemAsync<CdaPeisEmulatorTestInstanceDataModel>(It.IsAny<string>(),
                     It.IsAny<PartitionKey>(), null, default))
                 .ReturnsAsync(mockItemTestInstanceResponse.Object);
 
             // Act
-            var result = await _controller.GetAsync(peis_id, new RequestHeaderModel { XRequestId = xRequestId });
+            var result = await _controller.GetAsync(peis_id, _xRequestId);
 
             // Assert
             Assert.IsType<OkObjectResult>(result); // Check if the result is an OkObjectResult

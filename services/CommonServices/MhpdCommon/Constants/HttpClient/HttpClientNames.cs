@@ -8,6 +8,7 @@ public static class HttpClientNames
     public const string PensionRetrievalService = "PensionRetrievalService";
     public const string RetrievedPensionsService = "RetrievedPensionsService";
     public const string PeiIntegrationService = "PeiIntegrationService";
+    public const string ViewDataIntegrationService = "ViewDataIntegrationService";
 
     //External
     public const string CdaService = "CdaService";

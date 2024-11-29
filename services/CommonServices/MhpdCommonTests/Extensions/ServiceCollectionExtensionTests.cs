@@ -120,9 +120,9 @@ public class ServiceCollectionExtensionTests
     {
         //Arrange
         var mockConfiguration = new Mock<IConfiguration>();
-        var peirRetrievalDuration = 100;
+        var peiRetrievalDuration = 100;
         var viewdataRetrievalDuration = 30;
-        mockConfiguration.Setup(x => x[PeiOrchestrationSettings.PeiRetrievalDurationVariable]).Returns($"{peirRetrievalDuration}");
+        mockConfiguration.Setup(x => x[PeiOrchestrationSettings.PeiRetrievalDurationVariable]).Returns($"{peiRetrievalDuration}");
         mockConfiguration.Setup(x => x[PeiOrchestrationSettings.ViewDataDurationVariable]).Returns($"{viewdataRetrievalDuration}");
 
         var serviceCollection = new ServiceCollection();
@@ -135,8 +135,8 @@ public class ServiceCollectionExtensionTests
         //Assert
         var config = provider.GetRequiredService(typeof(IOptions<PeiOrchestrationSettings>)) as IOptions<PeiOrchestrationSettings>;
         Assert.NotNull(config);
-        Assert.Equal(peirRetrievalDuration, config.Value.PeiRetrievalDuration);
+        Assert.Equal(peiRetrievalDuration, config.Value.PeiRetrievalDuration);
         Assert.Equal(PeiOrchestrationSettings.DefaultPeiPollingInterval, config.Value.PeiPollingInterval);
-        Assert.Equal(peirRetrievalDuration + viewdataRetrievalDuration, config.Value.TotalPensionRetrievalDuration);
+        Assert.Equal(peiRetrievalDuration + viewdataRetrievalDuration, config.Value.TotalPensionRetrievalDuration);
     }
 }

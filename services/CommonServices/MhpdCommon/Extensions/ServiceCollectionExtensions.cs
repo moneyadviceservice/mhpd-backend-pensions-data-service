@@ -88,6 +88,7 @@ namespace MhpdCommon.Extensions
             AddMhpdHttpClient(services, configuration, HttpClientNames.PensionRetrievalService, HttpClientUrlVariables.PensionRetrievalServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.RetrievedPensionsService, HttpClientUrlVariables.RetrievedPensionsServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.PeiIntegrationService, HttpClientUrlVariables.PeiIntegrationServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.ViewDataIntegrationService, HttpClientUrlVariables.ViewDataIntegrationServiceUrl);
 
             services.AddOptions<CommonHttpConfiguration>().Configure(option =>
             {
@@ -97,6 +98,7 @@ namespace MhpdCommon.Extensions
                 option.PensionRetrievalServiceUrl = configuration[HttpClientUrlVariables.PensionRetrievalServiceUrl];
                 option.RetrievedPensionsServiceUrl = configuration[HttpClientUrlVariables.RetrievedPensionsServiceUrl];
                 option.PeiIntegrationServiceUrl = configuration[HttpClientUrlVariables.PeiIntegrationServiceUrl];
+                option.ViewDataIntegrationServiceUrl = configuration[HttpClientUrlVariables.ViewDataIntegrationServiceUrl];
             });
 
             return services;

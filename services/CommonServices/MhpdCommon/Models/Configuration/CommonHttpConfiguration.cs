@@ -8,4 +8,5 @@ public class CommonHttpConfiguration
     public string? RetrievedPensionsServiceUrl { get; set; }
     public string? PensionRetrievalServiceUrl { get; set; }
     public string? PeiIntegrationServiceUrl { get; set; }
+    public string? ViewDataIntegrationServiceUrl { get; set; }
 }

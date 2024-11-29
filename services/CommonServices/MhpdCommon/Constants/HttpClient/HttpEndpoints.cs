@@ -15,10 +15,11 @@ public static class HttpEndpoints
 
     public static class External
     {
-        public const string HolderNameViewConfigurations = "holdername-view-configurations";
-        public const string CdaTokenServiceEndpoint = "token";
-        public const string CdaPeis = "peis/{0}";
-        public const string PdpViewData = "view-data/{0}";
-        public const string JwkUri = "jwk_uri";
+        public const string ApiHostSuffix = "cda-integration/";
+        public const string HolderNameViewConfigurations = ApiHostSuffix + "holdername-view-configurations";
+        public const string CdaTokenServiceEndpoint = ApiHostSuffix + "token";
+        public const string CdaPeis = ApiHostSuffix + "peis/{0}";
+        public const string PdpViewData = ApiHostSuffix + "view-data/{0}";
+        public const string JwkUri = ApiHostSuffix + "jwk_uri";
     }
 }

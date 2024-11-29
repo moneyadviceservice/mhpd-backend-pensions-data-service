@@ -8,6 +8,7 @@ public class HttpClientUrlVariables
     public const string RetrievedPensionsServiceUrl = "RetrievedPensionsServiceUrl";
     public const string PensionRetrievalServiceUrl = "PensionRetrievalServiceUrl";
     public const string PeiIntegrationServiceUrl = "PeiIntegrationServiceUrl";
+    public const string ViewDataIntegrationServiceUrl = "ViewDataIntegrationServiceUrl";
 
     //External
     public const string CdaServiceUrl = "CdaServiceUrl";

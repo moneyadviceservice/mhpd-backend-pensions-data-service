@@ -24,7 +24,8 @@ public class UrlHelperTests
         var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
-        Assert.Equal("token?grant_type=authorization_code&ticket=my_ticket&claim_token=my_token&claim_token_format=format&scope=read", result);
+        Assert.Equal($"{HttpEndpoints.External.CdaTokenServiceEndpoint}?grant_type=authorization_code&ticket=my_ticket&claim_token=my_token&claim_token_format=format&scope=read", 
+            result);
     }
 
     [Fact]
@@ -41,7 +42,7 @@ public class UrlHelperTests
         var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
-        Assert.Equal("token?user_id=123&email=test@example.com", result);
+        Assert.Equal($"{HttpEndpoints.External.CdaTokenServiceEndpoint}?user_id=123&email=test@example.com", result);
     }
 
     [Fact]
@@ -59,7 +60,7 @@ public class UrlHelperTests
         var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
-        Assert.Equal("token?grant_type=authorization_code&claim_token_format=format", result);
+        Assert.Equal($"{HttpEndpoints.External.CdaTokenServiceEndpoint}?grant_type=authorization_code&claim_token_format=format", result);
     }
 
     [Fact]
@@ -72,7 +73,7 @@ public class UrlHelperTests
         var result = UrlHelper.ConstructEndPoint(request, HttpEndpoints.External.CdaTokenServiceEndpoint);
 
         // Assert
-        Assert.Equal("token?", result); // Empty query string
+        Assert.Equal($"{HttpEndpoints.External.CdaTokenServiceEndpoint}?", result); // Empty query string
     }
 
     [Theory]

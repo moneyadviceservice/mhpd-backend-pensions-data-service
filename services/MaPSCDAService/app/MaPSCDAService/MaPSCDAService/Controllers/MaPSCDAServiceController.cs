@@ -53,7 +53,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
         return Ok(response);
     }
 
-    [Route("redirect_details")]
+    [Route("redirect-details")]
     [HttpPost]
     public IActionResult RedirectDetails([FromBody] RedirectRequestPayload requestPayload, [FromHeader] RequestHeaderModel headerModel)
     {

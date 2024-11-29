@@ -37,7 +37,7 @@ public class PensionsDataController(
     private static readonly IEnumerable<string> CompletedStates =
     [
         PensionProviderConstants.RetrievalStatus.RetrievalComplete,
-        PensionProviderConstants.RetrievalErrorCodes.SystemError
+        PensionProviderConstants.RetrievalStatus.RetrievalFailed
     ];
     
     [HttpGet]
@@ -268,9 +268,9 @@ public class PensionsDataController(
     private static string? GetPeiStatus(RetrievedPensionRecord? record, string? retrievalStatus)
     {
         if (record != null && record.RetrievalResult is JsonElement { ValueKind: JsonValueKind.Object } retrievalResult && 
-            retrievalResult.TryGetProperty(ErrorCode, out var errorCode))
+            retrievalResult.TryGetProperty(ErrorCode, out _))
         {
-            return errorCode.ToString();
+            return PensionProviderConstants.RetrievalStatus.RetrievalFailed;
         }
 
         if (record != null && record.RetrievalResult is JsonElement { ValueKind: JsonValueKind.Array })

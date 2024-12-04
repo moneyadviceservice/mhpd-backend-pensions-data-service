@@ -49,7 +49,7 @@ public class TokenController(
     }
 
     [HttpPost]
-    [Route("pei_retrieval_details")]
+    [Route("pei-retrieval-details")]
     public async Task<IActionResult> PostPeiRetrievalDetailsAsync([FromQuery] PensionsDataRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {
         if (!TryValidateRequest(cdaRequestValidatorPipeline, request, requestHeader, out var message))

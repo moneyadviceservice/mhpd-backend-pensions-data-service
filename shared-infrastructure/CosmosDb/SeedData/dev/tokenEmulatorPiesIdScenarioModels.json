@@ -50,6 +50,31 @@
     "peisIdStartCode": "0010"
   },
   {
+    "id": "greenUnavailableCodes",
+    "code": "greenUnavailableCodes",
+    "peisIdStartCode": "0011"
+  },
+  {
+    "id": "yellowUnavailableCodes",
+    "code": "yellowUnavailableCodes",
+    "peisIdStartCode": "0012"
+  },
+  {
+    "id": "redUnavailableCodes",
+    "code": "redUnavailableCodes",
+    "peisIdStartCode": "0013"
+  },
+  {
+    "id": "CONTPension",
+    "code": "CONTPension",
+    "peisIdStartCode": "0014"
+  },
+  {
+    "id": "zTestAll",
+    "code": "zTestAll",
+    "peisIdStartCode": "0015"
+  },
+  {
     "id": "testScenario20",
     "code": "testScenario20",
     "peisIdStartCode": "0020"

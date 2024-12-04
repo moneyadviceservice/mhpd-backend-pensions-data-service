@@ -20,6 +20,7 @@ public class TokenControllerUnitTests
     private readonly Mock<ITokenUtility> _mockTokenUtility = new();
     private readonly Mock<IJwtUtility> _mockJwtUtility = new();
     private readonly Mock<IIdValidator> _mockIdValidator;
+    private readonly Mock<ILogger<TokenController>> _mockLogger = new();
 
     private readonly RequestHeaderModel _requestHeaderModel = new() { CorrelationId = ValidXRequestId };
 
@@ -39,7 +40,6 @@ public class TokenControllerUnitTests
     public TokenControllerUnitTests()
     {
         // Arrange: Create the mocks
-        Mock<ILogger<TokenController>> mockLogger = new();
         _mockIdValidator = new();
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
             
@@ -60,7 +60,7 @@ public class TokenControllerUnitTests
             .Returns(Task.FromResult(new CdaTokenResponseModel { IdToken =  IdToken}));
         
         var httpContext = new DefaultHttpContext();
-        _controller = new TokenController(_iCdaToken.Object, mockLogger.Object,
+        _controller = new TokenController(_iCdaToken.Object, _mockLogger.Object,
             _mockIdValidator.Object, mockValidatorPipeline.Object,
             mockCdaValidatorPipeline.Object, _mockTokenUtility.Object, _mockJwtUtility.Object)
         {
@@ -575,13 +575,68 @@ public class TokenControllerUnitTests
             .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
             .ReturnsAsync(new CdaTokenResponseModel { IdToken = IdToken });
 
-        // Simulate decoding of token but missing "peis_id"
-        _mockTokenUtility
-            .Setup(x => x.DecodeJwt(It.IsAny<string>()))
+        _mockJwtUtility
+            .Setup(x => x.ValidateJwtTokenWithKidAsync(It.IsAny<string>(), _mockLogger.Object))
             .Throws(new Exception("id_token signature invalid"));
 
         // Act
         var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var internalErrorResult = (ObjectResult)result;
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, internalErrorResult.StatusCode);
+        Assert.Equal("Internal server error", internalErrorResult.Value);
+    }
+    
+    [Fact]
+    public async Task When_AccessToken_Is_Empty_ShouldReturnInternalServerError()
+    {
+        // Arrange
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        // Simulate a response with an empty IdToken
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = string.Empty });
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var internalErrorResult = (ObjectResult)result;
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, internalErrorResult.StatusCode);
+        Assert.Equal("Internal server error", internalErrorResult.Value);
+    }
+    
+    [Fact]
+    public async Task When_AccessToken_Is_Invalid_ShouldReturnInternalServerError()
+    {
+        // Arrange
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        // Simulate a response with an invalid IdToken
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = InvalidTicketValue });
+
+        _mockJwtUtility
+            .Setup(x => x.ValidateJwtTokenWithKidAsync(It.IsAny<string>(), _mockLogger.Object))
+            .Throws(new Exception("AccessToken signature invalid"));
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
         var internalErrorResult = (ObjectResult)result;
 
         // Assert

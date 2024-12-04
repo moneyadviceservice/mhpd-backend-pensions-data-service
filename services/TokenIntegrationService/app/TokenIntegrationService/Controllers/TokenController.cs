@@ -33,19 +33,35 @@ public class TokenController(
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} Rpts");
         logger.LogRequest(request);
-
+        
         var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
         var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
+        
+        // Check if AccessToken is null and handle the error
+        if (string.IsNullOrEmpty(result.AccessToken))
+        {
+            logger.LogError("AccessToken is null in the response");
+            return await GetInternalServerErrorResponse();
+        }
 
+        try
+        {
+            // Validate the Jwt token signature
+            await jwtUtility.ValidateJwtTokenWithKidAsync(result.AccessToken, logger);
+        }
+        catch(Exception ex)
+        {
+            logger.LogError(ex, "AccessToken signature invalid");
+            return await GetInternalServerErrorResponse();
+        }
+        
         var response = new TokenIntegrationResponseModel
         {
             Rpt = result.AccessToken
         };
         
         logger.LogResponse(response);
-        Console.WriteLine(response);
-            
-        return Ok(response);             
+        return Ok(response);
     }
 
     [HttpPost]
@@ -63,7 +79,6 @@ public class TokenController(
 
         var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
         var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
-        var internalServerErrorResponse = Task.FromResult<IActionResult>(StatusCode(500, "Internal server error"));
         
         var response = new PeiRetrievalDetailsResponseModel();
         
@@ -71,7 +86,7 @@ public class TokenController(
         if (result.IdToken == null)
         {
             logger.LogError("IdToken is null in the response");
-            return await internalServerErrorResponse;
+            return await GetInternalServerErrorResponse();
         }
         
         try
@@ -87,7 +102,7 @@ public class TokenController(
             else
             {
                 logger.LogError("id_token missing peis_id");
-                return await internalServerErrorResponse;
+                return await GetInternalServerErrorResponse();
             }
             
             // Validate the Jwt token signature
@@ -96,7 +111,7 @@ public class TokenController(
         catch (Exception ex)
         {
             logger.LogError(ex, "id_token signature invalid");
-            return await internalServerErrorResponse;
+            return await GetInternalServerErrorResponse();
         }
     
         logger.LogResponse(response);
@@ -150,5 +165,10 @@ public class TokenController(
             CodeVerifier = request.CodeVerifier,
             RedirectUrl = request.RedirectUrl
         };
+    }
+
+    private Task<IActionResult> GetInternalServerErrorResponse()
+    {
+        return Task.FromResult<IActionResult>(StatusCode(500, "Internal server error"));
     }
 }

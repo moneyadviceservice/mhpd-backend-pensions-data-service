@@ -33,7 +33,7 @@ public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataR
             return BadRequest(Constants.HolderNameConstants.InvalidHolderNameId);
         }
 
-        var filteredConfigurations = await viewDataRepository.GetByIdAsync(holderNameGuid, holderNameGuid);
+        var filteredConfigurations = await viewDataRepository.GetByIdStreamAsync(holderNameGuid, holderNameGuid);
 
         if (filteredConfigurations == null)
         {

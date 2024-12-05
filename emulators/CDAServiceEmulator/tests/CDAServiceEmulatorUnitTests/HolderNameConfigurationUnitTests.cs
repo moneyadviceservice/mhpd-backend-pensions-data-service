@@ -26,7 +26,7 @@ namespace CDAServiceEmulatorUnitTests
             _idValidator.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
 
             Mock<IHolderNameViewDataRepository<HolderNameConfigurationModel>> repository = new();
-            repository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((string id, string key) => HolderConfigurationMock.FilterConfigurations(id));
+            repository.Setup(x => x.GetByIdStreamAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((string id, string key) => HolderConfigurationMock.FilterConfigurations(id));
             repository.Setup(x => x.GetHolderNameConfigurationsAsync()).ReturnsAsync(HolderConfigurationMock.GetHolderConfiguration());
 
             _controller = new HolderNameController(_idValidator.Object, repository.Object)

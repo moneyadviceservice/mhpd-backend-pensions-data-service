@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.Cosmos;
+using System.Text.Json;
 
 namespace MhpdCommon.Repository;
 
@@ -26,7 +27,22 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
             return default;
         }
     }
-    
+
+    public async Task<T?> GetByIdStreamAsync(string id, string partitionKey)
+    {
+        try
+        {
+            using var response = await _container.ReadItemStreamAsync(id, new PartitionKey(partitionKey));
+            using StreamReader streamReader = new(response.Content);
+            string content = await streamReader.ReadToEndAsync();
+            return JsonSerializer.Deserialize<T>(content);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return default;
+        }
+    }
+
     public async Task InsertItemAsync(T item, string partitionKey)
     {
         ArgumentNullException.ThrowIfNull(item);

@@ -277,7 +277,7 @@
           "id": "[parameters('holderNameViewDataContainerName')]",
           "partitionKey": {
             "paths": [
-              "/holdernameGuid"
+              "/holdername_guid"
             ],
             "kind": "Hash"
           },
@@ -285,7 +285,7 @@
             "uniqueKeys": [
               {
                 "paths": [
-                  "/holdernameGuid"
+                  "/holdername_guid"
                 ]
               }
             ]
@@ -294,7 +294,7 @@
             "indexingMode": "consistent",
             "includedPaths": [
                 {
-                  "path": "/holdernameGuid/?"
+                  "path": "/holdername_guid/?"
                 }
               ],
               "excludedPaths": [

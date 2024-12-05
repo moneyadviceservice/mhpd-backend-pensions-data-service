@@ -1,7 +1,8 @@
 ﻿using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
-using CDAServiceEmulator.Models.HolderConfiguration;
 using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,7 @@ public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataR
 {
     [HttpGet]
     [Route("holdername-view-configurations")]
-    public async Task<IActionResult> GetAsync([FromQuery] string? holderNameGuid,
+    public async Task<IActionResult> GetAsync([FromQuery(Name = QueryParams.Cda.HolderName.Guid)] string? holderNameGuid,
         [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
     {
         if (!idValidator.IsValidGuid(xRequestId))

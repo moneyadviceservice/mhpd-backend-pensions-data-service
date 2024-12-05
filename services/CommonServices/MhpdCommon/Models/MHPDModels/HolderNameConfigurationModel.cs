@@ -7,9 +7,9 @@ public class HolderNameConfigurationModel
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
-    [JsonPropertyName("holdernameGuid")]
+    [JsonPropertyName("holdername_guid")]
     public string? HolderNameGuid { get; set; }
 
-    [JsonPropertyName("viewDataUrl")]
+    [JsonPropertyName("veiw_data_url")]
     public string? ViewDataUrl { get; set; }
 }

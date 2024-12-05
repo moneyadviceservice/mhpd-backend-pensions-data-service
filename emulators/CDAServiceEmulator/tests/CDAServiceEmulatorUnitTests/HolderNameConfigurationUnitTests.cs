@@ -1,9 +1,9 @@
 ﻿using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
-using CDAServiceEmulator.Models.HolderConfiguration;
 using CDAServiceEmulatorUnitTests.Mock;
 using MhpdCommon.Constants;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

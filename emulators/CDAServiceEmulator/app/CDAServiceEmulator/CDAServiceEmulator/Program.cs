@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models.HolderConfiguration;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;

@@ -1,4 +1,4 @@
-﻿using CDAServiceEmulator.Models.HolderConfiguration;
+﻿using MhpdCommon.Models.MHPDModels;
 
 namespace CDAServiceEmulatorUnitTests.Mock;
 

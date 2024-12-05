@@ -1,6 +1,6 @@
 ﻿using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models.HolderConfiguration;
 using CDAServiceEmulatorUnitTests.Mock;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Azure.Cosmos;
 using Moq;
 

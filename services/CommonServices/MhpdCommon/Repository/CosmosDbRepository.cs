@@ -33,9 +33,15 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
         try
         {
             using var response = await _container.ReadItemStreamAsync(id, new PartitionKey(partitionKey));
-            using StreamReader streamReader = new(response.Content);
-            string content = await streamReader.ReadToEndAsync();
-            return JsonSerializer.Deserialize<T>(content);
+
+            if (response.IsSuccessStatusCode)
+            {
+                using StreamReader streamReader = new(response.Content);
+                string content = await streamReader.ReadToEndAsync();
+                return JsonSerializer.Deserialize<T>(content);
+            }
+
+            return default;
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {

@@ -74,7 +74,7 @@ public class HolderNameClientTests
             ViewDataUrl = "https://viewdata.pdp.com",
         };
 
-        _repository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(model);
+        _repository.Setup(mock => mock.GetByIdStreamAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(model);
 
         var client = new HolderNameClient(_httpClientFactory.Object, _repository.Object, _logger.Object);
         var correlationId = Guid.NewGuid().ToString();

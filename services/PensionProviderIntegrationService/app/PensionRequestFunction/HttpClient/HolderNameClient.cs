@@ -17,7 +17,8 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
 
     public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId, string correlationId)
     {
-        var cachedModel = await _repository.GetByIdAsync(holderNameId, holderNameId);
+        var cachedModel = await _repository.GetByIdStreamAsync(holderNameId, holderNameId);
+
         if (cachedModel != null)
         {
             _logger.LogWarning("Cached version of holder name configuration found for {holderNameId}.", holderNameId);

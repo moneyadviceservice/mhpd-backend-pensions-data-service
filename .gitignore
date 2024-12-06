@@ -369,3 +369,15 @@ FodyWeavers.xsd
 
 # JetBrains IDEs (like IntelliJ, Rider, PyCharm, etc.)
 .idea/
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+
+# Local .terraform directories
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*

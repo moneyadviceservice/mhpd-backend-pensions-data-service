@@ -1,5 +1,5 @@
 module "CDA_service_emulator" {
-  source                 = "github.com/moneyadviceservice/terraform-module-app-service.git"
+  source                 = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=add_connection_string"
   name                   = "CDA-service-emulator"
   product                = var.product
   resource_group_name    = data.azurerm_resource_group.this.name

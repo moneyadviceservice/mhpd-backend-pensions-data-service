@@ -11,6 +11,11 @@ module "CDA_service_emulator" {
   app_command_line       = "dotnet CDAServiceEmulator.dll"
   dotnet_stack           = true
   enable_client_affinity = true
+  connection_strings = [{
+    name  = "CosmosDBConnectionString"
+    type  = "Custom"
+    value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+  }]
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                                          = module.CDA_service.instrumentation_key
     "APPINSIGHTS_PROFILERFEATURE_VERSION"                                     = "1.0.0"
@@ -23,7 +28,6 @@ module "CDA_service_emulator" {
     "IGNORE_APPINSIGHTS_SDK"                                                  = "disabled"
     "InstrumentationEngine_EXTENSION_VERSION"                                 = "disabled"
     "CosmosDBConnectionString"                                                = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
-	"ConnectionStrings__CosmosDBConnectionString"							  = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "KeyVaultConfiguration__KeyVaultURL"                                      = "https://${var.product}-${var.env}.vault.azure.net/"
     "SnapshotDebugger_EXTENSION_VERSION"                                      = "disabled"
     "MhpdCosmosConfiguration__CdaPeisEmulatorScenarioModelContainerName"      = "cdaPeisEmulatorScenarioModels"

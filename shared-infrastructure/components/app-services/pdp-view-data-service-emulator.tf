@@ -10,6 +10,11 @@ module "pdp_view_data_service_emulator" {
   ftps_state          = var.ftps_state
   app_command_line    = "dotnet PDPViewDataServicedEmulator.dll"
   dotnet_stack        = true
+  connection_strings = [{
+    name  = "CosmosDBConnectionString"
+    type  = "Custom"
+    value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+  }]
   app_settings = {
     "JwtSettings__ExpiryInSeconds"								= "600"
     "JwtSettings__PrivateKey"									= data.azurerm_key_vault_secret.CDA_service_emulator_private_key.value
@@ -19,7 +24,6 @@ module "pdp_view_data_service_emulator" {
     "JwtSettings__Subject"										= "data.azurerm_key_vault_secret.jwt_settings_subject.value"
 	"MhpdCosmosConfiguration__DatabaseName"						= "mhpd-testharness"
 	"MhpdCosmosConfiguration__ViewdatapayloadsContainerName"	= "viewdatapayloads"
-	"ConnectionStrings__CosmosDBConnectionString"				= "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
 	"CosmosDBConnectionString"									= "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"       					= true
     "APPLICATIONINSIGHTS_CONNECTION_STRING" 					= "InstrumentationKey=${module.pdp_view_data_service_emulator.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pdp_view_data_service_emulator.app_insights_app_id}"

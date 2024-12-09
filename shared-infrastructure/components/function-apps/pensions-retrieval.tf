@@ -14,11 +14,11 @@ module "pensions_retrieval_function" {
   app_settings = {
     "ContainerId"                            = "${var.product}PensionsRetrievalRecords"
     "ContainerPartitionKey"                  = "/userSessionId"
-    "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.endpoint}"
+    "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "DatabaseId"                             = "${var.product}-businesslayer"
     "InboundQueue"                           = "pensions-retrieval-job"
     "OutboundQueue"                          = "pension-details-request"
-    "PeiIntegrationServiceUrl"               = "https://pei-integration-service-${var.env}.azurewebsites.net"
+    "PeiIntegrationServiceUrl"               = "https://maps-apim-dev.azure-api.net/mhpd/"
     "PeiRetryInterval"                       = "5"
     "PeiRetryTimeout"                        = "60"
     "ServiceBusConnectionstring"             = data.azurerm_servicebus_namespace.this.default_primary_connection_string

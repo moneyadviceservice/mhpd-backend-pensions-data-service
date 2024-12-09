@@ -24,7 +24,7 @@ module "CDA_service" {
     "InstrumentationEngine_EXTENSION_VERSION"         = "disabled"
     "KeyVaultConfiguration__KeyVaultURL"              = "https://${var.product}-${var.env}.vault.azure.net/"
     "SnapshotDebugger_EXTENSION_VERSION"              = "disabled"
-    "UriSettings__RedirectTargetUrl"                  = "https://CDA-service-emulator-${var.env}.azurewebsites.net/"
+    "UriSettings__RedirectTargetUrl"                  = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                 = "true"
     "XDT_MicrosoftApplicationInsights_BaseExtensions" = "disabled"
     "XDT_MicrosoftApplicationInsights_Mode"           = "recommended"

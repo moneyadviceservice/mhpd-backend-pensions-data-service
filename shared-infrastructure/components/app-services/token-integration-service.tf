@@ -26,7 +26,7 @@ module "token_integration_service" {
     "XDT_MicrosoftApplicationInsights_BaseExtensions" = "disabled"
     "XDT_MicrosoftApplicationInsights_Mode"           = "recommended"
     "XDT_MicrosoftApplicationInsights_PreemptSdk"     = "disabled"
-    "CdaServiceUrl"                                   = "https://CDA-service-emulator-${var.env}.azurewebsites.net/"
+    "CdaServiceUrl"                                   = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
   }
   tags = {}
 }

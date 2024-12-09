@@ -18,7 +18,7 @@ module "pei_integration_service" {
     "APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION"    = "disabled"
     "ApplicationInsightsAgent_EXTENSION_VERSION"      = "~2"
     "DISABLE_APPINSIGHTS_SDK"                         = "disabled"
-    "CdaServiceUrl"                                   = "https://maps-apim-${var.env}.azure-api.net/cda-integration"
+    "CdaServiceUrl"                                   = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
     "DiagnosticServices_EXTENSION_VERSION"            = "~3"
     "IGNORE_APPINSIGHTS_SDK"                          = "disabled"
     "InstrumentationEngine_EXTENSION_VERSION"         = "disabled"

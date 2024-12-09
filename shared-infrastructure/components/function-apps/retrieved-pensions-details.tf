@@ -21,7 +21,7 @@ module "retrieved_pensions_details_function" {
     "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED" = "1"
     "InboundQueue"                           = "retrieved-pension-details"
     "ServiceBusConnectionstring"             = data.azurerm_servicebus_namespace.this.default_primary_connection_string
-    "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.endpoint}"
+    "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "APPLICATIONINSIGHTS_CONNECTION_STRING"  = "InstrumentationKey=${module.retrieved_pensions_details_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.retrieved_pensions_details_function.app_insights_app_id}"
   }
 }

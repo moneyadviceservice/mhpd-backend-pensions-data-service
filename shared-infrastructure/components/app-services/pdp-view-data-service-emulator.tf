@@ -8,7 +8,7 @@ module "pdp_view_data_service_emulator" {
   os_type             = "Linux"
   sku_name            = "B3"
   ftps_state          = var.ftps_state
-  app_command_line    = "dotnet PDPViewDataServicedEmulator.dll"
+  app_command_line    = "dotnet PDPViewDataServiceEmulator.dll"
   dotnet_stack        = true
   connection_strings = [{
     name  = "CosmosDBConnectionString"

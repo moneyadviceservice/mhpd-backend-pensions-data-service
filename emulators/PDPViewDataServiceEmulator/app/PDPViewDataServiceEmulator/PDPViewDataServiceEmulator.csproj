@@ -8,8 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MhpdCommon" Version="1.2.53" />
-    <PackageReference Include="Azure.Identity" Version="1.12.0" />
+    <PackageReference Include="MhpdCommon" Version="1.2.83" />
+    <PackageReference Include="Azure.Identity" Version="1.13.1" />
+    <PackageReference Include="MhpdCommonHosting" Version="1.2.83" />
     <PackageReference Include="Moq" Version="4.20.70" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>

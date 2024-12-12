@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
 using MhpdCommon.Extensions;
@@ -9,8 +8,17 @@ using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+var mtlsCertificate = await builder!.ConfigureMtlsWithClientCertificateAsync();
+
 
 // Add services to the container.
 builder.Services.AddHttpClient();
@@ -114,6 +122,8 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 
 var app = builder.Build();
 
+app.UseClientCertificateValidation(mtlsCertificate);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -121,12 +131,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
 app.UseAuthorization();
 
 app.MapControllers();
 
 app.UseHttpLogging();
+app.UseHttpsRedirection();
 
 app.Run();
 

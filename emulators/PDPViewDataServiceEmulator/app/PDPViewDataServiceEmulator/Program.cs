@@ -9,6 +9,13 @@ using PDPViewDataServiceEmulator.CosmosRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
+var mtlsCertificate = await builder!.ConfigureMtlsWithClientCertificateAsync();
+
 builder.Services.AddHttpClient();
 builder.Services.AddMhpdUtilities();
 builder.Services.AddControllers();
@@ -55,6 +62,8 @@ builder.Services.AddHttpLogging(logging =>
 
 var app = builder.Build();
 
+app.UseClientCertificateValidation(mtlsCertificate);
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -65,6 +74,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.MapControllers();
 app.UseHttpLogging();
+app.UseHttpsRedirection();
 app.Run();
 
 [ExcludeFromCodeCoverage]

@@ -1,4 +1,5 @@
 ﻿using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Certificates;
@@ -13,14 +14,17 @@ namespace MhpdCommon.Extensions;
 
 public static class HostBuilderExtensions
 {
-    public static async Task<X509Certificate2> ConfigureMtlsWithClientCertificateAsync(this WebApplicationBuilder builder)
+    public static async Task<X509Certificate2?> ConfigureMtlsWithClientCertificateAsync(this WebApplicationBuilder builder)
     {
-        var keyVaultEndpoint = new Uri(builder.Configuration[SecurityConstants.Vault.Uri] ?? string.Empty);
+        _ = bool.TryParse(builder.Configuration["EnforceClientCertificate"], out var skipClientValidation);
+        if (skipClientValidation) return null;
+
+        var keyVaultEndpoint = new Uri(builder.Configuration[SecurityConstants.Mtls.VaultUri] ?? string.Empty);
         builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, GetVaultCredential(builder.Environment, builder.Configuration));
 
         // Load the certificate from the key vault
         var certificateClient = new CertificateClient(keyVaultEndpoint, GetVaultCredential(builder.Environment, builder.Configuration));
-        var certificateName = builder.Configuration[SecurityConstants.Vault.MtlsCertificate];
+        var certificateName = builder.Configuration[SecurityConstants.Mtls.ClientCertificate];
         KeyVaultCertificateWithPolicy vaultCertificate = await certificateClient.GetCertificateAsync(certificateName);
         var certificate = new X509Certificate2(vaultCertificate.Cer);
 
@@ -33,6 +37,7 @@ public static class HostBuilderExtensions
                 httpsOptions.CheckCertificateRevocation = true;
                 httpsOptions.ClientCertificateValidation = (cert, chain, policyErrors) =>
                 {
+                    LogCertificateChain(chain);
                     // This allows us to return a 403 later
                     return true;
                 };
@@ -57,5 +62,21 @@ public static class HostBuilderExtensions
             // Use Managed Identity in Azure
             return new DefaultAzureCredential();
         }
+    }
+
+    private static void LogCertificateChain(X509Chain? chain) 
+    {
+        var builder = new StringBuilder($"Inspecting certificate chain...{Environment.NewLine}");
+        builder.AppendLine($"Certificate chain is {(chain == null ? "absent" : "present")}");
+
+        if (chain == null) return;
+
+        builder.AppendLine("Certificate chain contains...");
+        foreach (var element in chain.ChainElements)
+        {
+            builder.AppendLine(element.Certificate.FriendlyName);
+        }
+
+        Console.WriteLine(builder.ToString());
     }
 }

@@ -9,15 +9,12 @@
             public const string TenantId = "AzureAd:TenantId";
         }
 
-        public static class Vault
-        {
-            public const string Uri = "KeyVault:VaultUri";
-            public const string MtlsCertificate = "KeyVault:MtlsCertificate";
-        }
-
         public static class Mtls
         {
+            public const string VaultUri = "Mtls:VaultUri";
+            public const string ClientCertificate = "Mtls:ClientCertificate";
             public const string InvalidCertificateMessage = "Invalid client certificate";
+            public const string EnforceClientCertificate = "Mtls:EnforceClientCertificate";
         }
     }
 }

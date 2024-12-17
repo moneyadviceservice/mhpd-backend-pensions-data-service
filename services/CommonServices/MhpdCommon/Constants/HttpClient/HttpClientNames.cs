@@ -12,4 +12,5 @@ public static class HttpClientNames
 
     //External
     public const string CdaService = "CdaService";
+    public const string PdpService = "PdpService";
 }

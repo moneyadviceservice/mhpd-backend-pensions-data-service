@@ -19,7 +19,6 @@ if (builder.Environment.IsDevelopment())
 
 var mtlsCertificate = await builder!.ConfigureMtlsWithClientCertificateAsync();
 
-
 // Add services to the container.
 builder.Services.AddHttpClient();
 builder.Services.AddMhpdUtilities();

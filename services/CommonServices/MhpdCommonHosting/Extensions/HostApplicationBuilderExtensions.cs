@@ -16,8 +16,8 @@ public static class HostBuilderExtensions
 {
     public static async Task<X509Certificate2?> ConfigureMtlsWithClientCertificateAsync(this WebApplicationBuilder builder)
     {
-        _ = bool.TryParse(builder.Configuration["EnforceClientCertificate"], out var skipClientValidation);
-        if (skipClientValidation) return null;
+        _ = bool.TryParse(builder.Configuration[SecurityConstants.Mtls.EnforceClientCertificate], out var enforceClientCertificate);
+        if (!enforceClientCertificate) return null;
 
         var keyVaultEndpoint = new Uri(builder.Configuration[SecurityConstants.Mtls.VaultUri] ?? string.Empty);
         builder.Configuration.AddAzureKeyVault(keyVaultEndpoint, GetVaultCredential(builder.Environment, builder.Configuration));

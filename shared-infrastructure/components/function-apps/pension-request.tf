@@ -15,6 +15,7 @@ module "pension_request_function" {
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING"  = "InstrumentationKey=${module.pension_request_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pension_request_function.app_insights_app_id}"
     "CdaServiceUrl"                          = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
+	"PdpServiceUrl"                          = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
     "ContainerId"                            = "${var.product}holderNameViewConfigurationData"
     "ContainerPartitionKey"                  = "/holdernameGuid"
     "DatabaseId"                             = "${var.product}-businesslayer"

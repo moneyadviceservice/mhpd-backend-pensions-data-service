@@ -1,5 +1,7 @@
 ﻿using System.Net.Http.Headers;
+using System.Web;
 using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using Microsoft.Extensions.Logging;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
@@ -11,13 +13,16 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
     public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt, string correlationId)       
     {
         var scope = "owner";
-        var client = httpClientFactory.CreateClient();
+        var client = httpClientFactory.CreateClient(HttpClientNames.PdpService);
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
+        client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, viewDataUrl);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
 
-        var viewDataResponse = await client.GetAsync($"{viewDataUrl}/{assetGuid}?scope={scope}");
+        var endPoint = string.Format(HttpEndpoints.External.PdpViewData, HttpUtility.UrlEncode(assetGuid), scope);
+
+        var viewDataResponse = await client.GetAsync(endPoint);
         
         var response = await CreateResponse(viewDataResponse);
 

@@ -13,7 +13,7 @@ module "pension_data_service" {
   app_settings = {
     "CommonServiceBusConfiguration__OutboundQueue" = "pensions-retrieval-job"
     "OutboundQueue"                                = "pensions-retrieval-job"
-    "ServiceBusConnectionString"                   = "Endpoint=sb://${var.product}-sbns-${var.env}.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=${data.azurerm_servicebus_namespace.pension_data.default_primary_connection_string}"
+    "ServiceBusConnectionString"                   = data.azurerm_servicebus_namespace.this.default_primary_connection_string
     "PensionRetrievalServiceUrl"                   = "https://maps-apim-dev.azure-api.net/mhpd/"
     "RetrievedPensionsServiceUrl"                  = "https://maps-apim-dev.azure-api.net/mhpd/"
     "tokenIntegrationServiceUrl"                   = "https://maps-apim-dev.azure-api.net/mhpd/"

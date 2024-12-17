@@ -85,6 +85,7 @@ namespace MhpdCommon.Extensions
             AddMhpdHttpClient(services, configuration, HttpClientNames.MapsCdaService, HttpClientUrlVariables.MapsCdaServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.TokenIntegrationService, HttpClientUrlVariables.TokenIntegrationServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.CdaService, HttpClientUrlVariables.CdaServiceUrl);
+            AddMhpdHttpClient(services, configuration, HttpClientNames.PdpService, HttpClientUrlVariables.PdpServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.PensionRetrievalService, HttpClientUrlVariables.PensionRetrievalServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.RetrievedPensionsService, HttpClientUrlVariables.RetrievedPensionsServiceUrl);
             AddMhpdHttpClient(services, configuration, HttpClientNames.PeiIntegrationService, HttpClientUrlVariables.PeiIntegrationServiceUrl);
@@ -95,6 +96,7 @@ namespace MhpdCommon.Extensions
                 option.MapsCdaServiceUrl = configuration[HttpClientUrlVariables.MapsCdaServiceUrl];
                 option.TokenIntegrationServiceUrl = configuration[HttpClientUrlVariables.TokenIntegrationServiceUrl];
                 option.CdaServiceUrl = configuration[HttpClientUrlVariables.CdaServiceUrl];
+                option.PdpServiceUrl = configuration[HttpClientUrlVariables.PdpServiceUrl];
                 option.PensionRetrievalServiceUrl = configuration[HttpClientUrlVariables.PensionRetrievalServiceUrl];
                 option.RetrievedPensionsServiceUrl = configuration[HttpClientUrlVariables.RetrievedPensionsServiceUrl];
                 option.PeiIntegrationServiceUrl = configuration[HttpClientUrlVariables.PeiIntegrationServiceUrl];

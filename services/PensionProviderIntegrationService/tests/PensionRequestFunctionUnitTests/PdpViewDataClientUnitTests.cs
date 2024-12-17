@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using MhpdCommon.Constants.HttpClient;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -31,7 +32,7 @@ namespace PensionRequestFunctionUnitTests
             string viewDataUrl = "https://pdpviewdataservicedemulator.azurewebsites.net/view-data/";
             var handler = CreateHttpHandler(success, statusCode);
 
-            _httpClientFactoryMock.Setup(x => x.CreateClient(string.Empty))
+            _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.PdpService))
                 .Returns(new HttpClient(handler.Object)
                 {
                     BaseAddress = new Uri("http://localhost:1234"!)

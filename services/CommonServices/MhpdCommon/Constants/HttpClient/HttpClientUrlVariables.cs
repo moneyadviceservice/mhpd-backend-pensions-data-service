@@ -12,4 +12,5 @@ public class HttpClientUrlVariables
 
     //External
     public const string CdaServiceUrl = "CdaServiceUrl";
+    public const string PdpServiceUrl = "PdpServiceUrl";
 }

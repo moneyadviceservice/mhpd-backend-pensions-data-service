@@ -8,6 +8,23 @@ namespace PensionsDataService.HttpClients;
 
 public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, ILogger<RetrievalRecordServiceClient> logger) : IRetrievalRecordServiceClient
 {
+    public async Task<int> DeleteAsync(RequestHeaderModel requestHeader)
+    {
+        var httpClient = httpClientFactory.CreateClient(HttpClientNames.PensionRetrievalService);
+
+        // Add request headers
+        httpClient.DefaultRequestHeaders.Add(HeaderConstants.UserSessionId, requestHeader.UserSessionId);
+        httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
+
+        // Send the request to the constructed endpoint
+        var response = await httpClient.DeleteAsync(HttpEndpoints.Internal.PensionsRetrievalRecords);
+
+        // Check if the response is successful
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<int>();
+    }
+
     public async Task<PensionsRetrievalRecord> GetAsync(RequestHeaderModel requestHeader)
     {
         try

@@ -17,11 +17,8 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
 
     public async Task<List<RetrievedPensionRecord>> GetRetrievedRecordsAsync(string pensionsRetrievalRecordId)
     {
-        var query = new QueryDefinition("SELECT * FROM c WHERE c.pensionsRetrievalRecordId = @partitionKey")
-                .WithParameter("@partitionKey", pensionsRetrievalRecordId);
-
         var container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
-        var iterator = container.GetItemQueryIterator<RetrievedPensionRecord>(query);
+        using var iterator = GetRetrievedRecords(container, pensionsRetrievalRecordId);
 
         var response = await iterator.ReadNextAsync();
 
@@ -61,6 +58,29 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
         logMessage = $"Unable to save a record for pension with PEI: {payload.Pei}";
         _logger.LogCritical(logMessage);
         return false;
+    }
+
+    public async Task<int> DeleteRetrievedRecordsAsync(string pensionsRetrievalRecordId)
+    {
+        var container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        using var iterator = GetRetrievedRecords(container, pensionsRetrievalRecordId);
+
+        var response = await iterator.ReadNextAsync();
+
+        foreach (var record in response)
+        {
+            await container.DeleteItemAsync<RetrievedPensionRecord>(record.Id, new PartitionKey(record.PensionsRetrievalRecordId));
+        }
+
+        return response.Count;
+    }
+
+    private static FeedIterator<RetrievedPensionRecord> GetRetrievedRecords(Container container, string pensionsRetrievalRecordId)
+    {
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.pensionsRetrievalRecordId = @retrievalId")
+                .WithParameter("@retrievalId", pensionsRetrievalRecordId);
+
+        return container.GetItemQueryIterator<RetrievedPensionRecord>(query);
     }
 
     private void LogDatabaseInfo()

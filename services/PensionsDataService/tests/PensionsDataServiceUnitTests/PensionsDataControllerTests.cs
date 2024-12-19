@@ -664,4 +664,35 @@ public class PensionsDataControllerTests
         // Verify the mashed data output
         Assert.True(responseModel.PensionsDataRetrievalComplete == expectedStatus);
     }
+
+    [Theory]
+    [InlineData (true)]
+    [InlineData (false)]
+    public async Task DeletePensionsDataAsync_ReturnsResult(bool recordsExist)
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel
+        {
+            UserSessionId = "123e4567-e89b-12d3-a456-426614174000",
+            CorrelationId = Guid.NewGuid().ToString()
+        };
+
+        var getResult = new PensionsRetrievalRecord
+        {
+            Id = recordsExist ? Guid.NewGuid().ToString() : string.Empty
+        };
+
+        // Simulate a successful response from the retrieval record function client
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(getResult);
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var deleteResult = await _controller.DeletePensionsDataAsync(requestHeader);
+
+        // Assert
+        Assert.IsType<NoContentResult>(deleteResult);
+    }
 }

@@ -1,10 +1,12 @@
-﻿namespace PensionsRetrievalFunction.Models;
+﻿using MhpdCommon.Models.MHPDModels;
+
+namespace PensionsRetrievalFunction.Models;
 
 public class PeiDataResponse
 {
-    private readonly Dictionary<string, PeiData> _peiData = [];
+    private readonly Dictionary<string, PeiDataModel> _peiData = [];
 
-    public PeiDataResponse(string? rpt, IEnumerable<PeiData> peis)
+    public PeiDataResponse(string? rpt, IEnumerable<PeiDataModel> peis)
     {
         AddPeiRange(peis);
         SetRpt(rpt);
@@ -20,17 +22,17 @@ public class PeiDataResponse
         }
     }
 
-    public void AddPeiRange(IEnumerable<PeiData> peis)
+    public void AddPeiRange(IEnumerable<PeiDataModel> peis)
     {
         if (peis == null) return;
-        peis.ToList().ForEach(pei => _peiData.TryAdd(pei.Pei, pei));
+        peis.ToList().ForEach(pei => _peiData.TryAdd(pei.Pei!, pei));
     }
 
-    public bool TryAdd(PeiData pei)
+    public bool TryAdd(PeiDataModel pei)
     {
-        if(pei == null) return false;
+        if(pei == null || pei.Pei == null) return false;
         return _peiData.TryAdd(pei.Pei, pei);
     }
 
-    public IReadOnlyCollection<PeiData> PeiData => _peiData.Values;
+    public IReadOnlyCollection<PeiDataModel> PeiData => _peiData.Values;
 }

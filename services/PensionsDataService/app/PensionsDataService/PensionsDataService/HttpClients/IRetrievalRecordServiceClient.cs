@@ -6,4 +6,6 @@ namespace PensionsDataService.HttpClients;
 public interface IRetrievalRecordServiceClient
 {
     Task<PensionsRetrievalRecord> GetAsync(RequestHeaderModel requestHeader);
+
+    Task<int> DeleteAsync(RequestHeaderModel requestHeader);
 }

@@ -1,5 +1,6 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -101,7 +102,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
         _logger.LogWarning("Pei request orchestration complete");
     }
 
-    private static PensionRequestPayload CreateRequestPayload(PeiData pei, PensionsRetrievalRecord record)
+    private static PensionRequestPayload CreateRequestPayload(PeiDataModel pei, PensionsRetrievalRecord record)
     {
         return new PensionRequestPayload
         {

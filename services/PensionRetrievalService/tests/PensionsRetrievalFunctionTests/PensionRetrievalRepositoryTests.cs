@@ -1,9 +1,9 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using Moq;
-using PensionsRetrievalFunction.Models;
 using PensionsRetrievalFunction.Repository;
 
 namespace PensionsRetrievalFunctionTests;
@@ -34,7 +34,7 @@ public class PensionRetrievalRepositoryTests
         client.Setup(mock => mock.GetContainer(configuration.DatabaseId, configuration.ContainerId))
             .Returns(_container.Object);
 
-        _container.Setup(mock => mock.GetItemQueryIterator<PensionsRetrievalRecord>(It.IsAny<QueryDefinition>(), 
+        _container.Setup(mock => mock.GetItemQueryIterator<PensionsRetrievalRecord>(It.IsAny<QueryDefinition>(),
             It.IsAny<string>(), It.IsAny<QueryRequestOptions>())).Returns(iterator.Object);
         _container.Setup(mock => mock.CreateItemAsync(It.IsAny<PensionsRetrievalRecord>(), It.IsAny<PartitionKey>(),
             It.IsAny<ItemRequestOptions>(), It.IsAny<CancellationToken>())).ReturnsAsync(_writeResponse.Object).Verifiable();
@@ -47,8 +47,8 @@ public class PensionRetrievalRepositoryTests
     }
 
     [Theory]
-    [InlineData(0 , 1, true)]
-    [InlineData(1 , 0, false)]
+    [InlineData(0, 1, true)]
+    [InlineData(1, 0, false)]
     public async Task WhenRecordIsQueried_ReturnsNullOrNew(int recordsFound, int expectedCalls, bool isObjectReturned)
     {
         //Arrange
@@ -94,7 +94,7 @@ public class PensionRetrievalRepositoryTests
         //Arrange
         List<PensionsRetrievalRecord> records = [];
 
-        if(isRecordInDatabase) records.Add(new PensionsRetrievalRecord());
+        if (isRecordInDatabase) records.Add(new PensionsRetrievalRecord());
 
         _readResponse.Setup(mock => mock.GetEnumerator()).Returns(records.GetEnumerator);
 
@@ -103,5 +103,30 @@ public class PensionRetrievalRepositoryTests
 
         //Assert
         Assert.Equal(isRecordInDatabase, record != null);
+
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task WhenRecordIsDeleted_DatabaseResultIsCorrect(bool isRecordInDatabase)
+    {
+        //Arrange
+        List<PensionsRetrievalRecord> records = [];
+
+        if (isRecordInDatabase)
+        {
+            records.Add(new PensionsRetrievalRecord());
+            records.Add(new PensionsRetrievalRecord());
+        }
+
+        _readResponse.Setup(mock => mock.GetEnumerator()).Returns(records.GetEnumerator);
+        _readResponse.Setup(mock => mock.Count).Returns(records.Count);
+
+        //Act
+        var count = await _repository.DeleteRetrievalRecordsAsync(Guid.NewGuid().ToString());
+
+        //Assert
+        Assert.Equal(records.Count, count);
     }
 }

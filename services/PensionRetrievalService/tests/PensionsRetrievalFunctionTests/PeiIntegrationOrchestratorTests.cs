@@ -1,5 +1,6 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -111,7 +112,7 @@ public class PeiIntegrationOrchestratorTests
 
     private static PeiDataResponse CreateResponse(bool withData)
     {
-        var response = new List<PeiData>
+        var response = new List<PeiDataModel>
         {
             new() {
                 Description = "Test",

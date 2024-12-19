@@ -198,4 +198,44 @@ public class RetrievedPensionsRecordClientTests
         var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetAsync(request, _requestHeaderModel));
         Assert.Equal("Error communicating with retrieved record endpoint", exception.Message);
     }
+
+    [Fact]
+    public async Task DeleteAsync_Request_ReturnsResult()
+    {
+        // Arrange
+        var request = new PensionsRetrievalRecordIdModel { PensionsRetrievalRecordId = "test-session-id" };
+
+        var expectedCount = 4;
+
+        var httpResponse = new HttpResponseMessage
+        {
+            Content = JsonContent.Create(expectedCount),
+            StatusCode = HttpStatusCode.OK,
+        };
+
+        // Mock a successful HTTP response
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(httpResponse);
+
+        _mockHttpClientFactory.Setup(x => x.CreateClient(HttpClientNames.RetrievedPensionsService))
+            .Returns(new HttpClient(handlerMock.Object)
+            {
+                BaseAddress = new Uri("http://localhost:1234")
+            });
+
+        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
+
+        // Act
+        var result = await client.DeleteAsync("retrieval-record-Id", "correlation-Id");
+
+        // Assert
+        Assert.Equal(expectedCount, result);
+    }
 }

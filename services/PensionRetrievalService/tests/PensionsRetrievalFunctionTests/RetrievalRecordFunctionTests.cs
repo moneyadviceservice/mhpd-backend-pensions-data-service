@@ -1,4 +1,5 @@
 ﻿using MhpdCommon.Constants;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,6 +27,7 @@ public class RetrievalRecordFunctionTests
 
         _repository = new Mock<IPensionRetrievalRepository>();
         _repository.Setup(mock => mock.GetRetrievalRecordAsync(It.IsAny<string>())).ReturnsAsync(new PensionsRetrievalRecord());
+        _repository.Setup(mock => mock.DeleteRetrievalRecordsAsync(It.IsAny<string>())).ReturnsAsync(2);
 
         _function = new RetrievalRecordFunction(_loggerMock.Object, _repository.Object, _idValidatorMock.Object);
     }
@@ -50,7 +52,7 @@ public class RetrievalRecordFunctionTests
         mockRequest.Setup(req => req.Headers).Returns(request.Headers);
 
         //Act
-        var response = await _function.RunAsync(mockRequest.Object);
+        var response = await _function.GetAsync(mockRequest.Object);
 
         //Assert
         var result = Assert.IsType<OkObjectResult>(response);
@@ -82,7 +84,7 @@ public class RetrievalRecordFunctionTests
         mockRequest.Setup(req => req.Headers).Returns(request.Headers);
 
         //Act
-        var response = await _function.RunAsync(mockRequest.Object);
+        var response = await _function.GetAsync(mockRequest.Object);
 
         //Assert
         var result = Assert.IsType<BadRequestObjectResult>(response);
@@ -106,12 +108,41 @@ public class RetrievalRecordFunctionTests
         mockRequest.Setup(req => req.Headers).Returns(request.Headers);
 
         //Act
-        var response = await _function.RunAsync(mockRequest.Object);
+        var response = await _function.GetAsync(mockRequest.Object);
 
         //Assert
         var result = Assert.IsType<BadRequestObjectResult>(response);
         Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
         Assert.Equal(Constants.ResponseType.InvalidCorrelationId, result.Value);
         _repository.Verify(mock => mock.GetRetrievalRecordAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Delete_ShouldReturnOk_WhenPayloadIsValid(bool withCorrelationHeader)
+    {
+        //Arrange
+        var userSessionId = Guid.NewGuid().ToString();
+        var correlationId = Guid.NewGuid().ToString();
+        var request = new DefaultHttpContext().Request;
+        request.Headers[HeaderConstants.UserSessionId] = userSessionId;
+
+        if (withCorrelationHeader)
+        {
+            request.Headers[HeaderConstants.CorrelationId] = correlationId;
+        }
+
+        var mockRequest = new Mock<HttpRequest>();
+        mockRequest.Setup(req => req.Headers).Returns(request.Headers);
+
+        //Act
+        var response = await _function.DeleteAsync(mockRequest.Object);
+
+        //Assert
+        var result = Assert.IsType<OkObjectResult>(response);
+        Assert.Equal((int)HttpStatusCode.OK, result.StatusCode);
+        Assert.IsType<int>(result.Value);
+        _repository.Verify(mock => mock.DeleteRetrievalRecordsAsync(userSessionId), Times.Once);
     }
 }

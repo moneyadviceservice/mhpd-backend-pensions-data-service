@@ -1,4 +1,5 @@
 ﻿using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -82,7 +83,7 @@ public class PeiServiceClientTests
 
         if (success)
         {
-            var response = new List<PeiData>
+            var response = new List<PeiDataModel>
             {
                 new() {
                     Description = "Test",
@@ -114,7 +115,7 @@ public class PeiServiceClientTests
         };
     }
 
-    private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, List<PeiData>? content = null)
+    private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, List<PeiDataModel>? content = null)
     {
         var response = new HttpResponseMessage(statusCode);
         if (content != null)

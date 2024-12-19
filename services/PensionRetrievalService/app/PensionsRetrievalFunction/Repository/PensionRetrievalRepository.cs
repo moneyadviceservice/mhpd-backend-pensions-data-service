@@ -1,8 +1,8 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
-using PensionsRetrievalFunction.Models;
 
 namespace PensionsRetrievalFunction.Repository;
 
@@ -41,6 +41,19 @@ public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> opti
     {
         var response = await GetMatchingRecordsAsync(userSessionId);
         return response.SingleOrDefault();
+    }
+
+    public async Task<int> DeleteRetrievalRecordsAsync(string userSessionId)
+    {
+        var container = _client.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var records = await GetMatchingRecordsAsync(userSessionId);
+
+        foreach (var record in records)
+        {
+            await container.DeleteItemAsync<RetrievedPensionRecord>(record.Id, new PartitionKey(record.UserSessionId));
+        }
+
+        return records.Count;
     }
 
     private async Task<FeedResponse<PensionsRetrievalRecord>> GetMatchingRecordsAsync(string userSessionId)

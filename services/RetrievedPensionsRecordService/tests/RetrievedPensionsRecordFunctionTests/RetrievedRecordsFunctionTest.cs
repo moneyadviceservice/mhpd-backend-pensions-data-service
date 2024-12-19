@@ -29,6 +29,7 @@ public class RetrievedRecordsFunctionTest
 
         _repository = new Mock<IPensionRecordRepository>();
         _repository.Setup(mock => mock.GetRetrievedRecordsAsync(It.IsAny<string>())).ReturnsAsync([new RetrievedPensionRecord()]).Verifiable();
+        _repository.Setup(mock => mock.DeleteRetrievedRecordsAsync(It.IsAny<string>())).ReturnsAsync(It.IsAny<int>()).Verifiable();
 
         _function = new RetrievedRecordsFunction(_loggerMock.Object, _repository.Object, _idValidatorMock.Object);
     }
@@ -56,7 +57,7 @@ public class RetrievedRecordsFunctionTest
         mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
 
         //Act
-        var response = await _function.RunAsync(mockRequest.Object);
+        var response = await _function.GetAsync(mockRequest.Object);
 
         //Assert
         var result = Assert.IsType<OkObjectResult>(response);
@@ -84,7 +85,7 @@ public class RetrievedRecordsFunctionTest
 
         if (withParams)
         {
-            queryParams.Add(HeaderConstants.UserSessionId, Guid.NewGuid().ToString());
+            queryParams.Add(Constants.RetrievedRecordQuery, Guid.NewGuid().ToString());
         }
 
         var queries = new QueryCollection(queryParams);
@@ -93,7 +94,7 @@ public class RetrievedRecordsFunctionTest
         mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
 
         //Act
-        var response = await _function.RunAsync(mockRequest.Object);
+        var response = await _function.GetAsync(mockRequest.Object);
 
         //Assert
         var result = Assert.IsType<BadRequestObjectResult>(response);
@@ -123,12 +124,44 @@ public class RetrievedRecordsFunctionTest
         mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
 
         //Act
-        var response = await _function.RunAsync(mockRequest.Object);
+        var response = await _function.GetAsync(mockRequest.Object);
 
         //Assert
         var result = Assert.IsType<BadRequestObjectResult>(response);
         Assert.Equal((int)HttpStatusCode.BadRequest, result.StatusCode);
         Assert.Equal(Constants.InvalidCorrelationId, result.Value);
         _repository.Verify(mock => mock.GetRetrievedRecordsAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Delete_ShouldReturnOk_WhenPayloadIsValid(bool withHeader)
+    {
+        //Arrange
+        var retrievalRecordId = Guid.NewGuid().ToString();
+        var queryParams = new Dictionary<string, StringValues>
+        {
+            { Constants.RetrievedRecordQuery, retrievalRecordId}
+        };
+
+        var headers = new Dictionary<string, StringValues>();
+        if (withHeader)
+        {
+            headers.Add(HeaderConstants.CorrelationId, Guid.NewGuid().ToString());
+        }
+
+        var mockRequest = new Mock<HttpRequest>();
+        mockRequest.Setup(req => req.Query).Returns(new QueryCollection(queryParams));
+        mockRequest.Setup(req => req.Headers).Returns(new HeaderDictionary(headers));
+
+        //Act
+        var response = await _function.DeleteAsync(mockRequest.Object);
+
+        //Assert
+        var result = Assert.IsType<OkObjectResult>(response);
+        Assert.Equal((int)HttpStatusCode.OK, result.StatusCode);
+        Assert.IsType<int>(result.Value);
+        _repository.Verify(mock => mock.DeleteRetrievedRecordsAsync(retrievalRecordId), Times.Once);
     }
 }

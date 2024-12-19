@@ -144,6 +144,34 @@ public class PensionsDataController(
         return await Task.FromResult<IActionResult>(response);
     }
 
+    [HttpDelete]
+    [Route("pensions-data")]
+    public async Task<IActionResult> DeletePensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
+    {
+        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
+        {
+            logger.LogError("Error: {ErrorMessage}", validationMessage);
+            return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
+        }
+
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} DELETE");
+        logger.LogRequest(requestHeader);
+
+        // Get the pensions retrieval record associated with the passed userSessionId
+        var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
+        logger.LogResponse(retrievalRecordResult);
+
+        if (!string.IsNullOrEmpty(retrievalRecordResult.Id))
+        {
+            var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(requestHeader);
+            var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(retrievalRecordResult.Id, requestHeader.CorrelationId!);
+
+            logger.LogWarning("Delete request removed {retrievalCount} pension retrieval records and {retrievedCount} retrieved pension records", retrievalCount, retrievedCount);
+        }
+
+        return new NoContentResult();
+    }
+
     private static int GetRemainingRetrievalTime(PensionsRetrievalRecord retrievalRecord, int totalEstimatedDuration)
     {
         if (retrievalRecord.PeiRetrievalComplete)
@@ -152,9 +180,9 @@ public class PensionsDataController(
         }
 
         var estimatedCompletionTime = retrievalRecord.JobStartTimestamp.AddSeconds(totalEstimatedDuration);
-        var remainingDuration = (estimatedCompletionTime - DateTime.UtcNow).Seconds;
+        var remainingDuration = (estimatedCompletionTime - DateTime.UtcNow).TotalSeconds;
 
-        return Math.Max(remainingDuration, 1);
+        return Math.Max((int)remainingDuration, 1);
     }
     
     private bool TryValidateRequests(PensionsDataRequestModel request, RequestHeaderModel requestHeader, out string? message)

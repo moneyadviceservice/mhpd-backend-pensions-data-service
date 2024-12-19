@@ -121,6 +121,26 @@ public  class PensionRecordRepositoryTests
         Assert.Equal(2, result.Count);
     }
 
+    [Fact]
+    public async Task WhenRecordAreDeleted_DatabaseResultIsCorrect()
+    {
+        //Arrange
+        List<RetrievedPensionRecord> records = [
+            new RetrievedPensionRecord(),
+            new RetrievedPensionRecord(),
+            new RetrievedPensionRecord()
+        ];
+
+        _readResponse.Setup(mock => mock.GetEnumerator()).Returns(records.GetEnumerator);
+        _readResponse.Setup(mock => mock.Count).Returns(records.Count);
+
+        //Act
+        var result = await _repository.DeleteRetrievedRecordsAsync(Guid.NewGuid().ToString());
+
+        //Assert
+        Assert.Equal(records.Count, result);
+    }
+
     private static RetrievedPensionDetailsPayload GetPayload()
     {
         return new RetrievedPensionDetailsPayload

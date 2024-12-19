@@ -1,6 +1,7 @@
 ﻿using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Logging;
 using PensionsRetrievalFunction.Models;
 using System.Net.Http.Json;
@@ -36,7 +37,7 @@ public class PeiServiceClient(IHttpClientFactory httpClientFactory, ILogger<PeiS
             return new PeiDataResponse(null, []);
         }
 
-        var peiData = await response.Content.ReadFromJsonAsync<List<PeiData>>();
+        var peiData = await response.Content.ReadFromJsonAsync<List<PeiDataModel>>();
 
         var peiResponse = new PeiDataResponse(response.GetResponseHeader(HeaderConstants.Rpt), peiData ?? []);
 

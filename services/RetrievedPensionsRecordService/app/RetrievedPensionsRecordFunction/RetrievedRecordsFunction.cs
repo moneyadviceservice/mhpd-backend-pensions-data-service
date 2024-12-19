@@ -16,8 +16,19 @@ namespace RetrievedPensionsRecordFunction
         private readonly IPensionRecordRepository _repository = repository;
         private readonly IIdValidator _idValidator = validator;
 
-        [Function("RetrievedRecordsFunction")]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "retrieved-pension-records")] HttpRequest req)
+        [Function("GetRetrievedRecords")]
+        public async Task<IActionResult> GetAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "retrieved-pension-records")] HttpRequest req)
+        {
+            return await ProcessRetrievedRecordsAsync(req, _repository.GetRetrievedRecordsAsync);
+        }
+
+        [Function("DeleteRetrievedRecords")]
+        public async Task<IActionResult> DeleteAsync([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "retrieved-pension-records")] HttpRequest req)
+        {
+            return await ProcessRetrievedRecordsAsync(req, _repository.DeleteRetrievedRecordsAsync);
+        }
+
+        private async Task<IActionResult> ProcessRetrievedRecordsAsync<T>(HttpRequest req, Func<string, Task<T>> processor)
         {
             var correlationId = req.Headers[HeaderConstants.CorrelationId].ToString();
 
@@ -43,7 +54,7 @@ namespace RetrievedPensionsRecordFunction
                 return new BadRequestObjectResult(Constants.InvalidRecordId);
             }
 
-            var records = await _repository.GetRetrievedRecordsAsync(pensionsRetrievalRecordId);
+            var records = await processor(pensionsRetrievalRecordId);
 
             _logger.LogResponse(records);
 

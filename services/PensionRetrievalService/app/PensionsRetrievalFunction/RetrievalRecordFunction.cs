@@ -16,8 +16,19 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
     private readonly IPensionRetrievalRepository _repository = repository;
     private readonly IIdValidator _idValidator = validator;
 
-    [Function("RetrievalRecordFunction")]
-    public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "pensions-retrieval-records")] HttpRequest req)
+    [Function("GetRetrievalRecords")]
+    public async Task<IActionResult> GetAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "pensions-retrieval-records")] HttpRequest req)
+    {
+        return await ProcessRetrievalRecords(req, _repository.GetRetrievalRecordAsync);
+    }
+
+    [Function("DeleteRetrievalRecords")]
+    public async Task<IActionResult> DeleteAsync([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "pensions-retrieval-records")] HttpRequest req)
+    {
+        return await ProcessRetrievalRecords(req, _repository.DeleteRetrievalRecordsAsync);
+    }
+
+    private async Task<IActionResult> ProcessRetrievalRecords<T>(HttpRequest req, Func<string, Task<T>> processor)
     {
         var correlationId = req.Headers[HeaderConstants.CorrelationId].ToString();
 
@@ -43,10 +54,9 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
             return new BadRequestObjectResult(Constants.ResponseType.InvalidSessionId);
         }
 
-        var record = await _repository.GetRetrievalRecordAsync(userSessionId);
-
+        var record = await processor(userSessionId);
         _logger.LogResponse(record);
 
-        return record != null ? new OkObjectResult(record) : new OkResult();
+        return EqualityComparer<T>.Default.Equals(record, default) ? new OkResult() : new OkObjectResult(record);
     }
 }

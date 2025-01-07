@@ -19,7 +19,7 @@ module "pension_request_function" {
     "ContainerId"                            = "${var.product}holderNameViewConfigurationData"
     "ContainerPartitionKey"                  = "/holdernameGuid"
     "DatabaseId"                             = "${var.product}-businesslayer"
-	"CosmosDBConnectionString"				 = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+    "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "FUNCTIONS_EXTENSION_VERSION"            = "~4"
     "FUNCTIONS_WORKER_RUNTIME"               = "dotnet-isolated"
     "InboundQueue"                           = "pension-details-request"

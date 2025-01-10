@@ -30,7 +30,7 @@ data "azurerm_key_vault_secret" "jwt_settings_subject" {
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
-data "azurerm_servicebus_namespace" "pension_data" {
+data "azurerm_servicebus_namespace" "this" {
   name                = "${var.product}-sbns-${var.env}"
   resource_group_name = "${var.product}-${var.env}"
 }

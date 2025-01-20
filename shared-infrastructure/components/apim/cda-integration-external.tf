@@ -43,7 +43,7 @@ resource "azurerm_api_management_api_policy" "cda-integration" {
 	<!-- Throttle, authorize, validate, cache, or transform the requests -->
 	<inbound>
 		<base />
-		<set-backend-service base-url=${local.cda-backend-service} />
+		<set-backend-service base-url="${local.cda-backend-service}" />
 		<authentication-certificate certificate-id="PdpMtls" />
 	</inbound>
 	<!-- Control if and how the requests are forwarded to services  -->

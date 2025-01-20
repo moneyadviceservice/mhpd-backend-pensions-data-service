@@ -14,8 +14,10 @@ module "pension_request_function" {
 
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING"  = "InstrumentationKey=${module.pension_request_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pension_request_function.app_insights_app_id}"
-    "CdaServiceUrl"                          = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
-    "PdpServiceUrl"                          = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
+    "CdaServiceUrl"                          = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
+    "PdpServiceUrl"                          = "https://maps-api-management-${var.env}.azure-api.net/view-data-external/"
+    "TokenIntegrationServiceUrl"             = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
+    "MapsCdaServiceUrl"                      = "https://maps-api-management-${var.env}.azure-api.net/maps-cda-service/"
     "ContainerId"                            = "${var.product}holderNameViewConfigurationData"
     "ContainerPartitionKey"                  = "/holdernameGuid"
     "DatabaseId"                             = "${var.product}-businesslayer"
@@ -23,10 +25,8 @@ module "pension_request_function" {
     "FUNCTIONS_EXTENSION_VERSION"            = "~4"
     "FUNCTIONS_WORKER_RUNTIME"               = "dotnet-isolated"
     "InboundQueue"                           = "pension-details-request"
-    "MapsCdaServiceUrl"                      = "https://maps-apim-${var.env}.azure-api.net/mhpd/"
     "OutboundQueue"                          = "retrieved-pension-details"
     "ServiceBusConnectionString"             = data.azurerm_servicebus_namespace.this.default_primary_connection_string
-    "TokenIntegrationServiceUrl"             = "https://maps-apim-${var.env}.azure-api.net/mhpd/"
     "WEBSITE_CONTENTSHARE"                   = "pensionrequestfunctionaee5"
     "WEBSITE_RUN_FROM_PACKAGE"               = "1"
     "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED" = "1"

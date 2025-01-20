@@ -23,5 +23,11 @@ module "retrieved_pensions_details_function" {
     "ServiceBusConnectionstring"             = data.azurerm_servicebus_namespace.this.default_primary_connection_string
     "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "APPLICATIONINSIGHTS_CONNECTION_STRING"  = "InstrumentationKey=${module.retrieved_pensions_details_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.retrieved_pensions_details_function.app_insights_app_id}"
+    "OutboundQueue"                          = "pensions-retrieval-job"
+    "PeiRetrievalDuration"                   = "60"
+    "PensionRetrievalServiceUrl"             = "https://maps-api-management-${var.env}.azure-api.net/pension-retrieval-service/"
+    "RetrievedPensionsServiceUrl"            = "https://maps-api-management-${var.env}.azure-api.net/retrieved-pensions-record-service/"
+    "tokenIntegrationServiceUrl"             = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
+    "ViewDataRetrievalDuration"              = "5"
   }
 }

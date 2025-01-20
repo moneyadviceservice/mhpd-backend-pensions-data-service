@@ -26,14 +26,14 @@
 
 | Name | Type |
 |------|------|
-| [azurerm_key_vault_access_policy.cda_application_access](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/resources/key_vault_access_policy) | resource |
-| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/client_config) | data source |
-| [azurerm_cosmosdb_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/cosmosdb_account) | data source |
-| [azurerm_key_vault.mhpd](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/key_vault) | data source |
-| [azurerm_key_vault_secret.CDA_service_emulator_private_key](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/key_vault_secret) | data source |
-| [azurerm_key_vault_secret.cda_service_private_key](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/key_vault_secret) | data source |
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/resource_group) | data source |
-| [azurerm_servicebus_namespace.pension_data](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/docs/data-sources/servicebus_namespace) | data source |
+| [azurerm_key_vault_access_policy.cda_application_access](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/resources/key_vault_access_policy) | resource |
+| [azurerm_client_config.current](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/client_config) | data source |
+| [azurerm_cosmosdb_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/cosmosdb_account) | data source |
+| [azurerm_key_vault.mhpd](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/key_vault) | data source |
+| [azurerm_key_vault_secret.CDA_service_emulator_private_key](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/key_vault_secret) | data source |
+| [azurerm_key_vault_secret.cda_service_private_key](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/key_vault_secret) | data source |
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/resource_group) | data source |
+| [azurerm_servicebus_namespace.pension_data](https://registry.terraform.io/providers/hashicorp/azurerm/4.4.0/specs/data-sources/servicebus_namespace) | data source |
 
 ## Inputs
 

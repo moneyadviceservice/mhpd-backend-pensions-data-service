@@ -23,9 +23,9 @@
 
 | Name | Type |
 |------|------|
-| [azurerm_cosmosdb_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.5.0/docs/data-sources/cosmosdb_account) | data source |
-| [azurerm_resource_group.mhpd](https://registry.terraform.io/providers/hashicorp/azurerm/4.5.0/docs/data-sources/resource_group) | data source |
-| [azurerm_servicebus_namespace.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.5.0/docs/data-sources/servicebus_namespace) | data source |
+| [azurerm_cosmosdb_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.5.0/specs/data-sources/cosmosdb_account) | data source |
+| [azurerm_resource_group.mhpd](https://registry.terraform.io/providers/hashicorp/azurerm/4.5.0/specs/data-sources/resource_group) | data source |
+| [azurerm_servicebus_namespace.this](https://registry.terraform.io/providers/hashicorp/azurerm/4.5.0/specs/data-sources/servicebus_namespace) | data source |
 
 ## Inputs
 

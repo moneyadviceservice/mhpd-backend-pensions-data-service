@@ -18,7 +18,7 @@ module "pensions_retrieval_function" {
     "DatabaseId"                             = "${var.product}-businesslayer"
     "InboundQueue"                           = "pensions-retrieval-job"
     "OutboundQueue"                          = "pension-details-request"
-    "PeiIntegrationServiceUrl"               = "https://maps-apim-dev.azure-api.net/mhpd/"
+    "PeiIntegrationServiceUrl"               = "https://maps-api-management-test.azure-api.net/pei-integration-service/"
     "PeiRetryInterval"                       = "5"
     "PeiRetryTimeout"                        = "60"
     "ServiceBusConnectionstring"             = data.azurerm_servicebus_namespace.this.default_primary_connection_string

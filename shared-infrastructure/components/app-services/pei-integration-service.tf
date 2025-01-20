@@ -18,18 +18,25 @@ module "pei_integration_service" {
     "APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION"    = "disabled"
     "ApplicationInsightsAgent_EXTENSION_VERSION"      = "~2"
     "DISABLE_APPINSIGHTS_SDK"                         = "disabled"
-    "CdaServiceUrl"                                   = "https://maps-apim-${var.env}.azure-api.net/cda-integration/"
     "DiagnosticServices_EXTENSION_VERSION"            = "~3"
     "IGNORE_APPINSIGHTS_SDK"                          = "disabled"
     "InstrumentationEngine_EXTENSION_VERSION"         = "disabled"
-    "MapsCdaServiceUrl"                               = "https://maps-apim-${var.env}.azure-api.net/mhpd/"
-    "TokenIntegrationServiceUrl"                      = "https://maps-apim-${var.env}.azure-api.net/mhpd/"
+    "CdaServiceUrl"                                   = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
+    "MapsCdaServiceUrl"                               = "https://maps-api-management-${var.env}.azure-api.net/maps-cda-service/"
+    "TokenIntegrationServiceUrl"                      = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
+    "PensionRetrievalServiceUrl"                      = "https://maps-api-management-${var.env}.azure-api.net/pension-retrieval-service/"
+    "RetrievedPensionsServiceUrl"                     = "https://maps-api-management-${var.env}.azure-api.net/retrieved-pensions-record-service/"
     "KeyVaultConfiguration__KeyVaultURL"              = "https://${var.product}-${var.env}.vault.azure.net/"
     "SnapshotDebugger_EXTENSION_VERSION"              = "disabled"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                 = "true"
     "XDT_MicrosoftApplicationInsights_BaseExtensions" = "disabled"
     "XDT_MicrosoftApplicationInsights_Mode"           = "recommended"
     "XDT_MicrosoftApplicationInsights_PreemptSdk"     = "disabled"
+    "OutboundQueue"                                   = "pensions-retrieval-job"
+    "PeiRetrievalDuration"                            = "60"
+    "ServiceBusConnectionString"                      = "Endpoint=sb://mhpd-sbns-${var.env}.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=${data.azurerm_servicebus_namespace.this.primary_shared_access_key}"
+    "ViewDataRetrievalDuration"                       = "5"
+
   }
   tags = {}
 }

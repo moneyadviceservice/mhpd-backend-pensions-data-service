@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CDAServiceEmulator", "CDASe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CDAServiceEmulatorUnitTests", "..\..\tests\CDAServiceEmulatorUnitTests\CDAServiceEmulatorUnitTests.csproj", "{5015404F-CF92-48A8-86FF-F2DC78E85BEB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CDAServiceApiTests", "..\..\tests\CDAServiceEmulatorApiTests\CDAServiceApiTests\CDAServiceApiTests.csproj", "{6FEE06F6-F7EE-4E96-9064-7289E94B7949}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{5015404F-CF92-48A8-86FF-F2DC78E85BEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5015404F-CF92-48A8-86FF-F2DC78E85BEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5015404F-CF92-48A8-86FF-F2DC78E85BEB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6FEE06F6-F7EE-4E96-9064-7289E94B7949}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6FEE06F6-F7EE-4E96-9064-7289E94B7949}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6FEE06F6-F7EE-4E96-9064-7289E94B7949}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6FEE06F6-F7EE-4E96-9064-7289E94B7949}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

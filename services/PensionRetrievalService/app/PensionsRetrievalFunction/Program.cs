@@ -1,8 +1,12 @@
 using MhpdCommon.Extensions;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using PensionsRetrievalFunction.HttpClients;
 using PensionsRetrievalFunction.Orchestration;
 using PensionsRetrievalFunction.Repository;
@@ -25,6 +29,33 @@ var host = new HostBuilder()
         services.AddScoped<IPensionRetrievalRepository, PensionRetrievalRepository>();
         services.AddTransient<IPeiServiceClient, PeiServiceClient>();
         services.AddTransient<IPeiIntegrationOrchestrator, PeiIntegrationOrchestrator>();
+        services.AddSingleton<IOpenApiConfigurationOptions>(_ =>
+        {
+            var options = new OpenApiConfigurationOptions()
+            {
+                Info = new OpenApiInfo()
+                {
+                    Title = "MaPS Pensions Retrieval Records",
+                    Version = DefaultOpenApiConfigurationOptions.GetOpenApiDocVersion(),
+                    Description =
+                        "This service allows a client to retrieve pensions retrieval records for a pension owner session.",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "General Enquires",
+                        Email = "contact@maps.org.uk",
+                        Url = new Uri("https://maps.org.uk/en/about-us/contact-us")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "Government API License",
+                        Url = new Uri("https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/")
+                    },
+                },
+                OpenApiVersion = Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums.OpenApiVersionType.V3
+            };
+
+            return options;
+        });
     })
     .Build();
 

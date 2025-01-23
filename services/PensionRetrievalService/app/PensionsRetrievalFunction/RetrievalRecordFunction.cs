@@ -1,14 +1,18 @@
+using System.Net;
 using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using PensionsRetrievalFunction.Models;
 using PensionsRetrievalFunction.Repository;
 
 namespace PensionsRetrievalFunction;
+
 
 public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IPensionRetrievalRepository repository, IIdValidator validator)
 {
@@ -17,12 +21,38 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
     private readonly IIdValidator _idValidator = validator;
 
     [Function("GetRetrievalRecords")]
+    [OpenApiOperation(operationId: "get-pensions-retrieval-record-for-pension-owner-session",
+        Summary = "Get Pensions Retrieval Record",
+        Description = "Get the pensions retrieval record that contains the information on the state of a process to retrieve the pensions data for a user session from the PDP ecosystem")]
+    [OpenApiParameter(
+        "userSessionId",
+        In = ParameterLocation.Header, 
+        Description = "The unique id of pension owner session as issued by the requesting system",
+        Required = true)]
+    [OpenApiResponseWithBody(HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(object), Description = "The OK response message containing pension retrieval record.")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest, Description = "BadRequest")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.Forbidden, Description = "Forbidden")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.BadGateway, Description = "BadGateway")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.ServiceUnavailable, Description = "Service Unavailable")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.GatewayTimeout, Description = "Gateway Timeout")]
     public async Task<IActionResult> GetAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "pensions-retrieval-records")] HttpRequest req)
     {
         return await ProcessRetrievalRecords(req, _repository.GetRetrievalRecordAsync);
     }
 
     [Function("DeleteRetrievalRecords")]
+    [OpenApiOperation(operationId: "delete-pensions-retrieval-records-id",
+        Summary = "Delete Pensions Retrieval Record",
+        Description = "Deletes the given pension retrieval record id.")]
+    [OpenApiParameter(
+        "id",
+        In = ParameterLocation.Path, 
+        Description = "The id of pension retrieval record to be deleted",
+        Required = true)]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "No Content")]
+    [OpenApiResponseWithoutBody(HttpStatusCode.NotFound, Description = "Not Found")]
     public async Task<IActionResult> DeleteAsync([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "pensions-retrieval-records")] HttpRequest req)
     {
         return await ProcessRetrievalRecords(req, _repository.DeleteRetrievalRecordsAsync);

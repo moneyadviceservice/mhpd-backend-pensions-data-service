@@ -162,7 +162,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     {            
         var (codeChallenge, codeVerifier) = _pkceGenerator.GeneratePkce();
         return new RedirectResponseModel
-        {                
+        {
             RedirectTargetUrl = _redirectTargetUrl,
             Rqp = fetchRqp,
             Scope = Constants.Scope,

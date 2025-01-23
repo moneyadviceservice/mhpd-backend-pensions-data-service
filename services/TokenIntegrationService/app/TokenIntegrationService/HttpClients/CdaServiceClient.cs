@@ -29,7 +29,7 @@ public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaS
                         cdaTokenRequest, HttpEndpoints.External.CdaTokenServiceEndpoint),
                     _ => throw new InvalidOperationException("Unsupported request type.")
                 };
-
+                
                 return await httpClient.PostAsync(endpoint, null);
             },
             HttpClientOperationName.CdaServiceTokenPOST);

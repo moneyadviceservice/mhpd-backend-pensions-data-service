@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MaPSCDAService", "MaPSCDASe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MaPSCDAServiceUnitTests", "..\..\tests\MaPSCDAServiceUnitTests\MaPSCDAServiceUnitTests.csproj", "{200E0C42-9D39-41A2-BFA7-2238B99DE09A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaPSCDAServiceApiTests", "..\..\tests\MaPSCDAServiceApiTests\MaPSCDAServiceApiTests.csproj", "{5936B23F-691F-486B-BFAD-1ED78DB6D7AE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{200E0C42-9D39-41A2-BFA7-2238B99DE09A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{200E0C42-9D39-41A2-BFA7-2238B99DE09A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{200E0C42-9D39-41A2-BFA7-2238B99DE09A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5936B23F-691F-486B-BFAD-1ED78DB6D7AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5936B23F-691F-486B-BFAD-1ED78DB6D7AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5936B23F-691F-486B-BFAD-1ED78DB6D7AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5936B23F-691F-486B-BFAD-1ED78DB6D7AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

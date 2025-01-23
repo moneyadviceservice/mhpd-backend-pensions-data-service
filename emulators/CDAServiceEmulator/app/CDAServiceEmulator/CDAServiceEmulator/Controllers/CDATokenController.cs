@@ -71,7 +71,7 @@ public class CdaTokenController(
     {
         return new CdaTokenResponseModel
         {
-            AccessToken = isAuthorizationCodeGrantType ? string.Empty : tokenUtility.GenerateJwt(new CustomClaimDataModel()),
+            AccessToken = isAuthorizationCodeGrantType ? string.Empty : TokenQueryParams.ValidJwtToken,
             TokenType = isAuthorizationCodeGrantType ? TokenQueryParams.TokenTypeBearer : TokenQueryParams.TokenTypeRpt,
             Upgraded = false,
             IdToken = isAuthorizationCodeGrantType ? GetIdToken(peisStartCode) : null,

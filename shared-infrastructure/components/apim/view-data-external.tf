@@ -61,3 +61,16 @@ resource "azurerm_api_management_api_policy" "view-data-external" {
 </policies>
 XML
 }
+
+resource "azurerm_api_management_api_diagnostic" "view-data-external" {
+  identifier                = "applicationinsights"
+  resource_group_name       = data.azurerm_api_management.this.resource_group_name
+  api_management_name       = data.azurerm_api_management.this.name
+  api_name                  = azurerm_api_management_api.view-data-external.name
+  api_management_logger_id  = local.api_management_logger_id
+  sampling_percentage       = var.sampling_percentage
+  always_log_errors         = true
+  log_client_ip             = true
+  verbosity                 = var.verbosity
+  http_correlation_protocol = var.http_correlation_protocol
+}

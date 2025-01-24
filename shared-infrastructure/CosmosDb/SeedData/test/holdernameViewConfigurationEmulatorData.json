@@ -1,17 +1,32 @@
 [
   {
-    "id": "28965b42-ae24-4053-87d9-e80788c90a0e",
-    "holdernameGuid": "28965b42-ae24-4053-87d9-e80788c90a0e",
-    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+    "id": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
+    "holdername_guid": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
+    "veiw_data_url": "https://maps-apim-test.azure-api.net/view-data-external"
   },
   {
-    "id": "b323f839-abb6-4b9e-bc76-b17791b6f071",
-    "holdernameGuid": "b323f839-abb6-4b9e-bc76-b17791b6f071",
-    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+    "id": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
+    "holdername_guid": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
+    "veiw_data_url": "https://maps-apim-test.azure-api.net/view-data-external"
   },
   {
-    "id": "c4b8580c-b896-4146-be64-96b412773c72",
-    "holdernameGuid": "c4b8580c-b896-4146-be64-96b412773c72",
-    "viewDataUrl": "https://pdpviewdataservicedemulator.azurewebsites.net/view-data"
+    "id": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
+    "holdername_guid": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
+    "veiw_data_url": "https://maps-apim-test.azure-api.net/view-data-external"
+  },
+  {
+    "id": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
+    "holdername_guid": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
+    "veiw_data_url": "https://maps-apim-test.azure-api.net/view-data-external"
+  },
+  {
+    "id": "cd2770ad-3928-4023-9d25-03e745b41648",
+    "holdername_guid": "cd2770ad-3928-4023-9d25-03e745b41648",
+    "veiw_data_url": "https://maps-apim-test.azure-api.net/view-data-external"
+  },
+  {
+    "id": "9d0f04b2-8a47-4fb9-91d9-08828036b631",
+    "holdername_guid": "9d0f04b2-8a47-4fb9-91d9-08828036b631",
+    "veiw_data_url": "https://maps-apim-test.azure-api.net/view-data-external"
   }
 ]

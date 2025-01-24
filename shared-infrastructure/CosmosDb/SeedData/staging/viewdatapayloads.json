@@ -1,0 +1,137 @@
+[
+  {
+    "id": "1ba03e25-659a-43b8-ae77-b956df168969",
+    "assetGuid": "1ba03e25-659a-43b8-ae77-b956df168969",
+    "view_data": {
+      "arrangements": [
+        {
+          "pensionProviderSchemeName": "My Company Direct Contribution Scheme",
+          "alternateSchemeName": {
+            "name": "Converted from My Old Direct Contribution Scheme",
+            "alternateNameType": "FOR"
+          },
+          "possibleMatch": true,
+          "possibleMatchReference": "Q12345",
+          "pensionAdministrator": {
+            "name": "Pension Company 1",
+            "contactMethods": [
+              {
+                "preferred": false,
+                "contactMethodDetails": {
+                  "email": "example@examplemyline.com"
+                }
+              },
+              {
+                "preferred": true,
+                "contactMethodDetails": {
+                  "number": "+123 1111111111",
+                  "usage": [
+                    "A",
+                    "M"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "63ab8af1-2004-4a0b-bad0-629cca220757",
+    "assetGuid": "63ab8af1-2004-4a0b-bad0-629cca220757",
+    "view_data": {
+      "arrangements": [
+        {
+          "pensionProviderSchemeName": "Your Pension DC Master Trust",
+          "possibleMatch": false,
+          "pensionReference": "D1006548723",
+          "dateOfBirth": "1973-09-18",
+          "pensionType": "DC",
+          "pensionOrigin": "WM",
+          "pensionStatus": "A",
+          "pensionStartDate": "1998-05-16",
+          "retirementDate": "2033-09-18",
+          "pensionAdministrator": {
+            "name": "Your Pension",
+            "contactMethods": [
+              {
+                "preferred": false,
+                "contactMethodDetails": {
+                  "email": "mastertrust@yourpension.com"
+                }
+              },
+              {
+                "preferred": true,
+                "contactMethodDetails": {
+                  "url": "http://www.yourpension.co.uk"
+                }
+              },
+              {
+                "preferred": false,
+                "contactMethodDetails": {
+                  "number": "+44 80080087355",
+                  "usage": [
+                    "M"
+                  ]
+                }
+              },
+              {
+                "preferred": false,
+                "contactMethodDetails": {
+                  "postalName": "Your Pension",
+                  "line1": "92 Victoria Lane",
+                  "line2": "Frampton Cotterell",
+                  "line3": "Bristol",
+                  "line4": "South Glocustershire",
+                  "postcode": "BS36 9DD",
+                  "countryCode": "GB"
+                }
+              }
+            ]
+          },
+          "employmentMembershipPeriods": [
+            {
+              "employerName": "Sweets R Us",
+              "employerStatus": "C",
+              "employmentStartDate": "1998-05-16"
+            }
+          ],
+          "benefitIllustrations": [
+            {
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "DC",
+                  "calculationMethod": "SMPI",
+                  "payableDetails": {
+                    "payableDate": "2038-09-18",
+                    "annualAmount": 20700,
+                    "amountType": "INC"
+                  },
+                  "dcPot": 300000,
+                  "survivorBenefit": false,
+                  "safeguardedBenefit": false
+                },
+                {
+                  "illustrationType": "AP",
+                  "benefitType": "DC",
+                  "calculationMethod": "SMPI",
+                  "payableDetails": {
+                    "payableDate": "2038-09-18",
+                    "annualAmount": 16215,
+                    "amountType": "INC"
+                  },
+                  "dcPot": 235000,
+                  "survivorBenefit": false,
+                  "safeguardedBenefit": false
+                }
+              ],
+              "illustrationDate": "2023-05-16"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

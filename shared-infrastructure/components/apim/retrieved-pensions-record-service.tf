@@ -6,7 +6,7 @@ resource "azurerm_api_management_api" "retrieved-pensions-record-service" {
   revision              = "1"
   display_name          = "retrieved-pensions-record-service"
   path                  = "retrieved-pensions-record-service"
-  service_url           = "https://func-pension-request-${var.env}.azurewebsites.net"
+  service_url           = "https://func-retrieved-pensions-${var.env}.azurewebsites.net"
   protocols             = ["https"]
   subscription_required = false
   subscription_key_parameter_names {

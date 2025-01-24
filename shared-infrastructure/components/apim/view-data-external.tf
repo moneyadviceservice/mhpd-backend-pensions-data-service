@@ -6,7 +6,7 @@ resource "azurerm_api_management_api" "view-data-external" {
   revision              = "1"
   display_name          = "view-data-external"
   path                  = "view-data-external"
-  service_url           = "https://pdp-view-data-service-emulator-${var.env}.azurewebsites.net"
+  service_url           = "https://maps-api-management-${var.env}.azure-api.net/view-data-service-emulator"
   protocols             = ["https"]
   subscription_required = false
   subscription_key_parameter_names {
@@ -43,8 +43,9 @@ resource "azurerm_api_management_api_policy" "view-data-external" {
 	<!-- Throttle, authorize, validate, cache, or transform the requests -->
 	<inbound>
 		<base />
-		<set-backend-service base-url="${local.pdp-backend-service}" />
-		<authentication-certificate certificate-id="PdpMtls" />
+        <set-variable name="backendUrl" value="${local.backendUrl}" />
+		<set-backend-service base-url="${local.view-data-backend-service}" />
+        <authentication-certificate certificate-id="${local.certificate-id}" />
 	</inbound>
 	<!-- Control if and how the requests are forwarded to services  -->
 	<backend>

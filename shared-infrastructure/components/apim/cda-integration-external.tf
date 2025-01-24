@@ -6,7 +6,7 @@ resource "azurerm_api_management_api" "cda-integration-external" {
   revision              = "1"
   display_name          = "cda-integration-external"
   path                  = "cda-integration-external"
-  service_url           = "https://cda-service-emulator-${var.env}.azurewebsites.net"
+  service_url           = "https://maps-api-management-${var.env}.azure-api.net/cda-emulator"
   protocols             = ["https"]
   subscription_required = false
   subscription_key_parameter_names {

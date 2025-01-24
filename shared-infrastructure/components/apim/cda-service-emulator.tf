@@ -45,3 +45,55 @@ resource "azurerm_api_management_api_diagnostic" "cda-emulator" {
   verbosity                 = var.verbosity
   http_correlation_protocol = var.http_correlation_protocol
 }
+
+resource "azurerm_api_management_api_policy" "cda-emulator" {
+  api_name            = azurerm_api_management_api.cda-emulator.name
+  api_management_name = data.azurerm_api_management.this.name
+  resource_group_name = data.azurerm_api_management.this.resource_group_name
+
+  xml_content = <<XML
+<policies>
+    <!-- Throttle, authorize, validate, cache, or transform the requests -->
+    <inbound>
+        <base />
+        <choose>
+            <when condition="@(context.Request.Certificate == null)">
+                <return-response>
+                    <set-status code="403" reason="Forbidden" />
+                    <set-body>@{
+                        return "Access denied: Client certificate is missing.";
+                    }</set-body>
+                </return-response>
+            </when>
+            <when condition="@(!context.Request.Certificate.Subject.Contains("CN=mhpd.backend.com"))">
+                <return-response>
+                    <set-status code="403" reason="Forbidden" />
+                    <set-body>@{
+                        return "Access denied: Client certificate is invalid.";
+                    }</set-body>
+                </return-response>
+            </when>
+            <!--otherwise>
+                <validate-client-certificate validate-revocation="true" validate-trust="true" validate-not-before="true" validate-not-after="true" ignore-error="false">
+                    <identities>
+                        <identity issuer-certificate-id="${local.certificate-id}" />
+                    </identities>
+                </validate-client-certificate>
+            </otherwise-->
+        </choose>
+    </inbound>
+    <!-- Control if and how the requests are forwarded to services  -->
+    <backend>
+        <forward-request />
+    </backend>
+    <!-- Customize the responses -->
+    <outbound>
+        <base />
+    </outbound>
+    <!-- Handle exceptions and customize error responses  -->
+    <on-error>
+        <base />
+    </on-error>
+</policies>
+XML
+}

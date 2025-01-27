@@ -10,6 +10,6 @@ public class HolderNameConfigurationModel
     [JsonPropertyName("holdername_guid")]
     public string? HolderNameGuid { get; set; }
 
-    [JsonPropertyName("veiw_data_url")]
+    [JsonPropertyName("view_data_url")]
     public string? ViewDataUrl { get; set; }
 }

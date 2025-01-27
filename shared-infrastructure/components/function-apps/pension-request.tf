@@ -20,7 +20,7 @@ module "pension_request_function" {
     "MapsCdaServiceUrl"                      = "https://maps-api-management-${var.env}.azure-api.net/maps-cda-service/"
     "ContainerId"                            = "${var.product}holderNameViewConfigurationData"
     "ContainerPartitionKey"                  = "/holdernameGuid"
-    "DatabaseId"                             = "${var.product}-businesslayer"
+    "DatabaseId"                             = "${var.product}-business-layer"
     "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "FUNCTIONS_EXTENSION_VERSION"            = "~4"
     "FUNCTIONS_WORKER_RUNTIME"               = "dotnet-isolated"

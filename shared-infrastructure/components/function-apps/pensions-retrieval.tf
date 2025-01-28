@@ -26,5 +26,9 @@ module "pensions_retrieval_function" {
     "WEBSITE_RUN_FROM_PACKAGE"               = "1"
     "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED" = "1"
     "APPLICATIONINSIGHTS_CONNECTION_STRING"  = "InstrumentationKey=${module.pensions_retrieval_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pensions_retrieval_function.app_insights_app_id}"
+    "PeiRetrievalDuration"                   = "60"
+    "PensionRetrievalServiceUrl"             = "https://maps-api-management-${var.env}.azure-api.net/pension-retrieval-service/"
+    "RetrievedPensionsServiceUrl"            = "https://maps-api-management-${var.env}.azure-api.net/retrieved-pensions-record-service/"
+    "PeiPollingInterval"                     = "5"
   }
 }

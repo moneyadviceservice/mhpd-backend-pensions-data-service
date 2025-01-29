@@ -27,9 +27,9 @@ module "token_integration_service" {
     "XDT_MicrosoftApplicationInsights_Mode"                    = "recommended"
     "XDT_MicrosoftApplicationInsights_PreemptSdk"              = "disabled"
     "CdaServiceUrl"                                            = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
-    "CosmosIntegrationConfiguration__DatabaseId"               = "disabled"
-    "CosmosIntegrationConfiguration__HolderNameCacheContainer" = "disabled"
-    "CosmosIntegrationConfiguration__JwkCacheContainer"        = "disabled"
+    "CosmosIntegrationConfiguration__DatabaseId"               = "mhpd-integration-layer"
+    "CosmosIntegrationConfiguration__HolderNameCacheContainer" = "mhpdholderNameViewConfigurationData"
+    "CosmosIntegrationConfiguration__JwkCacheContainer"        = "jwkUriEmulatorData"
   }
   tags = {}
 }

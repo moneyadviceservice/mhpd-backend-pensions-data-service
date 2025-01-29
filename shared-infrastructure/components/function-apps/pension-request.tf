@@ -30,9 +30,9 @@ module "pension_request_function" {
     "WEBSITE_CONTENTSHARE"                                     = "pensionrequestfunctionaee5"
     "WEBSITE_RUN_FROM_PACKAGE"                                 = "1"
     "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"                   = "1"
-    "CosmosIntegrationConfiguration__DatabaseId"               = "disabled"
-    "CosmosIntegrationConfiguration__HolderNameCacheContainer" = "disabled"
-    "CosmosIntegrationConfiguration__JwkCacheContainer"        = "disabled"
+    "CosmosIntegrationConfiguration__DatabaseId"               = "mhpd-integration-layer"
+    "CosmosIntegrationConfiguration__HolderNameCacheContainer" = "mhpdholderNameViewConfigurationData"
+    "CosmosIntegrationConfiguration__JwkCacheContainer"        = "jwkUriEmulatorData"
     # "AzureWebJobsStorage"                      				= "DefaultEndpointsProtocol=https;AccountName=mhpdcloudservicespenfunc;AccountKey=${module.retrieved_pensions_details_function.sa_primary_access_key};EndpointSuffix=core.windows.net"
     # "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" 				= "DefaultEndpointsProtocol=https;AccountName=mhpdcloudservicespenfunc;AccountKey=${module.retrieved_pensions_details_function.sa_primary_access_key};EndpointSuffix=core.windows.net"
   }

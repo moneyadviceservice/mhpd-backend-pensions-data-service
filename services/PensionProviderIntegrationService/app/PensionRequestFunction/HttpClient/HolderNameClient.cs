@@ -1,23 +1,32 @@
-﻿using MhpdCommon.Constants;
+﻿using MhpdCommon.Caching;
+using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Logging;
-using PensionRequestFunction.Repository;
 using System.Net.Http.Json;
 
 namespace PensionRequestFunction.HttpClient;
 
-public class HolderNameClient(IHttpClientFactory httpClientFactory, 
-    IHolderNameConfigurationRepository<HolderNameConfigurationModel> repository,
+public class HolderNameClient(IHttpClientFactory httpClientFactory,
+    IHolderNameConfigurationCache<HolderNameConfigurationModel> cache,
     ILogger<HolderNameClient> logger) : IHolderNameClient
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
     private readonly ILogger<HolderNameClient> _logger = logger;
-    private readonly IHolderNameConfigurationRepository<HolderNameConfigurationModel> _repository = repository;
+    private readonly IHolderNameConfigurationCache<HolderNameConfigurationModel> _cache = cache;
 
     public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId, string correlationId)
     {
-        var cachedModel = await _repository.GetByIdStreamAsync(holderNameId, holderNameId);
+        HolderNameConfigurationModel? cachedModel = null;
+
+        try
+        {
+            cachedModel = await _cache.GetByIdStreamAsync(holderNameId, holderNameId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reading holdername view configuration from cache. Fetching from source...");
+        }
 
         if (cachedModel != null)
         {
@@ -40,7 +49,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
         {
             try
             {
-                await _repository.InsertItemAsync(model, model.HolderNameGuid!);
+                await _cache.InsertItemAsync(model, model.HolderNameGuid!);
             }
             catch (Exception error)
             {

@@ -35,6 +35,8 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         var viewDataUrl = await GetViewDataUrlAsync(holderNameGuid, correlationId) ?? 
             throw new InvalidOperationException(string.Format(StatusConstants.NoViewDataUrl, pei));
 
+        logger.LogWarning("Accessing {viewDataUrl} for view data...", viewDataUrl);
+
         var viewDataToken = await GetViewDataAsync(correlationId, viewDataUrl, pei, iss, userSessionId, null);
 
         return tokenUtility.RetrieveClaim(viewDataToken, "view_data");

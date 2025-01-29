@@ -9,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddMhpdUtilities();
 builder.Services.AddMhpdHttpClients();
+builder.Services.AddMhpdCosmosDb();
+builder.Services.AddIntegrationServices();
 builder.Services.AddScoped<ICdaServiceClient, CdaServiceClient>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, RqpNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, RqpNotAJwtValidator>();

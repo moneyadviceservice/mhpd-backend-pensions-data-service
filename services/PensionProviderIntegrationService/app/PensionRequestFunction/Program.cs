@@ -9,7 +9,6 @@ using PensionRequestFunction.HttpClient;
 using PensionRequestFunction.HttpClient.Implementation;
 using PensionRequestFunction.HttpClient.Interfaces;
 using PensionRequestFunction.Orchestration;
-using PensionRequestFunction.Repository;
 using PensionRequestFunction.Transformer;
 
 var host = new HostBuilder()
@@ -24,6 +23,7 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
         services.AddMhpdCosmosDb(context.Configuration);
         services.AddMhpdUtilities();
+        services.AddIntegrationServices();
         services.AddMhpdServiceBusTools(context.Configuration);
         services.AddMhpdHttpClients(context.Configuration);
         services.AddTransient<IPdpViewDataClient, PdpViewDataClient>();
@@ -32,7 +32,6 @@ var host = new HostBuilder()
         services.AddTransient<IHolderNameClient, HolderNameClient>();
         services.AddTransient<IViewDataOrchestrator, ViewDataOrchestrator>();
         services.AddTransient<IVewDataToPensionArrangementTransformer, ViewDataToPensionArrangementTransformer>();
-        services.AddTransient<IHolderNameConfigurationRepository<HolderNameConfigurationModel>, HolderNameConfigurationRepository>();
         services.AddTransient<ViewDataOrchestratorClients>();
     })
     .Build();

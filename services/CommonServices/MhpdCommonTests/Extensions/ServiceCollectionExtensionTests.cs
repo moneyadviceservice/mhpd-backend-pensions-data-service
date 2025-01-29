@@ -1,7 +1,12 @@
 ﻿using Azure.Messaging.ServiceBus;
+using MhpdCommon.Caching;
+using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.MHPDModels.JwkUri;
+using MhpdCommon.SharedHttpClient;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
@@ -29,6 +34,49 @@ public class ServiceCollectionExtensionTests
         _serviceCollectionMock.ContainsScopedService<IIdValidator, IdValidator>();
         _serviceCollectionMock.ContainsScopedService<IMessageParser, MessageParser>();
         _serviceCollectionMock.ContainsScopedService<ITokenUtility, TokenUtility>();
+    }
+
+    [Fact]
+    public void WhenServiceCollection_AddsIntegrationServices_ServicesAreRegistered()
+    {
+        //Arrange
+        var inMemorySettings = new Dictionary<string, string>
+        {
+            {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:DatabaseId", "integration-db"},
+            {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:HolderNameCacheContainer", "holderNameCache"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
+
+        var configurationSectionMock = new Mock<IConfigurationSection>();
+        configurationSectionMock
+            .Setup(x => x[DatabaseConstants.ConfigurationSections.IntegrationLayer])
+            .Returns((string key) => configuration[$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:{key}"]);
+
+        var mockConfiguration = new Mock<IConfiguration>();
+        mockConfiguration
+           .Setup(x => x.GetSection(DatabaseConstants.ConfigurationSections.IntegrationLayer))
+           .Returns(configurationSectionMock.Object);
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(mockConfiguration.Object);
+
+        //Act
+        serviceCollection.AddIntegrationServices();
+        _serviceCollectionMock.ServiceCollection.AddIntegrationServices(mockConfiguration.Object);
+
+        //Assert
+        var provider = serviceCollection.BuildServiceProvider();
+
+        var integrationConfig = provider.GetRequiredService(typeof(IOptions<CosmosIntegrationConfiguration>));
+        Assert.NotNull(integrationConfig);
+
+        _serviceCollectionMock.ContainsScopedService<IJwtUtility, JwtUtility>();
+        _serviceCollectionMock.ContainsScopedService<ISharedHttpClient, SharedHttpClient>();
+        _serviceCollectionMock.ContainsScopedService<IHolderNameConfigurationCache<HolderNameConfigurationModel>, HolderNameConfigurationCache>();
+        _serviceCollectionMock.ContainsScopedService<IJwkKeyCache<JwkUriResponseModel>, JwkKeyCache>();
     }
 
     [Fact]

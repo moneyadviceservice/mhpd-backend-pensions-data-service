@@ -19,7 +19,8 @@ module "pension_data_service" {
     "tokenIntegrationServiceUrl"                   = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"              = true
     "APPLICATIONINSIGHTS_CONNECTION_STRING"        = "InstrumentationKey=${module.pension_data_service.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pension_data_service.app_insights_app_id}"
-    "PeiRetrievalDuration"                         = "9"
+    "PeiRetrievalDuration"                         = "60"
+    "ViewDataRetrievalDuration"                    = "5"
   }
   tags = {}
 }

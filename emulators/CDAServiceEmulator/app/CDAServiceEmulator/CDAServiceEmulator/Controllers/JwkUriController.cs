@@ -12,7 +12,7 @@ public class JwkUriController(ILogger<JwkUriController> logger) : ControllerBase
     [Route("jwk_uri")]
     public Task<IActionResult> GetAsync()
     {
-        var response = new JwkUriResponseModel();
+        var response = JwkUriResponseModel.Default();
         logger.LogResponse(response);
         return Task.FromResult<IActionResult>(Ok(response));
     }

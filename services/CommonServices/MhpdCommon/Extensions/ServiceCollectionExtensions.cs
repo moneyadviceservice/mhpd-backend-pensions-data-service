@@ -8,6 +8,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 using MhpdCommon.SharedHttpClient;
+using MhpdCommon.Models.MHPDModels.JwkUri;
+using MhpdCommon.Constants;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Caching;
 
 namespace MhpdCommon.Extensions
 {
@@ -19,6 +23,19 @@ namespace MhpdCommon.Extensions
             services.AddScoped<IIdValidator, IdValidator>();
             services.AddScoped<IMessageParser, MessageParser>();
             services.AddScoped<ITokenUtility, TokenUtility>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddIntegrationServices(
+            this IServiceCollection services, IConfiguration? configuration = null)
+        {
+            configuration = GetConfiguration(services, configuration);
+
+            services.Configure<CosmosIntegrationConfiguration>(configuration.GetSection(DatabaseConstants.ConfigurationSections.IntegrationLayer));
+
+            services.AddScoped<IHolderNameConfigurationCache<HolderNameConfigurationModel>, HolderNameConfigurationCache>();
+            services.AddScoped<IJwkKeyCache<JwkUriResponseModel>, JwkKeyCache>();
             services.AddScoped<IJwtUtility, JwtUtility>();
             services.AddScoped<ISharedHttpClient, SharedHttpClient.SharedHttpClient>();
 

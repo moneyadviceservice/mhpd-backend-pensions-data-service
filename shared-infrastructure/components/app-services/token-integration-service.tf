@@ -30,6 +30,7 @@ module "token_integration_service" {
     "CosmosIntegrationConfiguration__DatabaseId"               = "mhpd-integration-layer"
     "CosmosIntegrationConfiguration__HolderNameCacheContainer" = "mhpdholderNameViewConfigurationData"
     "CosmosIntegrationConfiguration__JwkCacheContainer"        = "jwkUriEmulatorData"
+    "CosmosDBConnectionString"                                 = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
   }
   tags = {}
 }

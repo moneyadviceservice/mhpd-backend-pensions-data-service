@@ -11,6 +11,10 @@ public static class Constants
 
     public static class TokenConstants
     {
+        public const string NoKidTokenCode = "0093";
+        public const string UnknownKidTokenCode = "0094";
+        public const string ExpiredTokenCode = "0095";
+        public const string UnknownKeyTokenCode = "0096";
         public const string NullIdTokenCode = "0097";
         public const string InvalidIdTokenCode = "0098";
         public const string MissingPeisTokenCode = "0099";

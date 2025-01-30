@@ -15,7 +15,7 @@
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.3.2" />
     <PackageReference Include="Azure.Identity" Version="1.13.1" />
     <PackageReference Include="Azure.Security.KeyVault.Certificates" Version="4.7.0" />
-    <PackageReference Include="MhpdCommon" Version="1.3.5" />
+    <PackageReference Include="MhpdCommon" Version="1.3.10" />
     <PackageReference Include="MhpdCommonHosting" Version="1.2.90" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Certificate" Version="8.0.11" />

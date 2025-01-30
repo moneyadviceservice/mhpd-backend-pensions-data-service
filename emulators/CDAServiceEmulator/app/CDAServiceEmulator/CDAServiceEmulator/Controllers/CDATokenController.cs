@@ -5,6 +5,7 @@ using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.MHPDModels.JwkUri;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -86,6 +87,10 @@ public class CdaTokenController(
             Constants.TokenConstants.NullIdTokenCode => null,
             Constants.TokenConstants.InvalidIdTokenCode => "ThisStringIsNotAValidJwtToken",
             Constants.TokenConstants.MissingPeisTokenCode => tokenUtility.GenerateJwt(new CustomClaimDataModel()),
+            Constants.TokenConstants.NoKidTokenCode => JwkConstants.TestTokenNoKid,
+            Constants.TokenConstants.UnknownKidTokenCode => JwkConstants.TestTokenUnknownKid,
+            Constants.TokenConstants.ExpiredTokenCode => JwkConstants.TestTokenExpired,
+            Constants.TokenConstants.UnknownKeyTokenCode => JwkConstants.TestTokenUnknownKey,
             _ => tokenUtility.GenerateJwt(new CustomClaimDataModel 
                 { 
                     Name = QueryParams.Cda.Token.PeisId,

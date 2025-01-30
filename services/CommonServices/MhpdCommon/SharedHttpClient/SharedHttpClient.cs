@@ -18,6 +18,7 @@ public class SharedHttpClient(IHttpClientFactory httpClientFactory, ILogger<Shar
         try
         {
             response = await jwkCache.GetByIdAsync(JwkCacheId, JwkCacheId);
+            logger.LogWarning("Found Jwk keys from cache. Skipping GET request...");
         }
         catch (Exception ex)
         {
@@ -38,6 +39,7 @@ public class SharedHttpClient(IHttpClientFactory httpClientFactory, ILogger<Shar
         try
         {
             await jwkCache.InsertItemAsync(response, JwkCacheId);
+            logger.LogWarning("Caching Jwk Keys from GET request...");
         }
         catch (Exception ex)
         {

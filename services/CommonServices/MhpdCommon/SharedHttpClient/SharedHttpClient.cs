@@ -18,7 +18,6 @@ public class SharedHttpClient(IHttpClientFactory httpClientFactory, ILogger<Shar
         try
         {
             response = await jwkCache.GetByIdAsync(JwkCacheId, JwkCacheId);
-            logger.LogWarning("Found Jwk keys from cache. Skipping GET request...");
         }
         catch (Exception ex)
         {
@@ -27,6 +26,7 @@ public class SharedHttpClient(IHttpClientFactory httpClientFactory, ILogger<Shar
 
         if (response != null)
         {
+            logger.LogWarning("Found Jwk keys from cache. Skipping GET request...");
             return response;
         }
 

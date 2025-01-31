@@ -91,6 +91,9 @@ public class TokenController(
         
         try
         {
+            // Validate the Jwt token signature
+            await jwtUtility.ValidateJwtTokenWithKidAsync(result.IdToken, logger);
+
             // Attempt to decode the IdToken
             var claims = tokenUtility.DecodeJwt(result.IdToken);
 
@@ -104,9 +107,6 @@ public class TokenController(
                 logger.LogError("id_token missing peis_id");
                 return await GetInternalServerErrorResponse();
             }
-            
-            // Validate the Jwt token signature
-            await jwtUtility.ValidateJwtTokenWithKidAsync(result.IdToken, logger);
         } 
         catch (Exception ex)
         {

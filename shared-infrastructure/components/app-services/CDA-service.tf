@@ -29,7 +29,10 @@ module "CDA_service" {
     "XDT_MicrosoftApplicationInsights_BaseExtensions" = "disabled"
     "XDT_MicrosoftApplicationInsights_Mode"           = "recommended"
     "XDT_MicrosoftApplicationInsights_PreemptSdk"     = "disabled"
-    "PrivateKey"                                      = data.azurerm_key_vault_secret.cda_service_private_key.value
+    "JwtSettings__PrivateKey"                         = data.azurerm_key_vault_secret.maps_cda_service_private_key.value
+    "JwtSettings__ExpiryInSeconds"                    = data.azurerm_key_vault_secret.maps_cda_service_expiry.value
+    "JwtSettings__Audience"                           = data.azurerm_key_vault_secret.maps_cda_service_audience.value
+    "JwtSettings__Kid"                                = data.azurerm_key_vault_secret.maps_cda_service_kid.value
   }
   tags = {}
 }

@@ -9,9 +9,23 @@ data "azurerm_key_vault" "mhpd" {
   resource_group_name = "${var.product}-${var.env}"
 }
 
+data "azurerm_key_vault_secret" "maps_cda_service_private_key" {
+  name         = "maps_cda_service_private_key"
+  key_vault_id = data.azurerm_key_vault.mhpd.id
+}
 
-data "azurerm_key_vault_secret" "cda_service_private_key" {
-  name         = "CDA-service-private-key"
+data "azurerm_key_vault_secret" "maps_cda_service_expiry" {
+  name         = "maps_cda_service_expiry"
+  key_vault_id = data.azurerm_key_vault.mhpd.id
+}
+
+data "azurerm_key_vault_secret" "maps_cda_service_audience" {
+  name         = "maps_cda_service_audience"
+  key_vault_id = data.azurerm_key_vault.mhpd.id
+}
+
+data "azurerm_key_vault_secret" "maps_cda_service_kid" {
+  name         = "maps_cda_service_kid"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 

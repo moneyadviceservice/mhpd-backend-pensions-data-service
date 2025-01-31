@@ -9,19 +9,13 @@ namespace MaPSCDAServiceUnitTests;
 public class PkceGeneratorUnitTests
 {
     
-    private readonly PkceGenerator pKCEUtils;
-
-    public PkceGeneratorUnitTests()
-    {
-        pKCEUtils = new PkceGenerator();
-        
-    }
+    private readonly PkceGenerator _pKceUtils = new();
 
     [Fact]
     public void GeneratePKCE_ReturnsValidVerifierAndChallenge()
     {
         // Arrange & Act
-        (string codeVerifier, string codeChallenge) = pKCEUtils.GeneratePkce();
+        (string codeVerifier, string codeChallenge) = _pKceUtils.GeneratePkce();
 
         // Assert
         Assert.False(string.IsNullOrEmpty(codeVerifier), "Code verifier should not be null or empty.");
@@ -38,8 +32,8 @@ public class PkceGeneratorUnitTests
     public void GeneratePKCE_ProducesDifferentChallengeForDifferentVerifiers()
     {
         // Arrange & Act
-        (string codeVerifier1, string codeChallenge1) = pKCEUtils.GeneratePkce();
-        (string codeVerifier2, string codeChallenge2) = pKCEUtils.GeneratePkce();
+        (string codeVerifier1, string codeChallenge1) = _pKceUtils.GeneratePkce();
+        (string codeVerifier2, string codeChallenge2) = _pKceUtils.GeneratePkce();
 
         // Assert
         Assert.NotEqual(codeVerifier1, codeVerifier2);
@@ -50,7 +44,7 @@ public class PkceGeneratorUnitTests
     public void GeneratePKCE_ProducesSameChallengeForSameVerifier()
     {
         // Arrange & Act
-        (string codeVerifier, string codeChallenge1) = pKCEUtils.GeneratePkce();
+        (string codeVerifier, string codeChallenge1) = _pKceUtils.GeneratePkce();
         string codeChallenge2;
 
         using (var sha256 = System.Security.Cryptography.SHA256.Create())

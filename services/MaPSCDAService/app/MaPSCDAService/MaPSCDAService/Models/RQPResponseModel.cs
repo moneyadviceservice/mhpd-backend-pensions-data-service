@@ -2,7 +2,7 @@
 
 namespace MaPSCDAService.Models
 {
-    public class RQPResponseModel
+    public class RqpResponseModel
     {
         [JsonPropertyName("rqp")]
         public string? Rqp { get; set;}     

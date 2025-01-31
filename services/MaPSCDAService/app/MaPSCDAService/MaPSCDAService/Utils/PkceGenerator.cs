@@ -1,4 +1,3 @@
-using System;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -26,15 +25,15 @@ public class PkceGenerator : IPkceGenerator
 
         // Generate code challenge using SHA-256 hash of the code verifier
         string codeChallenge;
-        using (var sha256 = SHA256.Create())
+        using (SHA256.Create())
         {
-            byte[] challengeBytes = SHA256.HashData(Encoding.ASCII.GetBytes(codeVerifier));
+            var challengeBytes = SHA256.HashData(Encoding.ASCII.GetBytes(codeVerifier));
             codeChallenge = Convert.ToBase64String(challengeBytes)
                 .Replace("+", "-")
                 .Replace("/", "_")
                 .Replace("=", ""); // Base64 URL encoding, without padding characters
         }
 
-        return (codeVerifier: codeVerifier, codeChallenge: codeChallenge);
+        return (codeVerifier, codeChallenge);
     }
 }

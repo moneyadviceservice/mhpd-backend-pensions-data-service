@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MaPSCDAService;
+namespace MaPSCDAService.Configuration;
 
 public class UriSettings
 {

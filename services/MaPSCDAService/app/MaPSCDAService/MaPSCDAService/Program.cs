@@ -1,8 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using Azure.Identity;
 using MaPSCDAService;
+using MaPSCDAService.Configuration;
 using MaPSCDAService.Utils;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.Configuration;
 using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,7 +25,6 @@ builder.Services.AddOptions<UriSettings>()
 // Add services to the container.
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddMhpdUtilities();
-builder.Services.AddScoped<IRqpTokenManager, RqpTokenManager>();
 builder.Services.AddControllers();
 builder.Services.AddTransient<IPkceGenerator, PkceGenerator>();
 builder.Services.AddHttpLogging(logging =>
@@ -37,6 +38,8 @@ builder.Services.AddHttpLogging(logging =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 
 var app = builder.Build();
 

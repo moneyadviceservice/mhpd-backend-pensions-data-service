@@ -10,22 +10,22 @@ data "azurerm_key_vault" "mhpd" {
 }
 
 data "azurerm_key_vault_secret" "maps_cda_service_private_key" {
-  name         = "maps_cda_service_private_key"
+  name         = "maps-cda-service-private-key"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
 data "azurerm_key_vault_secret" "maps_cda_service_expiry" {
-  name         = "maps_cda_service_expiry"
+  name         = "maps-cda-service-expiry"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
 data "azurerm_key_vault_secret" "maps_cda_service_audience" {
-  name         = "maps_cda_service_audience"
+  name         = "maps-cda-service-audience"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
 data "azurerm_key_vault_secret" "maps_cda_service_kid" {
-  name         = "maps_cda_service_kid"
+  name         = "maps-cda-service-kid"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 

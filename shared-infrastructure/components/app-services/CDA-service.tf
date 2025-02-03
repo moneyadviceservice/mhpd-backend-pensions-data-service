@@ -24,7 +24,7 @@ module "CDA_service" {
     "InstrumentationEngine_EXTENSION_VERSION"         = "disabled"
     "KeyVaultConfiguration__KeyVaultURL"              = "https://${var.product}-${var.env}.vault.azure.net/"
     "SnapshotDebugger_EXTENSION_VERSION"              = "disabled"
-    "UriSettings__RedirectTargetUrl"                  = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
+    "UriSettings__RedirectTargetUrl"                  = var.env == "staging" ? "https://sandbox.pensionsdashboards.org.uk/authorize" : "https://pdp-data-access-test-harness.netlify.app/"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                 = "true"
     "XDT_MicrosoftApplicationInsights_BaseExtensions" = "disabled"
     "XDT_MicrosoftApplicationInsights_Mode"           = "recommended"

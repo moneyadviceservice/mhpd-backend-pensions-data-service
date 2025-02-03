@@ -10,17 +10,21 @@ using TokenIntegrationService.Controllers;
 using TokenIntegrationService.HttpClients;
 using TokenIntegrationService.Models;
 using Moq;
+using MhpdCommon.Models.MHPDModels.JwkUri;
+using MhpdCommon.SharedHttpClient;
 
 namespace TokenIntegrationServiceUnitTests;
 
 public class TokenControllerUnitTests
 {
-    private readonly TokenController _controller;
+    private TokenController _controller;
     private readonly Mock<ICdaServiceClient> _iCdaToken = new();
     private readonly Mock<ITokenUtility> _mockTokenUtility = new();
     private readonly Mock<IJwtUtility> _mockJwtUtility = new();
     private readonly Mock<IIdValidator> _mockIdValidator;
     private readonly Mock<ILogger<TokenController>> _mockLogger = new();
+    private readonly Mock<TokenIntegrationRequestValidatorPipeline> _mockValidatorPipeline;
+    private readonly Mock<PensionsDataRequestValidatorPipeline> _mockCdaValidatorPipeline;
 
     private readonly RequestHeaderModel _requestHeaderModel = new() { CorrelationId = ValidXRequestId };
 
@@ -47,13 +51,13 @@ public class TokenControllerUnitTests
         var validators = Helper.GetOrderedValidatorsForTokenIntegrationRequest();
 
         // Create the TokenRequestValidatorPipeline with the mock validators
-        Mock<TokenIntegrationRequestValidatorPipeline> mockValidatorPipeline = new(validators);
+        _mockValidatorPipeline = new(validators);
         
         // Get ordered validators
         var cdaValidators = Helper.GetOrderedValidators();
 
         // Create the TokenRequestValidatorPipeline with the mock validators
-        Mock<PensionsDataRequestValidatorPipeline> mockCdaValidatorPipeline = new(cdaValidators);
+        _mockCdaValidatorPipeline = new(cdaValidators);
         
         _iCdaToken
             .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
@@ -61,8 +65,8 @@ public class TokenControllerUnitTests
         
         var httpContext = new DefaultHttpContext();
         _controller = new TokenController(_iCdaToken.Object, _mockLogger.Object,
-            _mockIdValidator.Object, mockValidatorPipeline.Object,
-            mockCdaValidatorPipeline.Object, _mockTokenUtility.Object, _mockJwtUtility.Object)
+            _mockIdValidator.Object, _mockValidatorPipeline.Object,
+            _mockCdaValidatorPipeline.Object, _mockTokenUtility.Object, _mockJwtUtility.Object)
         {
             ControllerContext = new ControllerContext()
             {
@@ -643,5 +647,53 @@ public class TokenControllerUnitTests
         Assert.IsType<ObjectResult>(result);
         Assert.Equal(500, internalErrorResult.StatusCode);
         Assert.Equal("Internal server error", internalErrorResult.Value);
+    }
+
+    [Theory]
+    [InlineData(JwkConstants.TestTokenNoKid, true, 500)]
+    [InlineData(JwkConstants.TestTokenUnknownKid, true, 500)]
+    [InlineData(JwkConstants.TestTokenExpired, true, 500)]
+    [InlineData(JwkConstants.TestTokenUnknownKey, true, 500)]
+    [InlineData(JwkConstants.TestTokenValidKey, false, 200)]
+    public async Task When_AccessToken_Is_Not_Valid_ShouldReturnInternalServerError(string token, bool shouldfailValidation, int code)
+    {
+        // Arrange
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        // Simulate a response with an invalid IdToken
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = token });
+        var client = new Mock<ISharedHttpClient>();
+        client.Setup(mock => mock.GetAsync()).ReturnsAsync(JwkUriResponseModel.Default);
+
+        var httpContext = new DefaultHttpContext();
+        _controller = new TokenController(_iCdaToken.Object, _mockLogger.Object,
+            _mockIdValidator.Object, _mockValidatorPipeline.Object,
+            _mockCdaValidatorPipeline.Object, _mockTokenUtility.Object, new JwtUtility(client.Object))
+        {
+            ControllerContext = new ControllerContext()
+            {
+                HttpContext = httpContext
+            }
+        };
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var internalErrorResult = (ObjectResult)result;
+
+        // Assert
+        Assert.Equal(code, internalErrorResult.StatusCode);
+
+        if (shouldfailValidation)
+        {
+            Assert.IsType<ObjectResult>(result);
+            Assert.Equal("Internal server error", internalErrorResult.Value);
+        }
     }
 }

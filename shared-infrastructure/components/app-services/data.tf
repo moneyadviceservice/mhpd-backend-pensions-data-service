@@ -29,7 +29,7 @@ data "azurerm_key_vault_secret" "maps_cda_service_kid" {
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
-data "azurerm_key_vault_secret" "CDA_service_emulator_private_key" {
+data "azurerm_key_vault_secret" "cda_service_emulator_private_key" {
   name         = "cda-service-emulator-private-key"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }

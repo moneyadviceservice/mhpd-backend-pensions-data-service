@@ -17,7 +17,7 @@ module "pdp_view_data_service_emulator" {
   }]
   app_settings = {
     "JwtSettings__ExpiryInSeconds"                           = "600"
-    "JwtSettings__PrivateKey"                                = data.azurerm_key_vault_secret.CDA_service_emulator_private_key.value
+    "JwtSettings__PrivateKey"                                = data.azurerm_key_vault_secret.cda_service_emulator_private_key.value
     "JwtSettings__Audience"                                  = "https://pdp/ig/token"
     "JwtSettings__Issuer"                                    = "https://emulators.maps.org.uk/am/oauth2"
     "JwtSettings__Kid"                                       = data.azurerm_key_vault_secret.jwt_settings_kid.value

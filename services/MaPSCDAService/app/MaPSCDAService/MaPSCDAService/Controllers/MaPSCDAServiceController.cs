@@ -101,7 +101,8 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     {
         return tokenUtility.GenerateJwt(new CustomClaimDataModel
         {
-            Subject = request.UserSessionId + "@" + request.Iss
+            Subject = request.UserSessionId + "@" + request.Iss,
+            Issuer = request.Iss
         });
     }
     

@@ -39,9 +39,7 @@ public partial class TokenUtility : ITokenUtility
         // Step 3: Define JWT claims
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, _jwtSettings.Subject),
-            new(JwtRegisteredClaimNames.Iss, _jwtSettings.Issuer),
-            new(JwtRegisteredClaimNames.Aud, _jwtSettings.Audience),
+            new(JwtRegisteredClaimNames.Sub, claimDataModel.Subject ?? _jwtSettings.Subject),
             new(JwtRegisteredClaimNames.Iat, iat.ToString(), ClaimValueTypes.Integer64),
             new(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Random 36-character GUID for jti
@@ -66,7 +64,7 @@ public partial class TokenUtility : ITokenUtility
         
         // Step 5: Create the JWT
         var token = new JwtSecurityToken(
-            issuer: _jwtSettings.Issuer,
+            issuer: claimDataModel.Issuer ?? _jwtSettings.Issuer,
             audience: _jwtSettings.Audience,
             claims: claims,
             expires: DateTimeOffset.FromUnixTimeSeconds(exp).UtcDateTime, // Set expiration

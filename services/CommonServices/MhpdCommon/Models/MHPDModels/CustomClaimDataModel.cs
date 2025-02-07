@@ -7,4 +7,6 @@ public class CustomClaimDataModel
     public string? Data { get; set; }
 
     public string? Subject { get; set; }
+    
+    public string? Issuer { get; set; }
 }

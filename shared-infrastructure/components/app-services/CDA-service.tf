@@ -24,15 +24,16 @@ module "CDA_service" {
     "InstrumentationEngine_EXTENSION_VERSION"         = "disabled"
     "KeyVaultConfiguration__KeyVaultURL"              = "https://${var.product}-${var.env}.vault.azure.net/"
     "SnapshotDebugger_EXTENSION_VERSION"              = "disabled"
-    "UriSettings__RedirectTargetUrl"                  = var.env == "staging" ? "https://sandbox.pensionsdashboards.org.uk/ig/authorize" : "https://pdp-data-access-test-harness.netlify.app/"
+    "UriSettings__RedirectTargetUrl"                  = var.env == "staging" ? "${var.cda_base_url}/ig/authorize" : "https://pdp-data-access-test-harness.netlify.app/"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                 = "true"
     "XDT_MicrosoftApplicationInsights_BaseExtensions" = "disabled"
     "XDT_MicrosoftApplicationInsights_Mode"           = "recommended"
     "XDT_MicrosoftApplicationInsights_PreemptSdk"     = "disabled"
     "JwtSettings__PrivateKey"                         = data.azurerm_key_vault_secret.maps_cda_service_private_key.value
-    "JwtSettings__ExpiryInSeconds"                    = data.azurerm_key_vault_secret.maps_cda_service_expiry.value
-    "JwtSettings__Audience"                           = data.azurerm_key_vault_secret.maps_cda_service_audience.value
+    "JwtSettings__ExpiryInSeconds"                    = 600
+    "JwtSettings__Audience"                           = var.cda_base_url
     "JwtSettings__Kid"                                = data.azurerm_key_vault_secret.maps_cda_service_kid.value
+    "JwtSettings__Role"                               = "owner"
   }
   tags = {}
 }

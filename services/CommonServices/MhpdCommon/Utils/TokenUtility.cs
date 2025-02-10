@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Options;
@@ -44,6 +45,11 @@ public partial class TokenUtility : ITokenUtility
             new(JwtRegisteredClaimNames.Exp, exp.ToString(), ClaimValueTypes.Integer64),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // Random 36-character GUID for jti
         };
+        
+        if (!string.IsNullOrWhiteSpace(_jwtSettings.Role))
+        {
+            claims.Add(new Claim(JwtCustomClaimNames.Role, _jwtSettings.Role));  // Add custom claim for rqp token
+        }
 
         if (!string.IsNullOrWhiteSpace(claimDataModel.Name) && !string.IsNullOrWhiteSpace(claimDataModel.Data))
         {

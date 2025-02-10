@@ -8,4 +8,5 @@ public class JwtSettings
     public string Audience { get; set; } = string.Empty;
     public string Kid { get; set; } = string.Empty;
     public string Issuer { get; set; } = string.Empty;
+    public string Role { get; set; } = string.Empty;
 }

@@ -11,3 +11,7 @@ variable "location" {
 variable "ftps_state" {
   default = "FtpsOnly"
 }
+
+variable "cda_base_url" {
+  default = "https://sandbox.pensionsdashboards.org.uk"
+}

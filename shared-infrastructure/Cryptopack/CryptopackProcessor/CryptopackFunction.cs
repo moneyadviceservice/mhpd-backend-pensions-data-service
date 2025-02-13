@@ -27,8 +27,11 @@ public class CryptopackFunction(ILogger<CryptopackFunction> logger, BlobServiceC
             using var archive = new ZipArchive(stream);
             var validationResult = validator.Validate(archive);
 
-            // Generate and upload the required content to the vault
-            await processor.ProcessAsync(archive);
+            if (validationResult.IsValid)
+            {
+                // Generate and upload the required content to the vault
+                await processor.ProcessAsync(archive);
+            }
 
             // Unwrap and archive the contents of the zip
             await ArchiveManifest(archive, name, validationResult.IsValid);

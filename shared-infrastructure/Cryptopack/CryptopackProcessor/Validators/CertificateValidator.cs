@@ -46,7 +46,8 @@ public class CertificateValidator(ILogger<CertificateValidator> logger, IOptions
 
             if (DateTime.Now < cert.NotBefore || DateTime.Now > cert.NotAfter)
             {
-                logger.LogWarning("Certificate '{cert}' is either expired or not yet active.", certName);
+                logger.LogWarning("Certificate '{cert}' is either expired or not yet active. Valid from {from} - Valid to {to}", 
+                    certName, cert.NotBefore, cert.NotAfter);
                 return false;
             }
 

@@ -5,14 +5,14 @@ module "cryptopack_processor_function" {
   product             = var.product
   create_service_plan = true
   resource_group_name = data.azurerm_resource_group.mhpd.name
-  name                = "cryptopack-processor"
+  name                = "cryptopack-proc"
   location            = var.location
   env                 = var.env
   sku_name            = "EP1"
   dotnet_stack        = true
 
   app_settings = {
-    "StorageConnectionString"                  = "DefaultEndpointsProtocol=https;AccountName=cryptopackprocessor;${module.cryptopack_processor_function.sa_primary_access_key}"
+    "StorageConnectionString"                  = "DefaultEndpointsProtocol=https;AccountName=cryptopackproc;${module.cryptopack_processor_function.sa_primary_access_key}"
     "KeyVaultSettings__KeyVaultUrl"            = "https://mhpd-${var.env}.vault.azure.net/"
     "KeyVaultSettings__TenantId"               = "bbe41032-8fce-4d42-bab5-44e21510886d"
     "KeyVaultSettings__ClientId"               = "83a2a90c-3d22-4cb6-b6e2-c3a5938f9db7"
@@ -21,7 +21,7 @@ module "cryptopack_processor_function" {
     "CryptopackSettings__PrivateKeySecretName" = "maps-cda-service-private-key"
     "CryptopackSettings__KidSecretName"        = "maps-cda-service-kid"
     "CryptopackSettings__PfxPassword"          = data.azurerm_key_vault_secret.pfx_password.value
-    "WebAppSettings__AppName"                  = "PdpMtls"
+    "WebAppSettings__AppName"                  = "CDA-service-${var.env}"
     "WebAppSettings__SubscriptionId"           = data.azurerm_client_config.current.subscription_id
     "WebAppSettings__ResourceGroupName"        = data.azurerm_resource_group.mhpd.name
     "WebAppSettings__JwtKeyVariable"           = "JwtSettings__PrivateKey"

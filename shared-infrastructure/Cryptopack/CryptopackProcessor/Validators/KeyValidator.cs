@@ -41,7 +41,7 @@ public class KeyValidator(ILogger<KeyValidator> logger, IOptions<Manifest> optio
         var isValid = VerifyKeyPair(keyPair, privateKeyContent, publicKeyContent);
 
         var verificationMessage = $"Key pair: '{keyPair.PrivateKey}' and '{keyPair.PublicKey}' {(isValid ? "have been" : "could not be")} verified";
-        logger.LogWarning(verificationMessage);
+        logger.LogWarning("{message}", verificationMessage);
 
         return isValid;
     }

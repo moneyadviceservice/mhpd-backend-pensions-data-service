@@ -11,18 +11,17 @@ using System.IO.Compression;
 namespace CryptopackProcessor;
 
 public class CryptopackFunction(ILogger<CryptopackFunction> logger, BlobServiceClient blobServiceClient, 
-    IOptions<Manifest> options, IManifestValidator validator, ICryptoProcessor processor)
+    IManifestValidator validator, ICryptoProcessor processor)
 {
-    private readonly Manifest _manifest = options.Value;
     private readonly BlobContainerClient _containerClient = blobServiceClient.GetBlobContainerClient(Constants.FileHandling.TargetContainer);
 
     [Function(nameof(CryptopackFunction))]
     public async Task Run([BlobTrigger(Constants.FileHandling.TargetContainer + "/{name}.zip", Connection = "StorageConnectionString")] Stream stream, string name)
     {
+        logger.LogWarning("Detected potential cryptopack: '{name}'. Processing...", name);
+
         try
         {
-            logger.LogWarning("Detected potential cryptopack: '{name}'. Processing...", name);
-
             // Validate the contents of the pack
             using var archive = new ZipArchive(stream);
             var validationResult = validator.Validate(archive);

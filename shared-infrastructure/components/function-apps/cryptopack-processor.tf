@@ -12,7 +12,7 @@ module "cryptopack_processor_function" {
   dotnet_stack        = true
 
   app_settings = {
-    "StorageConnectionString"                  = "DefaultEndpointsProtocol=https;AccountName=cryptopackproc${var.env};${module.cryptopack_processor_function.sa_primary_access_key}"
+    "StorageConnectionString"                  = "DefaultEndpointsProtocol=https;AccountName=cryptopackproc${var.env};AccountKey=${module.cryptopack_processor_function.sa_primary_access_key}"
     "KeyVaultSettings__KeyVaultUrl"            = "https://mhpd-${var.env}.vault.azure.net/"
     "KeyVaultSettings__TenantId"               = "bbe41032-8fce-4d42-bab5-44e21510886d"
     "KeyVaultSettings__ClientId"               = "83a2a90c-3d22-4cb6-b6e2-c3a5938f9db7"

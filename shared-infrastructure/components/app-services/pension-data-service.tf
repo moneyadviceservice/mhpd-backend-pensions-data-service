@@ -1,15 +1,18 @@
 module "pension_data_service" {
-  source              = "github.com/moneyadviceservice/terraform-module-app-service.git"
-  name                = "pension-data-service"
-  product             = var.product
-  resource_group_name = data.azurerm_resource_group.this.name
-  location            = var.location
-  env                 = var.env
-  os_type             = "Linux"
-  sku_name            = "B3"
-  ftps_state          = var.ftps_state
-  app_command_line    = "dotnet PensionsDataService.dll"
-  dotnet_stack        = true
+  source                  = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration"
+  name                    = "pension-data-service"
+  product                 = var.product
+  resource_group_name     = data.azurerm_resource_group.this.name
+  location                = var.location
+  env                     = var.env
+  os_type                 = "Linux"
+  sku_name                = "B3"
+  ftps_state              = var.ftps_state
+  app_command_line        = "dotnet PensionsDataService.dll"
+  dotnet_stack            = true
+  enable_vnet_integration = local.enable_vnet_integration
+  subnet_id               = local.subnet_id
+
   app_settings = {
     "CommonServiceBusConfiguration__OutboundQueue" = "pensions-retrieval-job"
     "OutboundQueue"                                = "pensions-retrieval-job"

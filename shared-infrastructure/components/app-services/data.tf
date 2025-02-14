@@ -14,6 +14,16 @@ data "azurerm_key_vault_secret" "maps_cda_service_private_key" {
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
+data "azurerm_key_vault_secret" "maps_cda_service_expiry" {
+  name         = "maps-cda-service-expiry"
+  key_vault_id = data.azurerm_key_vault.mhpd.id
+}
+
+data "azurerm_key_vault_secret" "maps_cda_service_audience" {
+  name         = "maps-cda-service-audience"
+  key_vault_id = data.azurerm_key_vault.mhpd.id
+}
+
 data "azurerm_key_vault_secret" "maps_cda_service_kid" {
   name         = "maps-cda-service-kid"
   key_vault_id = data.azurerm_key_vault.mhpd.id
@@ -42,4 +52,10 @@ data "azurerm_servicebus_namespace" "this" {
 data "azurerm_cosmosdb_account" "this" {
   name                = "${var.product}-cosmos-${var.env}"
   resource_group_name = "${var.product}-${var.env}"
+}
+
+data "azurerm_subnet" "mhpd-subnet" {
+  name                 = "${var.product}-apps"
+  virtual_network_name = "maps-hub-vnet-${var.env}"
+  resource_group_name  = "maps-hub-${var.env}"
 }

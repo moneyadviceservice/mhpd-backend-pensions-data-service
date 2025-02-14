@@ -29,3 +29,9 @@ data "azurerm_key_vault_secret" "user_client_secret" {
   name         = "KeyVaultSettings--ClientSecret"
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
+
+data "azurerm_subnet" "mhpd-subnet" {
+  name                 = "${var.product}-apps"
+  virtual_network_name = "maps-hub-vnet-${var.env}"
+  resource_group_name  = "maps-hub-${var.env}"
+}

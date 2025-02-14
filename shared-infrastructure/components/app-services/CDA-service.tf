@@ -1,5 +1,5 @@
 module "CDA_service" {
-  source                 = "github.com/moneyadviceservice/terraform-module-app-service.git"
+  source                 = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration"
   name                   = "CDA-service"
   product                = var.product
   resource_group_name    = data.azurerm_resource_group.this.name
@@ -11,6 +11,10 @@ module "CDA_service" {
   app_command_line       = "dotnet MaPSCDAService.dll"
   dotnet_stack           = true
   enable_client_affinity = true
+
+  enable_vnet_integration = local.enable_vnet_integration
+  subnet_id               = local.subnet_id
+
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                  = module.CDA_service.instrumentation_key
     "APPINSIGHTS_PROFILERFEATURE_VERSION"             = "1.0.0"

@@ -1,16 +1,17 @@
 module "retrieved_pensions_details_function" {
-  source = "github.com/moneyadviceservice/terraform-module-function-app.git?ref=main"
+  source = "github.com/moneyadviceservice/terraform-module-function-app.git?ref=vnet_integration"
 
-  os_type             = "Windows"
-  product             = var.product
-  create_service_plan = true
-  resource_group_name = data.azurerm_resource_group.mhpd.name
-  name                = "retrieved-pensions"
-  location            = var.location
-  env                 = var.env
-  sku_name            = "EP1"
-
-  dotnet_stack = true
+  os_type                 = "Windows"
+  product                 = var.product
+  create_service_plan     = true
+  resource_group_name     = data.azurerm_resource_group.mhpd.name
+  name                    = "retrieved-pensions"
+  location                = var.location
+  env                     = var.env
+  sku_name                = "EP1"
+  dotnet_stack            = true
+  enable_vnet_integration = local.enable_vnet_integration
+  subnet_id               = local.subnet_id
 
   app_settings = {
     "ContainerId"                            = "${var.product}RetrievedPensionRecords"

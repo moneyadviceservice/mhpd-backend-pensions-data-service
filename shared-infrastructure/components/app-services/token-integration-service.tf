@@ -1,15 +1,18 @@
 module "token_integration_service" {
-  source              = "github.com/moneyadviceservice/terraform-module-app-service.git"
-  name                = "token-integration-service"
-  product             = var.product
-  resource_group_name = data.azurerm_resource_group.this.name
-  location            = var.location
-  env                 = var.env
-  os_type             = "Linux"
-  sku_name            = "B3"
-  ftps_state          = "FtpsOnly"
-  app_command_line    = "dotnet TokenIntegrationService.dll"
-  dotnet_stack        = true
+  source                  = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration"
+  name                    = "token-integration-service"
+  product                 = var.product
+  resource_group_name     = data.azurerm_resource_group.this.name
+  location                = var.location
+  env                     = var.env
+  os_type                 = "Linux"
+  sku_name                = "B3"
+  ftps_state              = "FtpsOnly"
+  app_command_line        = "dotnet TokenIntegrationService.dll"
+  dotnet_stack            = true
+  enable_vnet_integration = local.enable_vnet_integration
+  subnet_id               = local.subnet_id
+
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                           = module.token_integration_service.instrumentation_key
     "APPINSIGHTS_PROFILERFEATURE_VERSION"                      = "1.0.0"

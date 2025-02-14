@@ -1,5 +1,5 @@
 module "pdp_view_data_service_emulator" {
-  source              = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=add_connection_string"
+  source              = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration"
   name                = "pdp-view-data-service-emulator"
   product             = var.product
   resource_group_name = data.azurerm_resource_group.this.name

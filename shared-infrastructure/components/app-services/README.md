@@ -15,12 +15,12 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_CDA_service"></a> [CDA\_service](#module\_CDA\_service) | github.com/moneyadviceservice/terraform-module-app-service.git | n/a |
-| <a name="module_CDA_service_emulator"></a> [CDA\_service\_emulator](#module\_CDA\_service\_emulator) | github.com/moneyadviceservice/terraform-module-app-service.git | add_connection_string |
-| <a name="module_pdp_view_data_service_emulator"></a> [pdp\_view\_data\_service\_emulator](#module\_pdp\_view\_data\_service\_emulator) | github.com/moneyadviceservice/terraform-module-app-service.git | n/a |
-| <a name="module_pei_integration_service"></a> [pei\_integration\_service](#module\_pei\_integration\_service) | github.com/moneyadviceservice/terraform-module-app-service.git | n/a |
-| <a name="module_pension_data_service"></a> [pension\_data\_service](#module\_pension\_data\_service) | github.com/moneyadviceservice/terraform-module-app-service.git | n/a |
-| <a name="module_token_integration_service"></a> [token\_integration\_service](#module\_token\_integration\_service) | github.com/moneyadviceservice/terraform-module-app-service.git | n/a |
+| <a name="module_CDA_service"></a> [CDA\_service](#module\_CDA\_service) | github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration | n/a |
+| <a name="module_CDA_service_emulator"></a> [CDA\_service\_emulator](#module\_CDA\_service\_emulator) | github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration | add_connection_string |
+| <a name="module_pdp_view_data_service_emulator"></a> [pdp\_view\_data\_service\_emulator](#module\_pdp\_view\_data\_service\_emulator) | github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration | n/a |
+| <a name="module_pei_integration_service"></a> [pei\_integration\_service](#module\_pei\_integration\_service) | github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration | n/a |
+| <a name="module_pension_data_service"></a> [pension\_data\_service](#module\_pension\_data\_service) | github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration | n/a |
+| <a name="module_token_integration_service"></a> [token\_integration\_service](#module\_token\_integration\_service) | github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration | n/a |
 
 ## Resources
 

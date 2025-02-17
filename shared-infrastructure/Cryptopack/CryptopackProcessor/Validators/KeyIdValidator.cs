@@ -15,7 +15,7 @@ public class KeyIdValidator(ILogger<KeyIdValidator> logger, IOptions<Manifest> o
 
         if (kidfile == null)
         {
-            logger.LogWarning("Expected Key Id file {kid} not found in the pack", _manifest.KeyId);
+            logger.LogInformation("Expected Key Id file {kid} not found in the pack", _manifest.KeyId);
             return new ValidationResult();
         }
 
@@ -26,10 +26,9 @@ public class KeyIdValidator(ILogger<KeyIdValidator> logger, IOptions<Manifest> o
 
         var isKidValid = !string.IsNullOrWhiteSpace(kid) && Guid.TryParse(kid, out _);
 
-        if (!isKidValid)
-        {
-            logger.LogWarning("Kid content is invalid: {kid}", kid);
-        }
+        var message = $"Kid content is {(isKidValid ? "valid" : "invalid")}";
+
+        logger.LogInformation("{message}: {kid}", message, kid);
 
         return new ValidationResult { IsValid = isKidValid };
     }

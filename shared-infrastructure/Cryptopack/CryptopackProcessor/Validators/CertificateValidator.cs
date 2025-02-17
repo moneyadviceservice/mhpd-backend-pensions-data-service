@@ -26,7 +26,7 @@ public class CertificateValidator(ILogger<CertificateValidator> logger, IOptions
 
         if (certfile == null)
         {
-            logger.LogWarning("Expected certificate {cert} not found in the pack", certName);
+            logger.LogInformation("Expected certificate {cert} not found in the pack", certName);
             return false;
         }
 
@@ -46,10 +46,12 @@ public class CertificateValidator(ILogger<CertificateValidator> logger, IOptions
 
             if (DateTime.Now < cert.NotBefore || DateTime.Now > cert.NotAfter)
             {
-                logger.LogWarning("Certificate '{cert}' is either expired or not yet active. Valid from {from} - Valid to {to}", 
+                logger.LogInformation("Certificate '{cert}' is either expired or not yet active. Valid from {from} - Valid to {to}", 
                     certName, cert.NotBefore, cert.NotAfter);
                 return false;
             }
+
+            logger.LogInformation("Certificate {cert} has been validated", certName);
 
             return true;
         }

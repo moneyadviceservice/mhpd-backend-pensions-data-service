@@ -32,17 +32,21 @@ public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer 
 
             if (pfxBytes != null)
             {
+                logger.LogInformation("Pfx certificate has been generated");
+
                 await vaultUploader.UploadCertificateAsync(pfxBytes);
+
+                // Upload the secrets
+                var jwtPrivateKeyPem = archive.GetFileContents(_manifest.JwtPair.PrivateKey);
+                var kidPem = archive.GetFileContents(_manifest.KeyId);
+
+                await vaultUploader.UploadSecretsAsync(jwtPrivateKeyPem, kidPem);
+
+                // Update and restart the affected service
+                await UpdateApplicationSettingsAsync(archive);
             }
 
-            // Upload the secrets
-            var jwtPrivateKeyPem = archive.GetFileContents(_manifest.JwtPair.PrivateKey);
-            var kidPem = archive.GetFileContents(_manifest.KeyId);
-
-            await vaultUploader.UploadSecretsAsync(jwtPrivateKeyPem, kidPem);
-
-            // Update and restart the affected service
-            await UpdateApplicationSettingsAsync(archive);
+            logger.LogInformation("Pfx certificate was not generated. Aborting further processing...");
         }
         catch (Exception ex)
         {

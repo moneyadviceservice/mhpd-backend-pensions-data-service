@@ -22,10 +22,11 @@ var host = new HostBuilder()
         services.AddSingleton(new BlobServiceClient(Environment.GetEnvironmentVariable("StorageConnectionString")));
         services.AddScoped<IManifestFileValidator, KeyIdValidator>();
         services.AddScoped<IManifestFileValidator, KeyValidator>();
+        services.AddScoped<IManifestFileValidator, EllipticKeyValidator>();
         services.AddScoped<IManifestFileValidator, CertificateValidator>();
         services.AddScoped<IManifestValidator, ManifestValidator>();
         services.AddScoped<IKeyVaultUploader, KeyVaultUploader>();
-        services.AddScoped<IPfxGenerator, PfxGenerator>();
+        services.AddScoped<IPfxGenerator, EllipticalPfxGenerator>();
         services.AddScoped<ICryptoProcessor, CryptoProcessor>();
         services.Configure<Manifest>(hostContext.Configuration.GetSection("Manifest"));
         services.Configure<KeyVaultSettings>(hostContext.Configuration.GetSection("KeyVaultSettings"));

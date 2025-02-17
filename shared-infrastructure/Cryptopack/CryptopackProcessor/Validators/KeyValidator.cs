@@ -10,11 +10,10 @@ namespace CryptopackProcessor.Validators;
 public class KeyValidator(ILogger<KeyValidator> logger, IOptions<Manifest> options) : IManifestFileValidator
 {
     private readonly Manifest _manifest = options.Value;
+
     public ValidationResult Validate(ZipArchive archive)
     {
-        var isKeyPairValid = ValidateKeyPair(_manifest.CertificatePair, archive);
-
-        isKeyPairValid &= ValidateKeyPair(_manifest.JwtPair, archive);
+        var isKeyPairValid = ValidateKeyPair(_manifest.JwtPair, archive);
 
         return new ValidationResult { IsValid = isKeyPairValid };
     }
@@ -26,7 +25,7 @@ public class KeyValidator(ILogger<KeyValidator> logger, IOptions<Manifest> optio
 
         if (privateKeyfile == null || publicKeyfile == null)
         {
-            logger.LogWarning("Matching pair not found for {private} and {public}", keyPair.PrivateKey, keyPair.PublicKey);
+            logger.LogInformation("Matching pair not found for {private} and {public}", keyPair.PrivateKey, keyPair.PublicKey);
             return false;
         }
 
@@ -41,7 +40,7 @@ public class KeyValidator(ILogger<KeyValidator> logger, IOptions<Manifest> optio
         var isValid = VerifyKeyPair(keyPair, privateKeyContent, publicKeyContent);
 
         var verificationMessage = $"Key pair: '{keyPair.PrivateKey}' and '{keyPair.PublicKey}' {(isValid ? "have been" : "could not be")} verified";
-        logger.LogWarning("{message}", verificationMessage);
+        logger.LogInformation("{message}", verificationMessage);
 
         return isValid;
     }
@@ -87,7 +86,7 @@ public class KeyValidator(ILogger<KeyValidator> logger, IOptions<Manifest> optio
     {
         byte[] signature;
 
-        using (var rsaPrivate = ECDsa.Create())
+        using (var rsaPrivate = ECDsa.Create(ECCurve.NamedCurves.nistP256))
         {
             rsaPrivate.ImportFromPem(privateKeyContent.ToCharArray());
             signature = rsaPrivate.SignData(testData, HashAlgorithmName.SHA256);

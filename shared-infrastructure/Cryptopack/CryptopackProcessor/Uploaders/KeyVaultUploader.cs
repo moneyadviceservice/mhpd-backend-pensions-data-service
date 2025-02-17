@@ -47,7 +47,7 @@ public class KeyVaultUploader : IKeyVaultUploader
         }
         else
         {
-            _logger.LogWarning("Certificate {certificateName} uploaded successfully", _cryptopackSettings.MtlsCertificateName);
+            _logger.LogInformation("Certificate {certificateName} uploaded successfully", _cryptopackSettings.MtlsCertificateName);
         }
     }
 
@@ -70,7 +70,7 @@ public class KeyVaultUploader : IKeyVaultUploader
         }
         else
         {
-            _logger.LogWarning("Secret '{secret}' uploaded successfully.", secretName);
+            _logger.LogInformation("Secret '{secret}' uploaded successfully.", secretName);
         }
     }
 }

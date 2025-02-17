@@ -18,7 +18,7 @@ public class CryptopackFunction(ILogger<CryptopackFunction> logger, BlobServiceC
     [Function(nameof(CryptopackFunction))]
     public async Task Run([BlobTrigger(Constants.FileHandling.TargetContainer + "/{name}.zip", Connection = "StorageConnectionString")] Stream stream, string name)
     {
-        logger.LogWarning("Detected potential cryptopack: '{name}'. Processing...", name);
+        logger.LogInformation("Processing potential cryptopack: '{name}'.", name);
 
         try
         {
@@ -38,7 +38,7 @@ public class CryptopackFunction(ILogger<CryptopackFunction> logger, BlobServiceC
             // Delete the original zip file so the next upload can be processed
             var blobClient = _containerClient.GetBlobClient($"/{name}.zip");
             await blobClient.DeleteAsync();
-            logger.LogWarning("Archived and removed original zip file: {name}", name);
+            logger.LogInformation("Archived and removed original zip file: {name}", name);
         }
         catch (Exception ex)
         {
@@ -55,7 +55,6 @@ public class CryptopackFunction(ILogger<CryptopackFunction> logger, BlobServiceC
         {
             if(string.IsNullOrEmpty(entry.Name)) continue;
 
-            logger.LogInformation("Unwrapped zip entry: {entry}", entry.FullName);
             using var entryStream = entry.Open();
 
             var blobClient = _containerClient.GetBlobClient(

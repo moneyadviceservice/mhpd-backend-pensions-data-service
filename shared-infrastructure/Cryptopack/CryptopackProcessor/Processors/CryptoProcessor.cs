@@ -30,23 +30,23 @@ public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer 
             // Generate and upload the MTLS certificate
             var pfxBytes = pfxGenerator.GeneratePfx(certificatePem, certPrivateKeyPem, certChainPem, _cryptopackSettings.PfxPassword);
 
-            if (pfxBytes != null)
+            if (pfxBytes == null || pfxBytes.Length == 0)
             {
-                logger.LogInformation("Pfx certificate has been generated");
-
-                await vaultUploader.UploadCertificateAsync(pfxBytes);
-
-                // Upload the secrets
-                var jwtPrivateKeyPem = archive.GetFileContents(_manifest.JwtPair.PrivateKey);
-                var kidPem = archive.GetFileContents(_manifest.KeyId);
-
-                await vaultUploader.UploadSecretsAsync(jwtPrivateKeyPem, kidPem);
-
-                // Update and restart the affected service
-                await UpdateApplicationSettingsAsync(archive);
+                throw new InvalidOperationException("Pfx certificate was not generated. Further processing will be aborted.");
             }
 
-            logger.LogInformation("Pfx certificate was not generated. Aborting further processing...");
+            logger.LogInformation("Pfx certificate has been generated");
+
+            await vaultUploader.UploadCertificateAsync(pfxBytes);
+
+            // Upload the secrets
+            var jwtPrivateKeyPem = archive.GetFileContents(_manifest.JwtPair.PrivateKey);
+            var kidPem = archive.GetFileContents(_manifest.KeyId);
+
+            await vaultUploader.UploadSecretsAsync(jwtPrivateKeyPem, kidPem);
+
+            // Update and restart the affected service
+            await UpdateApplicationSettingsAsync(archive);
         }
         catch (Exception ex)
         {
@@ -81,7 +81,7 @@ public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer 
         }
         else
         {
-            logger.LogWarning("Successfully updated and restarted {app}", _webAppSettings.AppName);
+            logger.LogInformation("Successfully updated and restarted {app}", _webAppSettings.AppName);
         }
     }
 
@@ -97,6 +97,6 @@ public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer 
             appServiceConfiguration.Properties.Add(variableName, variableValue);
         }
 
-        logger.LogWarning("Environment variable {variable} has been updated", variableName);
+        logger.LogInformation("Environment variable {variable} has been updated", variableName);
     }
 }

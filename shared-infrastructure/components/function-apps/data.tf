@@ -31,6 +31,8 @@ data "azurerm_key_vault_secret" "user_client_secret" {
 }
 
 data "azurerm_subnet" "mhpd-subnet" {
+  for_each = var.env == "staging" || var.env == "prod" ? toset(["exists"]) : toset([])
+
   name                 = "${var.product}-apps"
   virtual_network_name = "maps-hub-vnet-${var.env}"
   resource_group_name  = "maps-hub-${var.env}"

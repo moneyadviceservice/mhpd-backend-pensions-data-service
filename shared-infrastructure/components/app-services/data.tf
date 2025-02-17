@@ -55,6 +55,8 @@ data "azurerm_cosmosdb_account" "this" {
 }
 
 data "azurerm_subnet" "mhpd-subnet" {
+  for_each = var.env == "staging" || var.env == "prod" ? toset(["exists"]) : toset([])
+
   name                 = "${var.product}-apps"
   virtual_network_name = "maps-hub-vnet-${var.env}"
   resource_group_name  = "maps-hub-${var.env}"

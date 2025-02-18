@@ -13,7 +13,7 @@ module "pdp_view_data_service_emulator" {
   connection_strings = [{
     name  = "CosmosDBConnectionString"
     type  = "Custom"
-    value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+    value = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
   }]
   app_settings = {
     "JwtSettings__ExpiryInSeconds"                           = "600"

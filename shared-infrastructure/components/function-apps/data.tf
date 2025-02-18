@@ -10,6 +10,11 @@ data "azurerm_cosmosdb_account" "this" {
   resource_group_name = "${var.product}-${var.env}"
 }
 
+data "azurerm_cosmosdb_account" "testharness" {
+  name                = "${var.product}-cosmos-testharness"
+  resource_group_name = "${var.product}-staging"
+}
+
 data "azurerm_servicebus_namespace" "this" {
   name                = "${var.product}-sbns-${var.env}"
   resource_group_name = "${var.product}-${var.env}"

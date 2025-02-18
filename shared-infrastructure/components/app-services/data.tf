@@ -54,6 +54,11 @@ data "azurerm_cosmosdb_account" "this" {
   resource_group_name = "${var.product}-${var.env}"
 }
 
+data "azurerm_cosmosdb_account" "testharness" {
+  name                = "${var.product}-cosmos-testharness"
+  resource_group_name = "${var.product}-staging"
+}
+
 data "azurerm_subnet" "mhpd-subnet" {
   for_each = var.env == "staging" || var.env == "prod" ? toset(["exists"]) : toset([])
 

@@ -13,5 +13,5 @@ variable "ftps_state" {
 }
 
 variable "cda_base_url" {
-  default = "https://sandbox.pensionsdashboards.org.uk"
+  default = "https://bp-ftr.dev.pensionsdashboards.org.uk"
 }

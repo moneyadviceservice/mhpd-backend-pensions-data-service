@@ -35,6 +35,11 @@ data "azurerm_key_vault_secret" "user_client_secret" {
   key_vault_id = data.azurerm_key_vault.mhpd.id
 }
 
+data "azurerm_key_vault_secret" "user_client_id" {
+  name         = "KeyVaultSettings--ClientId"
+  key_vault_id = data.azurerm_key_vault.mhpd.id
+}
+
 data "azurerm_subnet" "mhpd-subnet" {
   for_each = var.env == "staging" || var.env == "prod" ? toset(["exists"]) : toset([])
 

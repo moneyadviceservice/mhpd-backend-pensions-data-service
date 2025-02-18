@@ -26,7 +26,7 @@ public class CertificateValidator(ILogger<CertificateValidator> logger, IOptions
 
         if (certfile == null)
         {
-            logger.LogInformation("Expected certificate {cert} not found in the pack", certName);
+            logger.LogInformation("Expected certificate '{cert}' not found in the pack", certName);
             return false;
         }
 
@@ -51,7 +51,7 @@ public class CertificateValidator(ILogger<CertificateValidator> logger, IOptions
                 return false;
             }
 
-            logger.LogInformation("Certificate {cert} has been validated", certName);
+            logger.LogInformation("Certificate '{cert}' has been validated", certName);
 
             return true;
         }

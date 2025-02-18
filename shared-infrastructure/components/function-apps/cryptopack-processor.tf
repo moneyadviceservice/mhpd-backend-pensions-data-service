@@ -15,7 +15,7 @@ module "cryptopack_processor_function" {
     "StorageConnectionString"                  = "DefaultEndpointsProtocol=https;AccountName=cryptopackproc${var.env};AccountKey=${module.cryptopack_processor_function.sa_primary_access_key}"
     "KeyVaultSettings__KeyVaultUrl"            = "https://mhpd-${var.env}.vault.azure.net/"
     "KeyVaultSettings__TenantId"               = "bbe41032-8fce-4d42-bab5-44e21510886d"
-    "KeyVaultSettings__ClientId"               = "83a2a90c-3d22-4cb6-b6e2-c3a5938f9db7"
+    "KeyVaultSettings__ClientId"               = data.azurerm_key_vault_secret.user_client_id.value
     "KeyVaultSettings__ClientSecret"           = data.azurerm_key_vault_secret.user_client_secret.value
     "CryptopackSettings__MtlsCertificateName"  = "PdpMtls"
     "CryptopackSettings__PrivateKeySecretName" = "maps-cda-service-private-key"

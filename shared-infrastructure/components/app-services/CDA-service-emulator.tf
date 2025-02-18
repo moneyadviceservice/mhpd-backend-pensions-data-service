@@ -27,7 +27,7 @@ module "CDA_service_emulator" {
     "DiagnosticServices_EXTENSION_VERSION"                                    = "~3"
     "IGNORE_APPINSIGHTS_SDK"                                                  = "disabled"
     "InstrumentationEngine_EXTENSION_VERSION"                                 = "disabled"
-    "CosmosDBConnectionString"                                                = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+    "CosmosDBConnectionString"                                                = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
     "SnapshotDebugger_EXTENSION_VERSION"                                      = "disabled"
     "MhpdCosmosConfiguration__CdaPeisEmulatorScenarioModelContainerName"      = "cdaPeisEmulatorScenarioModels"
     "MhpdCosmosConfiguration__CdaPeisEmulatorTestInstanceDataContainerName"   = "cdaPeisEmulatorTestInstanceData"

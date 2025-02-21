@@ -24,6 +24,7 @@ resource "azurerm_key_vault_access_policy" "apim_access" {
     "List",
     "Get",
   ]
+
 }
 
 resource "azurerm_api_management_certificate" "pdp-mtls" {
@@ -32,4 +33,10 @@ resource "azurerm_api_management_certificate" "pdp-mtls" {
   resource_group_name = data.azurerm_api_management.this.resource_group_name
 
   key_vault_secret_id = data.azurerm_key_vault_certificate.pdp-mtls.secret_id
+
+  lifecycle {
+    ignore_changes = [
+      key_vault_secret_id
+    ]
+  }
 }

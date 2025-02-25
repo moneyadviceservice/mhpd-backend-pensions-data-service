@@ -25,5 +25,12 @@ public static class PensionEnums
         CONT,  // CONT match
         NEW    // NEW match
     }
+
+    public enum IllustrationType
+    {
+        ERI, // Employer related investment pension
+        AP,  // Accrued Pension
+        UNDEFINED
+    }
 }
 

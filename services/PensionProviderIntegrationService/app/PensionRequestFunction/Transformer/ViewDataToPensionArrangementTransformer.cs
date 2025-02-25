@@ -140,7 +140,7 @@ namespace PensionRequestFunction.Transformer
             if (pdpArrangement.TryGetProperty(PensionConstants.AlternateSchemeName, out var pdpAlternateSchemeName))
             {
                 alternateSchemeNames.Add(pdpAlternateSchemeName);
-                pensionArrangement.Add(PensionConstants.AlternateSchemeName, alternateSchemeNames);
+                pensionArrangement.Add(PensionConstants.AlternateSchemeNames, alternateSchemeNames);
             }
         }
         
@@ -157,7 +157,7 @@ namespace PensionRequestFunction.Transformer
                 
                 // Transform employment end date to membership end date
                 JsonNodeExtensions.RenameProperty(ref employmentMembershipPeriods,
-                    PensionConstants.EmploymentStartDate, PensionConstants.MembershipStartDate);
+                    PensionConstants.EmploymentEndDate, PensionConstants.MembershipEndDate);
                 
                 pensionArrangement.Add(PensionConstants.EmploymentMembershipPeriods, employmentMembershipPeriods);
             }
@@ -169,37 +169,78 @@ namespace PensionRequestFunction.Transformer
                 pdpBenefitIllustrations.ValueKind != JsonValueKind.Undefined &&
                 JsonNode.Parse(pdpBenefitIllustrations.GetRawText()) is JsonArray benefitIllustrationsArray)
             {
-                foreach (var component in benefitIllustrationsArray.SelectMany(illustration =>
-                             illustration?[PensionConstants.IllustrationComponents]?.AsArray()!))
+                var benefitIllustrations = new JsonArray();
+
+                foreach (var benefit in benefitIllustrationsArray)
                 {
-                    
-                    if (component?[PensionConstants.PayableDetails] is not JsonObject payableDetails)
+                    var benefitClone = benefit?.DeepClone();
+
+                    var illustrationComponents = new JsonArray();
+
+                    foreach (var component in benefit![PensionConstants.IllustrationComponents]?.AsArray()!)
                     {
-                        return; // Exit if PayableDetails is not a JsonObject
+                        var illustration = component?.DeepClone();
+                        if(illustration == null) continue;
+
+                        var illustrationType = GetIllustrationType(illustration!);
+                        illustration![PensionConstants.IllustrationType] = illustrationType;
+                        JsonNodeExtensions.RenameProperty(ref illustration, PensionConstants.AccruedDcPot, PensionConstants.RetirementPot);
+                        JsonNodeExtensions.RenameProperty(ref illustration, PensionConstants.EstimatedDcPot, PensionConstants.RetirementPot);
+
+                        illustrationComponents.Add(illustration);
+
+                        if (illustration?[PensionConstants.PayableDetails] is not JsonObject payableDetails)
+                        {
+                            continue; // Skip if PayableDetails is not a JsonObject
+                        }
+
+                        ProcessPayableDetails(payableDetails);
                     }
 
-                    // Extract and parse the amount type
-                    var amountTypeString = payableDetails[PensionConstants.AmountType]?.ToString();
-                    var isValidAmountType = Enum.TryParse(amountTypeString, out PensionEnums.AmountTypes amountType) &&
-                                            new[] { PensionEnums.AmountTypes.INC, PensionEnums.AmountTypes.INCL, PensionEnums.AmountTypes.INCN }
-                                                .Contains(amountType);
-                    if (!isValidAmountType)
-                    {
-                        return; // Exit if amountType is not one of INC, INCL, or INCN
-                    }
-
-                    // Check for the presence of monthlyAmount and the validity of annualAmount
-                    var hasMonthlyAmount = payableDetails.ContainsKey(PensionConstants.MonthlyAmount);
-                    var hasValidAnnualAmount = payableDetails.TryGetPropertyValue(PensionConstants.AnnualAmount, out var annualAmountNode);
-
-                    if (!hasMonthlyAmount && hasValidAnnualAmount &&
-                        annualAmountNode?.GetValue<decimal>() is { } annualAmount)
-                    {
-                        payableDetails[PensionConstants.MonthlyAmount] = JsonValue.Create(Math.Round(annualAmount / 12));
-                    }
+                    benefitClone![PensionConstants.IllustrationComponents] = illustrationComponents;
+                    benefitIllustrations.Add(benefitClone);
                 }
 
-                pensionArrangement.Add(PensionConstants.BenefitIllustrations, benefitIllustrationsArray);
+                pensionArrangement.Add(PensionConstants.BenefitIllustrations, benefitIllustrations);
+            }
+        }
+
+        private static string GetIllustrationType(JsonNode illustration)
+        {
+            if (illustration[PensionConstants.EstimatedDcPot] != null)
+            {
+                return PensionEnums.IllustrationType.ERI.ToString();
+            }
+
+            if (illustration[PensionConstants.AccruedDcPot] != null)
+            {
+                return PensionEnums.IllustrationType.AP.ToString();
+            }
+
+            // Not safe to default to either of them
+            return PensionEnums.IllustrationType.UNDEFINED.ToString();
+        }
+
+        private static void ProcessPayableDetails(JsonObject payableDetails)
+        {
+            // Extract and parse the amount type
+            var amountTypeString = payableDetails[PensionConstants.AmountType]?.ToString();
+            var isValidAmountType = Enum.TryParse(amountTypeString, out PensionEnums.AmountTypes amountType) &&
+                                    new[] { PensionEnums.AmountTypes.INC, PensionEnums.AmountTypes.INCL, PensionEnums.AmountTypes.INCN }
+                                        .Contains(amountType);
+            if (!isValidAmountType)
+            {
+                return; // Skip if amountType is not one of INC, INCL, or INCN
+            }
+
+            // Check for the presence of monthlyAmount and the validity of annualAmount
+            var hasMonthlyAmount = payableDetails.ContainsKey(PensionConstants.MonthlyAmount);
+            var hasValidAnnualAmount = payableDetails.TryGetPropertyValue(PensionConstants.AnnualAmount, out var annualAmountNode);
+
+            if (!hasMonthlyAmount && hasValidAnnualAmount &&
+                annualAmountNode?.GetValue<decimal>() is { } annualAmount)
+            {
+                payableDetails[PensionConstants.MonthlyAmount] = JsonValue.Create(Math.Round(annualAmount / 12));
             }
         }
 

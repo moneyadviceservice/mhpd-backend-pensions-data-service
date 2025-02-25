@@ -1,6 +1,7 @@
 {
   "type": "object",
   "title": "pensionDetailsRequestMessagePayload",
+  "additionalProperties": false,
   "properties": {
     "pensionRetrievalRecordId": {
       "type": "string",

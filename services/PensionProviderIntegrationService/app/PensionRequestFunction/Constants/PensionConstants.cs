@@ -13,6 +13,7 @@ public static class PensionConstants
     public const string PensionArrangements = "pensionArrangements";
     public const string Arrangements = "arrangements";
     public const string AlternateSchemeName = "alternateSchemeName";
+    public const string AlternateSchemeNames = "alternateSchemeNames";
     public const string EmploymentMembershipPeriods = "employmentMembershipPeriods";
     public const string EmploymentStartDate = "employmentStartDate";
     public const string MembershipStartDate = "membershipStartDate";
@@ -48,4 +49,9 @@ public static class PensionConstants
     public const string AdministrativeDetailsNotAvailable = "administrativeDetailsNotAvailable";
     public const string TemporarySystemError = "temporarySystemError";
     public const string ErrorCode = "errorCode";
+    public const string EstimatedDcPot = "estimatedDcPot";
+    public const string AccruedDcPot = "accruedDcPot";
+    public const string IllustrationType = "illustrationType";
+    public const string IllustrationDate = "illustrationDate";
+    public const string RetirementPot = "dcPot";
 }

@@ -1,6 +1,7 @@
 {
   "type": "object",
   "title": "pensionsRetrievalJobsMessagePayload",
+  "additionalProperties": false,
   "description": "The payload to enable the initiation of a process to retrieve the pensions illustration data for a Citizen User.",
   "properties": {
     "peisId": {

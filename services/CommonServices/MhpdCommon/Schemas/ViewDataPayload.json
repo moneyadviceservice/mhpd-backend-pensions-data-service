@@ -1,6 +1,7 @@
 {
   "type": "object",
   "title": "View Data ",
+  "additionalProperties": false,
   "description": "Arrangement data",
   "properties": {
     "pensionLink": {
@@ -875,7 +876,6 @@
     "possibleMatchPensionArrangement": {
       "type": "object",
       "title": "possibleMatchPensionArrangement",
-      "additionalProperties": false,
       "properties": {
         "pensionProviderSchemeName": {
           "type": "string",

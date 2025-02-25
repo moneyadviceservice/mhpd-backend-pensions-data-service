@@ -679,7 +679,7 @@
               "estimatesDcPot": 900000.01,
               "survivorBenefit": true,
               "safeguardedBenefit": true,
-              "illustratonWarnings": [
+              "illustrationWarnings": [
                 "AVC"
               ]
             }
@@ -765,7 +765,7 @@
           "type": "boolean",
           "description": "An indicator that the benefit value shown also has safeguarded benefits"
         },
-        "illustratonWarnings": {
+        "illustrationWarnings": {
           "type": "array",
           "description": "Warnings may be provided to explain important additional information to the user which will affect the value of the benefit or the value show\nWarnings may be temporary or permanent.\nThere is no guarantee that all relevant warnings will be provided.",
           "minItems": 1,

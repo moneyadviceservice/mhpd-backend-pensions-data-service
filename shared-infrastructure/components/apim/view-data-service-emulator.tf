@@ -66,7 +66,7 @@ resource "azurerm_api_management_api_policy" "view-data-service-emulator" {
                     }</set-body>
                 </return-response>
             </when>
-            <when condition="@(!context.Request.Certificate.Subject.Contains("CN=mhpd.backend.com"))">
+            <when condition="@(!context.Request.Certificate.Subject.Contains("CN=casstubclient"))">
                 <return-response>
                     <set-status code="403" reason="Forbidden" />
                     <set-body>@{

@@ -14,20 +14,14 @@ public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataR
 {
     [HttpGet]
     [Route("holdername-view-configurations")]
-    public async Task<IActionResult> GetAsync([FromQuery(Name = QueryParams.Cda.HolderName.Guid)] string? holderNameGuid,
+    public async Task<IActionResult> GetAsync([FromQuery(Name = QueryParams.Cda.HolderName.Guid)] string holderNameGuid,
         [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
     {
         if (!idValidator.IsValidGuid(xRequestId))
         {
             return BadRequest(Constants.HolderNameConstants.InvalidRequestId);
         }
-
-        if (holderNameGuid == null)
-        {
-            var allConfigurations = await viewDataRepository.GetHolderNameConfigurationsAsync();
-            return Ok(new HolderNameViewDataResponse { Configurations = allConfigurations });
-        }
-
+        
         if (!idValidator.IsValidGuid(holderNameGuid))
         {
             return BadRequest(Constants.HolderNameConstants.InvalidHolderNameId);

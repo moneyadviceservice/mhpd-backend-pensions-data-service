@@ -39,27 +39,10 @@ namespace CDAServiceEmulatorUnitTests
         }
 
         [Fact]
-        public async Task When_NoHolderNameGuidProvided_Then_ReturnFullSetOfConfigurations_200Response()
-        {
-            // Arrange
-            _idValidator.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
-            string? holderNameGuid = null;
-
-            // Act
-            var result = await _controller.GetAsync(holderNameGuid, _xRequestId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<HolderNameViewDataResponse>(okResult.Value);
-            Assert.NotNull(response);
-            Assert.Equal(2, response.Configurations.Count);
-        }
-
-        [Fact]
         public async Task When_KnownHolderNameGuidProvided_Then_ReturnConfigurationForThatGuid_200Response()
         {
             // Arrange
-            const string holderNameGuid = HolderConfigurationMock.MatchingId;
+            const string? holderNameGuid = HolderConfigurationMock.MatchingId;
 
             // Act
             var result = await _controller.GetAsync(holderNameGuid, _xRequestId);
@@ -116,7 +99,7 @@ namespace CDAServiceEmulatorUnitTests
             _controller.ControllerContext = new ControllerContext() { HttpContext = httpContext };
 
             // Act
-            var result = await _controller.GetAsync(null, _xRequestId);
+            var result = await _controller.GetAsync(Guid.NewGuid().ToString(), _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -135,7 +118,7 @@ namespace CDAServiceEmulatorUnitTests
             _controller.ControllerContext = new ControllerContext() { HttpContext = httpContext };
 
             // Act
-            var result = await _controller.GetAsync(null, _xRequestId);
+            var result = await _controller.GetAsync(Guid.NewGuid().ToString(), _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -155,7 +138,7 @@ namespace CDAServiceEmulatorUnitTests
             _controller.ControllerContext = new ControllerContext() { HttpContext = httpContext };
 
             // Act
-            var result = await _controller.GetAsync(null, _xRequestId);
+            var result = await _controller.GetAsync(Guid.NewGuid().ToString(), _xRequestId);
 
             // Assert
             var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);

@@ -1,32 +1,32 @@
 [
   {
     "id": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
-    "holdername_guid": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
-    "view_data_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
+    "holdernameGuid": "7075aa11-10ad-4b2f-a9f5-1068e79119bf",
+    "view_data_host_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
   },
   {
     "id": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
-    "holdername_guid": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
-    "view_data_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
+    "holdernameGuid": "4572fe02-ed14-4738-b6c1-7b71cfd09c16",
+    "view_data_host_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
   },
   {
     "id": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
-    "holdername_guid": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
-    "view_data_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
+    "holdernameGuid": "5ee364b7-b38a-44ec-9108-b6fbb27bd473",
+    "view_data_host_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
   },
   {
     "id": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
-    "holdername_guid": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
-    "view_data_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
+    "holdernameGuid": "ca6f57a9-51de-4e9f-9a5a-d3fddcccd029",
+    "view_data_host_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
   },
   {
     "id": "cd2770ad-3928-4023-9d25-03e745b41648",
-    "holdername_guid": "cd2770ad-3928-4023-9d25-03e745b41648",
-    "view_data_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
+    "holdernameGuid": "cd2770ad-3928-4023-9d25-03e745b41648",
+    "view_data_host_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
   },
   {
     "id": "9d0f04b2-8a47-4fb9-91d9-08828036b631",
-    "holdername_guid": "9d0f04b2-8a47-4fb9-91d9-08828036b631",
-    "view_data_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
+    "holdernameGuid": "9d0f04b2-8a47-4fb9-91d9-08828036b631",
+    "view_data_host_url": "https://maps-api-management-test.azure-api.net/view-data-service-emulator"
   }
 ]

@@ -30,7 +30,7 @@ public static class QueryParams
 
         public static class HolderName
         {
-            public const string Guid = "holdername_guid";
+            public const string Guid = "holdernameGuid";
         }
     }
 

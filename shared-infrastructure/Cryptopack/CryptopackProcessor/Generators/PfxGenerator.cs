@@ -17,7 +17,7 @@ public class PfxGenerator(ILogger<PfxGenerator> logger) : IPfxGenerator
 
         try
         {
-            var privateKey = ECDsa.Create();
+            var privateKey = RSA.Create();
             privateKey.ImportFromPem(privateKeyPem);
 
             var certWithPrivateKey = certificate.CopyWithPrivateKey(privateKey);

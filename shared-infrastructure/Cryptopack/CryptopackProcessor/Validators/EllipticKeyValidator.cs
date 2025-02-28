@@ -17,14 +17,24 @@ public class EllipticKeyValidator(ILogger<EllipticKeyValidator> logger, IOptions
 
     public ValidationResult Validate(ZipArchive archive)
     {
-        var keyPair = _manifest.CertificatePair;
+        //var keyPair = _manifest.CertificatePair;
+        var isKeyPairValid = ValidateKeyPair(_manifest.JwtPair, archive);
+        isKeyPairValid &= ValidateKeyPair(_manifest.CertificatePair, archive);
+
+        return new ValidationResult { IsValid = isKeyPairValid };
+    }
+
+    public bool ValidateKeyPair(KeyPair keyPair, ZipArchive archive)
+    {
+        if (keyPair.AlgorithmType != KeyAlgorithmType.EC) return true;
+
         var privateKeyfile = archive.Entries.SingleOrDefault(file => file.Name == keyPair.PrivateKey);
         var publicKeyfile = archive.Entries.SingleOrDefault(file => file.Name == keyPair.PublicKey);
 
         if (privateKeyfile == null || publicKeyfile == null)
         {
             logger.LogInformation("Matching pair not found for {private} and {public}", keyPair.PrivateKey, keyPair.PublicKey);
-            return new ValidationResult();
+            return false;
         }
 
         using var privateKeyStream = privateKeyfile.Open();
@@ -40,7 +50,7 @@ public class EllipticKeyValidator(ILogger<EllipticKeyValidator> logger, IOptions
         var verificationMessage = $"Key pair: '{keyPair.PrivateKey}' and '{keyPair.PublicKey}' {(isKeyPairValid ? "have been" : "could not be")} verified";
         logger.LogInformation("{message}", verificationMessage);
 
-        return new ValidationResult { IsValid = isKeyPairValid };
+        return isKeyPairValid;
     }
 
     private static bool VerifyECKey(string privateKeyContent, string publicKeyContent)

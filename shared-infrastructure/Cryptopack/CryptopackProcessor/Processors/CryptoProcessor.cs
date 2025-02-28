@@ -12,7 +12,7 @@ using System.IO.Compression;
 namespace CryptopackProcessor.Processors;
 
 public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer settingsContainer, 
-    IPfxGenerator pfxGenerator, IKeyVaultUploader vaultUploader) : ICryptoProcessor
+    ICertificateGeneratorFactory generatorFactory, IKeyVaultUploader vaultUploader) : ICryptoProcessor
 {
     private readonly Manifest _manifest = settingsContainer.Manifest;
     private readonly CryptopackSettings _cryptopackSettings = settingsContainer.CryptopackSettings;
@@ -28,6 +28,7 @@ public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer 
             var certPrivateKeyPem = archive.GetFileContents(_manifest.CertificatePair.PrivateKey);
 
             // Generate and upload the MTLS certificate
+            var pfxGenerator = generatorFactory.GetGenerator(_manifest.CertificatePair.AlgorithmType);
             var pfxBytes = pfxGenerator.GeneratePfx(certificatePem, certPrivateKeyPem, certChainPem, _cryptopackSettings.PfxPassword);
 
             if (pfxBytes == null || pfxBytes.Length == 0)
@@ -46,7 +47,7 @@ public class CryptoProcessor(ILogger<CryptoProcessor> logger, SettingsContainer 
             await vaultUploader.UploadSecretsAsync(jwtPrivateKeyPem, kidPem);
 
             // Update and restart the affected service
-            await UpdateApplicationSettingsAsync(archive);
+            //await UpdateApplicationSettingsAsync(archive);
         }
         catch (Exception ex)
         {

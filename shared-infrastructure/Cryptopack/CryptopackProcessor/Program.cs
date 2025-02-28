@@ -26,8 +26,10 @@ var host = new HostBuilder()
         services.AddScoped<IManifestFileValidator, CertificateValidator>();
         services.AddScoped<IManifestValidator, ManifestValidator>();
         services.AddScoped<IKeyVaultUploader, KeyVaultUploader>();
-        services.AddScoped<IPfxGenerator, EllipticalPfxGenerator>();
+        services.AddScoped<EllipticalPfxGenerator>();
+        services.AddScoped<PfxGenerator>();
         services.AddScoped<ICryptoProcessor, CryptoProcessor>();
+        services.AddScoped<ICertificateGeneratorFactory, CertificateGeneratorFactory>();
         services.Configure<Manifest>(hostContext.Configuration.GetSection("Manifest"));
         services.Configure<KeyVaultSettings>(hostContext.Configuration.GetSection("KeyVaultSettings"));
         services.Configure<AzureAdSettings>(hostContext.Configuration.GetSection("KeyVaultSettings"));

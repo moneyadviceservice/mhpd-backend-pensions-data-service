@@ -14,12 +14,15 @@ public class KeyValidator(ILogger<KeyValidator> logger, IOptions<Manifest> optio
     public ValidationResult Validate(ZipArchive archive)
     {
         var isKeyPairValid = ValidateKeyPair(_manifest.JwtPair, archive);
+        isKeyPairValid &= ValidateKeyPair(_manifest.CertificatePair, archive);
 
         return new ValidationResult { IsValid = isKeyPairValid };
     }
 
     private bool ValidateKeyPair(KeyPair keyPair, ZipArchive archive)
     {
+        if (keyPair.AlgorithmType != KeyAlgorithmType.RSA) return true;
+
         var privateKeyfile = archive.Entries.SingleOrDefault(file => file.Name == keyPair.PrivateKey);
         var publicKeyfile = archive.Entries.SingleOrDefault(file => file.Name == keyPair.PublicKey);
 

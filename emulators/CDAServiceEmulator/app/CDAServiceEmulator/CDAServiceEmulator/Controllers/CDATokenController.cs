@@ -25,7 +25,7 @@ public class CdaTokenController(
 {
     [HttpPost]
     [Route("token")]
-    public async Task<IActionResult> GenerateTokenAsync([FromQuery] CdaTokenRequestModel request,
+    public async Task<IActionResult> GenerateTokenAsync([FromForm] CdaTokenRequestModel request,
         [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
     {
         LogInfoWithJsonObject("Request received: ", request);

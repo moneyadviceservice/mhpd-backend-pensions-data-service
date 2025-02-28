@@ -1,6 +1,7 @@
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Utils;
+using MhpdCommonTests.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MhpdCommonTests.Utils;
@@ -11,7 +12,7 @@ public class UrlHelperTests
     public void ConstructEndPoint_ShouldGenerateQueryString_ForCdaTokenRequestModel()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new TokenRequestModel
         {
             GrantType = "authorization_code",
             Ticket = "my_ticket",
@@ -49,7 +50,7 @@ public class UrlHelperTests
     public void ConstructEndPoint_ShouldIgnoreNullValues()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new TokenRequestModel
         {
             GrantType = "authorization_code",
             Ticket = null,  // This should be ignored in the query string

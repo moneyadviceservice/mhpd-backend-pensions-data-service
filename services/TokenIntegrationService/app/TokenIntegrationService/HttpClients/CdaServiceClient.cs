@@ -3,6 +3,8 @@ using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.SharedHttpClient;
 using MhpdCommon.Utils;
+using System.Text;
+using System.Text.Json;
 using TokenIntegrationService.Models;
 
 namespace TokenIntegrationService.HttpClients;
@@ -21,16 +23,14 @@ public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaS
 
                 httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestId);
 
-                var endpoint = request switch
+                var payload = request switch
                 {
-                    TokenIntegrationRequestModel tokenRequest => UrlHelper.ConstructEndPoint(
-                        tokenRequest, HttpEndpoints.External.CdaTokenServiceEndpoint),
-                    CdaTokenRequestModel cdaTokenRequest => UrlHelper.ConstructEndPoint(
-                        cdaTokenRequest, HttpEndpoints.External.CdaTokenServiceEndpoint),
+                    TokenIntegrationRequestModel tokenRequest => UrlHelper.ConstructFormEncodedPayload(tokenRequest),
+                    CdaTokenRequestModel cdaTokenRequest => UrlHelper.ConstructFormEncodedPayload(cdaTokenRequest),
                     _ => throw new InvalidOperationException("Unsupported request type.")
                 };
-                
-                return await httpClient.PostAsync(endpoint, null);
+
+                return await httpClient.PostAsync(HttpEndpoints.External.CdaTokenServiceEndpoint, payload);
             },
             HttpClientOperationName.CdaServiceTokenPOST);
     }

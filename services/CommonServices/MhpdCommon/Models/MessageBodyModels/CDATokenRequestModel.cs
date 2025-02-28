@@ -1,37 +1,38 @@
 ﻿using MhpdCommon.Constants.HttpClient;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace MhpdCommon.Models.MessageBodyModels;
 
 public class CdaTokenRequestModel
 {
-    [FromQuery(Name = QueryParams.Cda.Token.GrantType)]
+    [FromForm(Name = QueryParams.Cda.Token.GrantType)]
     public string? GrantType { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.Ticket)]
+
+    [FromForm(Name = QueryParams.Cda.Token.Ticket)]
     public string? Ticket { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.ClaimToken)]
+
+    [FromForm(Name = QueryParams.Cda.Token.ClaimToken)]
     public string? ClaimToken { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.ClaimTokenFormat)]
+
+    [FromForm(Name = QueryParams.Cda.Token.ClaimTokenFormat)]
     public string? ClaimTokenFormat { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.Scope)]
+
+    [FromForm(Name = QueryParams.Cda.Token.Scope)]
     public string? Scope { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.ClientId)]
+
+    [FromForm(Name = QueryParams.Cda.Token.ClientId)]
     public string? ClientId { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.ClientSecret)]
+
+    [FromForm(Name = QueryParams.Cda.Token.ClientSecret)]
     public string? ClientSecret { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.Code)]
+
+    [FromForm(Name = QueryParams.Cda.Token.Code)]
     public string? Code { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.RedirectUri)]
+
+    [FromForm(Name = QueryParams.Cda.Token.RedirectUri)]
     public string? RedirectUrl { get; set; }
-    
-    [FromQuery(Name = QueryParams.Cda.Token.CodeVerifier)]
+
+    [FromForm(Name = QueryParams.Cda.Token.CodeVerifier)]
     public string? CodeVerifier { get; set; }
 }

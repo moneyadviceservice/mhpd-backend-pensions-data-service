@@ -27,6 +27,28 @@ public static class UrlHelper
         return endpointName + GenerateQueryString(queryList);
     }
 
+    public static FormUrlEncodedContent ConstructFormEncodedPayload<T>(T request) where T : class
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var formData = new Dictionary<string, string>();
+
+        // Use reflection to iterate over properties and get the [FromForm] attribute's name
+        foreach (var property in typeof(T).GetProperties())
+        {
+            var fromFormAttribute = property.GetCustomAttribute<FromFormAttribute>();
+            var memberName = fromFormAttribute?.Name ?? property.Name; // Use the Name in FromForm or default to property name
+
+            var value = property.GetValue(request)?.ToString();
+            if (!string.IsNullOrEmpty(value))
+            {
+                formData.Add(memberName, value);
+            }
+        }
+
+        return new FormUrlEncodedContent(formData);
+    }
+
     /// <summary>
     /// Builds a fully qualified path by combining the domain root with a relative path.
     /// The function handles trailing and leading slashes in both the root and the suffix path

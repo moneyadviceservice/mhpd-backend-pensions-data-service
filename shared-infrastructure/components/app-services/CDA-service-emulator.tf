@@ -47,6 +47,7 @@ module "CDA_service_emulator" {
     "Mtls__ClientCertificate"                                                 = "PdpMtls"
     "Mtls__EnforceClientCertificate"                                          = "False"
     "Mtls__VaultUri"                                                          = "https://${var.product}-${var.env}.vault.azure.net/"
+    "CdaServiceUrl"                                                           = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
   }
   tags = {}
 }

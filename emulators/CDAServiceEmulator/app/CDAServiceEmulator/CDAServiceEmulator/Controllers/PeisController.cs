@@ -2,8 +2,11 @@
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
 using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace CDAServiceEmulator.Controllers;
@@ -13,13 +16,14 @@ namespace CDAServiceEmulator.Controllers;
 public class PeisController(
     CdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
     CdaPeisEmulatorTestInstanceDataRepository cdaPeisEmulatorTestInstanceDataRepository,
-    IIdValidator idValidator)
+    IIdValidator idValidator, IOptions<CommonHttpConfiguration> options)
     : ControllerBase
 {
     private const string BadRequestPeisIdInvalidResponse = "Invalid peis_id";
     private const string BadRequestXRequestIdInvalidResponse = "Invalid X-Request-Id";
     private const string BadRequestUnknownTestScenarioResponse = "Unknown test scenario";
     private const string UnauthorisedResponse = "Unauthorized";
+    private readonly CommonHttpConfiguration _configuration = options.Value;
 
     [HttpGet]
     [Route("/peis/{peis_id}")]
@@ -122,7 +126,7 @@ public class PeisController(
         {
             var headers = Response.Headers;
             headers.Append("WWW-Authenticate", "realm=\"PensionDashboard\", " +
-                                               "as_uri=\"https://as.pdp.com\", " +
+                                               $"as_uri=\"{_configuration.CdaTokenEndpoint}\", " +
                                                "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"");
             return false;
         }

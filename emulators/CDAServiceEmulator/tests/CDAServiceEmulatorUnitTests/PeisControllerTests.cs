@@ -5,6 +5,7 @@ using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulatorUnitTests.Mock.ScenarioModelData;
 using MhpdCommon.Constants;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,6 +24,7 @@ public class PeisControllerTests
     private readonly Mock<Container> _mockTestInstanceContainer;
     private readonly Mock<IIdValidator> _mockIdValidatorMock;
     private readonly string _xRequestId = Guid.NewGuid().ToString();
+    private readonly CommonHttpConfiguration _httpConfiguration;
 
     public PeisControllerTests()
     {
@@ -31,6 +33,11 @@ public class PeisControllerTests
             DatabaseName = "TestDatabase",
             CdaPeisEmulatorScenarioModelContainerName = "ScenarioModelContainer",
             CdaPeisEmulatorTestInstanceDataContainerName = "TestInstanceContainer",
+        };
+
+        _httpConfiguration = new CommonHttpConfiguration
+        {
+            CdaServiceUrl = "https://id.cda.com"
         };
 
         Mock<CosmosClient> mockCosmosClient = new();
@@ -53,7 +60,10 @@ public class PeisControllerTests
         
         Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
-        
+
+        Mock<IOptions<CommonHttpConfiguration>> mockHttpConfigOptions = new();
+        mockHttpConfigOptions.Setup(x => x.Value).Returns(_httpConfiguration);
+
         // Instantiate the CdaPeisEmulatorScenarioModelRepository with the mocked CosmosClient and configuration
         var mockScenarioModelRepository = new Mock<CdaPeisEmulatorScenarioModelRepository>(
             mockCosmosClient.Object, 
@@ -71,7 +81,8 @@ public class PeisControllerTests
         _httpContext.Request.Headers[HeaderConstants.RequestId] = Guid.NewGuid().ToString();
 
         // Inject mocks into the controller
-        _controller = new PeisController(mockScenarioModelRepository.Object, mockTestInstanceRepository.Object, _mockIdValidatorMock.Object)
+        _controller = new PeisController(mockScenarioModelRepository.Object, mockTestInstanceRepository.Object, 
+            _mockIdValidatorMock.Object, mockHttpConfigOptions.Object)
         {
             ControllerContext = new ControllerContext()
             {
@@ -120,7 +131,9 @@ public class PeisControllerTests
     {
         // Arrange
         string peis_id = "8586-4483-9899-17dd85af9074";
-        var responseHeaderValue = "realm=\"PensionDashboard\", as_uri=\"https://as.pdp.com\", ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
+        var responseHeaderValue = "realm=\"PensionDashboard\", " + 
+            $"as_uri=\"{_httpConfiguration.CdaTokenEndpoint}\", " + 
+            "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
 
         // Act
         var result = await _controller.GetAsync(peis_id, _xRequestId);

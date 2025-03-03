@@ -16,7 +16,7 @@ if (builder.Environment.IsDevelopment())
 
 var mtlsCertificate = await builder!.ConfigureMtlsWithClientCertificateAsync();
 
-builder.Services.AddHttpClient();
+builder.Services.AddMhpdHttpClients();
 builder.Services.AddMhpdUtilities();
 builder.Services.AddControllers();
 

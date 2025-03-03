@@ -1,8 +1,11 @@
 ﻿using System.Net.Http.Headers;
 using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using PDPViewDataServiceEmulator.CosmosRepository;
 using PDPViewDataServiceEmulator.Models;
@@ -14,10 +17,12 @@ namespace PDPViewDataServiceEmulator.Controllers
     public class PdpViewDataController(ILogger<PdpViewDataController> logger,
         ViewDataRepository viewDataRepository,
         IIdValidator validator,
-        ITokenUtility tokenUtility) : ControllerBase
+        ITokenUtility tokenUtility,
+        IOptions<CommonHttpConfiguration> options) : ControllerBase
     {
         private const string Owner = "owner";
         private const string BearerValue = "Bearer";
+        private readonly CommonHttpConfiguration _configuration = options.Value;
 
         [HttpGet]
         [Route("/view-data/{assetGuid?}")]
@@ -73,7 +78,7 @@ namespace PDPViewDataServiceEmulator.Controllers
             {
                 var headers = Response.Headers;
                 headers.Append("WWW-Authenticate", "realm=\"PensionDashboard\", " +
-                        $"as_uri=\"https://pdp/ig/token\", " +
+                        $"as_uri=\"{_configuration.CdaTokenEndpoint}\", " +
                         "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"");
                 return false;
             }

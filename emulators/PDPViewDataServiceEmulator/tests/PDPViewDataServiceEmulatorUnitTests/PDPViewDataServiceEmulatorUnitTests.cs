@@ -1,4 +1,5 @@
 using System.Net;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,8 @@ public class PdpViewDataServiceEmulatorUnitTests
     private const string XRequestId = "35cfcfb0-d98d-451f-83f1-e59933078555";
     private static readonly string EmptyAssetGuid = string.Empty;
     private static readonly string EmptyScope = string.Empty;
-        
+    private readonly CommonHttpConfiguration _httpConfiguration;
+
     private readonly DefaultHttpContext _httpContext;
     private readonly PdpViewDataController _controller;
     private readonly Mock<ITokenUtility> _tokenUtilityMock = new();
@@ -38,6 +40,11 @@ public class PdpViewDataServiceEmulatorUnitTests
         {
             DatabaseName = "TestDatabase",
             ViewdatapayloadsContainerName = "viewdatapayloadsContainerName",
+        };
+
+        _httpConfiguration = new CommonHttpConfiguration
+        {
+            CdaServiceUrl = "https://id.pdp.com"
         };
          
         Mock<ILogger<PdpViewDataController>> mockLogger = new();
@@ -53,6 +60,9 @@ public class PdpViewDataServiceEmulatorUnitTests
                  
         Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
+
+        Mock<IOptions<CommonHttpConfiguration>> mockHttpConfigOptions = new();
+        mockHttpConfigOptions.Setup(x => x.Value).Returns(_httpConfiguration);
 
         // Instantiate the ViewdatapayloadsContainerName with the mocked CosmosClient and configuration
         Mock<ViewDataRepository> mockViewDataRepository = new(
@@ -70,7 +80,8 @@ public class PdpViewDataServiceEmulatorUnitTests
             .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
         
         _httpContext = new DefaultHttpContext();
-        _controller = new PdpViewDataController(mockLogger.Object, mockViewDataRepository.Object, _idValidator.Object, _tokenUtilityMock.Object)
+        _controller = new PdpViewDataController(mockLogger.Object, mockViewDataRepository.Object, _idValidator.Object, 
+            _tokenUtilityMock.Object, mockHttpConfigOptions.Object)
         {
             ControllerContext = new ControllerContext
             {
@@ -282,7 +293,7 @@ public class PdpViewDataServiceEmulatorUnitTests
     private string ResponseHeaderValue()
     {
         return "realm=\"PensionDashboard\", " +
-               "as_uri=\"https://pdp/ig/token\", " +
+               $"as_uri=\"{_httpConfiguration.CdaTokenEndpoint}\", " +
                "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
     }
 

@@ -1,4 +1,7 @@
-﻿namespace MhpdCommon.Models.Configuration;
+﻿using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Utils;
+
+namespace MhpdCommon.Models.Configuration;
 
 public class CommonHttpConfiguration
 {
@@ -10,4 +13,6 @@ public class CommonHttpConfiguration
     public string? PensionRetrievalServiceUrl { get; set; }
     public string? PeiIntegrationServiceUrl { get; set; }
     public string? ViewDataIntegrationServiceUrl { get; set; }
+
+    public string CdaTokenEndpoint => UrlHelper.ConstructPath(CdaServiceUrl, HttpEndpoints.External.CdaTokenServiceEndpoint);
 }

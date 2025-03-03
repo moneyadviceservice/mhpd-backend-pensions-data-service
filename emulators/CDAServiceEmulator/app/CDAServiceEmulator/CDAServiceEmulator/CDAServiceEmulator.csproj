@@ -23,7 +23,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="8.0.11" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.1.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.0" />
   </ItemGroup>
 
@@ -32,5 +32,13 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\swagger\v1" />
+  </ItemGroup>
+  
+  <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
+      <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/cda-integration-external.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+  </Target>
 
 </Project>

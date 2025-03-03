@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.44.1" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,4 +23,12 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\swagger\v1" />
+  </ItemGroup>
+  
+  <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
+      <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/pei-integration.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+  </Target>
+  
 </Project>

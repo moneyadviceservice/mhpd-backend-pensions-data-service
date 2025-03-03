@@ -1,0 +1,145 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TokenIntegrationService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "version": "1.0"
+  },
+  "paths": {
+    "/rpts": {
+      "post": {
+        "tags": [
+          "Token"
+        ],
+        "parameters": [
+          {
+            "name": "requestHeader",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/RequestHeaderModel"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIntegrationRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIntegrationRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIntegrationRequestModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/pei-retrieval-details": {
+      "post": {
+        "tags": [
+          "Token"
+        ],
+        "parameters": [
+          {
+            "name": "ClientId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "ClientSecret",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "AuthorisationCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "RedirectUrl",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "CodeVerifier",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "requestHeader",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/RequestHeaderModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RequestHeaderModel": {
+        "type": "object",
+        "properties": {
+          "userSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "iss": {
+            "type": "string",
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TokenIntegrationRequestModel": {
+        "type": "object",
+        "properties": {
+          "rqp": {
+            "type": "string",
+            "nullable": true
+          },
+          "ticket": {
+            "type": "string",
+            "nullable": true
+          },
+          "as_uri": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

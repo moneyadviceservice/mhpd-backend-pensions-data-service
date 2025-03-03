@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "PeiIntegrationService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "version": "1.0"
+  },
+  "paths": {
+    "/peis": {
+      "get": {
+        "tags": [
+          "PeI"
+        ],
+        "parameters": [
+          {
+            "name": "requestModel",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/PeiIntegrationServiceRequestModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PeiIntegrationServiceRequestModel": {
+        "type": "object",
+        "properties": {
+          "rpt": {
+            "type": "string",
+            "nullable": true
+          },
+          "iss": {
+            "type": "string",
+            "nullable": true
+          },
+          "userSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "peisId": {
+            "type": "string",
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

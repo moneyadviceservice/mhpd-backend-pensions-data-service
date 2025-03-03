@@ -1,0 +1,135 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "PensionsDataService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "version": "1.0"
+  },
+  "paths": {
+    "/pensions-data": {
+      "get": {
+        "tags": [
+          "PensionsData"
+        ],
+        "parameters": [
+          {
+            "name": "requestHeader",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/RequestHeaderModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "PensionsData"
+        ],
+        "parameters": [
+          {
+            "name": "requestHeader",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/RequestHeaderModel"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PensionsDataRequestModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PensionsDataRequestModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PensionsDataRequestModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "PensionsData"
+        ],
+        "parameters": [
+          {
+            "name": "requestHeader",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/RequestHeaderModel"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PensionsDataRequestModel": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "nullable": true
+          },
+          "clientSecret": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorisationCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "redirectUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "codeVerifier": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RequestHeaderModel": {
+        "type": "object",
+        "properties": {
+          "userSessionId": {
+            "type": "string",
+            "nullable": true
+          },
+          "iss": {
+            "type": "string",
+            "nullable": true
+          },
+          "correlationId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

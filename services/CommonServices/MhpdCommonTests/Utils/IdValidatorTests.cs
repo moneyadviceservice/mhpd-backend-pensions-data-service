@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using MhpdCommon.Utils;
 
 namespace MhpdCommonTests.Utils;
@@ -85,5 +87,39 @@ public class IdValidatorTests
 
         // Assert
         Assert.Equal(expected, result);
+    }
+    
+    [Fact]
+    public void GenerateHashedString_ShouldReturn_40CharacterHex()
+    {
+        // Arrange
+        string peisStartCode = "0001";
+
+        // Act
+        string result = peisStartCode[..4] + BitConverter.ToString(
+            SHA1.HashData(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()))
+        ).Replace("-", "").ToLower()[4..];
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(40, result.Length);
+        Assert.Matches("^[a-f0-9]{40}$", result); // Matches the expected pattern
+    }
+
+    [Theory]
+    [InlineData("1001f518264ba44564b186f42af6659b5822eb6e", true)] // Valid hash
+    [InlineData("A2B1F10E51F71500225CF71E466A311A29C7342", false)] // Uppercase
+    [InlineData("5a2b1f10e51f71500225cf71e466a311a29c734", false)]  // 39 chars
+    [InlineData("5a2b1f10e51f71500225cf71e466a311a29c73421", false)] // 41 chars
+    [InlineData("zz2b1f10e51f71500225cf71e466a311a29c7342", false)] // Non-hex character
+    [InlineData(null, false)] // Null case
+    [InlineData("", false)] // Empty string
+    public void IsValidPeisId_ShouldValidateCorrectly(string? input, bool expected)
+    {
+        // Act
+        var isValid = _idValidator.IsValidPeisId(input);
+
+        // Assert
+        Assert.Equal(expected, isValid);
     }
 }

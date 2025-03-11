@@ -40,7 +40,7 @@ public class PeisController(
             return BadRequest(BadRequestXRequestIdInvalidResponse);
         }
         
-        if (string.IsNullOrEmpty(peis_id) || !idValidator.IsValidGuid(peis_id))
+        if (string.IsNullOrEmpty(peis_id) || !idValidator.IsValidPeisId(peis_id))
         {
             return BadRequest(BadRequestPeisIdInvalidResponse);
         }

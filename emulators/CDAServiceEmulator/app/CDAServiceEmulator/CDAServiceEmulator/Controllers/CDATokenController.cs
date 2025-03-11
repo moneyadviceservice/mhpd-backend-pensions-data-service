@@ -1,4 +1,6 @@
-﻿using CDAServiceEmulator.CosmosRepository;
+﻿using System.Security.Cryptography;
+using System.Text;
+using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Constants;
@@ -94,7 +96,9 @@ public class CdaTokenController(
             _ => tokenUtility.GenerateJwt(new CustomClaimDataModel 
                 { 
                     Name = QueryParams.Cda.Token.PeisId,
-                    Data = peisStartCode + Guid.NewGuid().ToString()[4..]
+                    Data = peisStartCode[..4] + BitConverter.ToString(
+                        SHA1.HashData(Encoding.UTF8.GetBytes(Guid.NewGuid().ToString()))
+                    ).Replace("-", "").ToLower()[4..]
                 })
         };
     }

@@ -12,76 +12,6 @@
         ],
         "parameters": [
           {
-            "name": "grant_type",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "ticket",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "claim_token",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "claim_token_format",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "scope",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "client_id",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "client_secret",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "code",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "redirect_uri",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "code_verifier",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
             "name": "X-Request-ID",
             "in": "header",
             "schema": {
@@ -89,6 +19,79 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "grant_type": {
+                    "type": "string"
+                  },
+                  "ticket": {
+                    "type": "string"
+                  },
+                  "claim_token": {
+                    "type": "string"
+                  },
+                  "claim_token_format": {
+                    "type": "string"
+                  },
+                  "scope": {
+                    "type": "string"
+                  },
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "type": "string"
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "redirect_uri": {
+                    "type": "string"
+                  },
+                  "code_verifier": {
+                    "type": "string"
+                  }
+                }
+              },
+              "encoding": {
+                "grant_type": {
+                  "style": "form"
+                },
+                "ticket": {
+                  "style": "form"
+                },
+                "claim_token": {
+                  "style": "form"
+                },
+                "claim_token_format": {
+                  "style": "form"
+                },
+                "scope": {
+                  "style": "form"
+                },
+                "client_id": {
+                  "style": "form"
+                },
+                "client_secret": {
+                  "style": "form"
+                },
+                "code": {
+                  "style": "form"
+                },
+                "redirect_uri": {
+                  "style": "form"
+                },
+                "code_verifier": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"

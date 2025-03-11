@@ -57,11 +57,11 @@
     "peisId": {
       "type": "string",
       "description": "The base url where the CDA peis API is located.",
-      "format": "uuid",
-      "minLength": 36,
-      "maxLength": 36,
+      "pattern": "^[a-f0-9]{40}$",
+      "minLength": 1,
+      "maxLength": 40,
       "examples": [
-        "d2552f23-84ca-4431-beeb-40a5c93864cf"
+        "5a2b1f10e51f71500225cf71e466a311a29c7342"
       ]
     },
     "peiData": {

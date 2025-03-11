@@ -7,11 +7,11 @@
     "peisId": {
       "type": "string",
       "description": "The unique identifier fro a collection of pensions data tath can be accessed by a Citizen User",
-      "format": "uuid",
-      "minLength": 36,
-      "maxLength": 36,
+      "pattern": "^[a-f0-9]{40}$",
+      "minLength": 1,
+      "maxLength": 40,
       "examples": [
-        "193a68e0-eddb-4396-86b4-f9ff6bad5c60"
+        "5a2b1f10e51f71500225cf71e466a311a29c7342"
       ]
     },
     "iss": {
@@ -40,7 +40,7 @@
   ],
   "examples": [
     {
-      "peisId": "193a68e0-eddb-4396-86b4-f9ff6bad5c60",
+      "peisId": "5a2b1f10e51f71500225cf71e466a311a29c7342",
       "iss": "DATA_PROVIDER_1fd1da88-9fb3-461c-a48a-3dba21bfba17",
       "userSessionId": "459566f6-5fce-479e-a098-298ca9676a85"
     }

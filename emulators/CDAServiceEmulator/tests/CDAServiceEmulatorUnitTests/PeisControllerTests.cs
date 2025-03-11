@@ -56,6 +56,7 @@ public class PeisControllerTests
         
         _mockIdValidatorMock = new Mock<IIdValidator>();
         _mockIdValidatorMock.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
+        _mockIdValidatorMock.Setup(x => x.IsValidPeisId(It.IsAny<string>())).Returns(true);
         _mockIdValidatorMock.Setup(x => x.IsValidPeI(It.IsAny<string>())).Returns(false);
         
         Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
@@ -152,7 +153,7 @@ public class PeisControllerTests
     {
         // Arrange
         AddAuthorisationHeader();
-        string peis_id = "cd0e4fdc-8586-4483-9899-17dd85af9074";
+        string peis_id = "1001f518264ba44564b186f42af6659b5822eb6e";
         
         // Arrange
         _mockScenarioModelContainer

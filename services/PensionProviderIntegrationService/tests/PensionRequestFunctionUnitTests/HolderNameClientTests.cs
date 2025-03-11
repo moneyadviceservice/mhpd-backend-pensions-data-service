@@ -24,14 +24,11 @@ public class HolderNameClientTests
         _cache.Setup(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>())).Verifiable();
     }
 
-    [Theory]
-    [InlineData(0, true)]
-    [InlineData(1, false)]
-    [InlineData(2, true)]
-    public async Task WhenRepositoryHasNoMatch_ClientModelIsReturned(int size, bool isNullExpected)
+    [Fact]
+    public async Task WhenRepositoryHasNoMatch_ClientModelIsReturned()
     {
         // Arrange
-        var handler = CreateHttpHandler(size);
+        var handler = CreateHttpHandler();
         _httpClientFactory.Setup(x => x.CreateClient(HttpClientNames.CdaService))
                 .Returns(new HttpClient(handler.Object)
                 {
@@ -47,20 +44,17 @@ public class HolderNameClientTests
         var result = await client.GetViewDataUrlAsync(Guid.NewGuid().ToString(), correlationId);
 
         //Assert
-        Assert.True(isNullExpected ? result == null : result != null);
+        Assert.NotNull(result);
         _httpClientFactory.Verify(x => x.CreateClient(HttpClientNames.CdaService), Times.Once);
 
-        if (!isNullExpected)
-        {
-            _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>()), Times.Once);
-        }
+        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
     public async Task WhenRepositoryHasAMatch_CacheModelIsReturned()
     {
         // Arrange
-        var handler = CreateHttpHandler(1);
+        var handler = CreateHttpHandler();
         _httpClientFactory.Setup(x => x.CreateClient(HttpClientNames.CdaService))
                 .Returns(new HttpClient(handler.Object)
                 {
@@ -93,7 +87,7 @@ public class HolderNameClientTests
     public async Task WhenCacheThrowsException_ClientModelIsReturned()
     {
         // Arrange
-        var handler = CreateHttpHandler(1);
+        var handler = CreateHttpHandler();
         _httpClientFactory.Setup(x => x.CreateClient(HttpClientNames.CdaService))
                 .Returns(new HttpClient(handler.Object)
                 {
@@ -123,24 +117,15 @@ public class HolderNameClientTests
         _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>()), Times.Once);
     }
 
-    private static Mock<HttpMessageHandler> CreateHttpHandler(int responseSize)
+    private static Mock<HttpMessageHandler> CreateHttpHandler()
     {
         var httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-        var configurations = new List<HolderNameConfigurationModel>();
-        var start = 0;
-        while (start++ < responseSize)
-        {
-            configurations.Add(new()
-            {
-                HolderNameGuid = Guid.NewGuid().ToString(),
-                Id = Guid.NewGuid().ToString(),
-                ViewDataUrl = "https://viewdata.pdp.com"
-            });
-        }
 
-        var response = new HolderNameViewDataResponse
+        var response = new HolderNameConfigurationModel
         {
-            Configurations = configurations
+            HolderNameGuid = Guid.NewGuid().ToString(),
+            Id = Guid.NewGuid().ToString(),
+            ViewDataUrl = "https://viewdata.pdp.com"
         };
 
         httpMessageHandlerMock
@@ -152,7 +137,7 @@ public class HolderNameClientTests
         return httpMessageHandlerMock;
     }
 
-    private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, HolderNameViewDataResponse? content = null)
+    private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, HolderNameConfigurationModel? content = null)
     {
         var response = new HttpResponseMessage(statusCode);
         if (content != null)

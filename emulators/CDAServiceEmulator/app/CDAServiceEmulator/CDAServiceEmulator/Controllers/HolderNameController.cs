@@ -34,6 +34,6 @@ public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataR
             return NotFound(Constants.HolderNameConstants.UnknownHolderNameId);
         }
 
-        return Ok(new HolderNameViewDataResponse { Configurations = [filteredConfigurations] });
+        return Ok(filteredConfigurations);
     }
 }

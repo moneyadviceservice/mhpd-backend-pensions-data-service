@@ -49,9 +49,9 @@ namespace CDAServiceEmulatorUnitTests
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<HolderNameViewDataResponse>(okResult.Value);
+            var response = Assert.IsType<HolderNameConfigurationModel>(okResult.Value);
             Assert.NotNull(response);
-            Assert.Single(response.Configurations);
+            Assert.Equal("https://exampleprovider2/pensiondataprovider/view-data", response.ViewDataUrl);
         }
 
         [Fact]

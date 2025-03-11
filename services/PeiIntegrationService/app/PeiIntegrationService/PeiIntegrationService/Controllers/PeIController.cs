@@ -85,7 +85,7 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
             return false;
         }
 
-        if (!_iIdValidator.IsValidGuid(request.PeisId))
+        if (!_iIdValidator.IsValidPeisId(request.PeisId))
         {
             message = Constants.ResponseType.PeisId;
             return false;

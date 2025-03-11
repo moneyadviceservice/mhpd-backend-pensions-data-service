@@ -62,14 +62,14 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
 
     private async Task<HolderNameConfigurationModel?> CreateResponse(HttpResponseMessage? httpResponse)
     {
-        var viewDataResponse = await httpResponse!.Content.ReadFromJsonAsync<HolderNameViewDataResponse>();
+        var viewDataResponse = await httpResponse!.Content.ReadFromJsonAsync<HolderNameConfigurationModel>();
 
-        if (viewDataResponse == null || viewDataResponse.Configurations.Count != 1)
+        if (viewDataResponse?.ViewDataUrl == null)
         {
             _logger.LogWarning("The holder name endpoint did not respond with exactly one configuration record");
             return null;
         }
 
-        return viewDataResponse.Configurations.Single();
+        return viewDataResponse;
     }
 }

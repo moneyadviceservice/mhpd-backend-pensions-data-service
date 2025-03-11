@@ -67,6 +67,7 @@ public class PeiIntegrationServiceUnitTests
             }));
 
         _idValidator.Setup(mock => mock.IsValidGuid(It.IsAny<string>())).Returns(true);
+        _idValidator.Setup(mock => mock.IsValidPeisId(It.IsAny<string>())).Returns(true);
 
         // Act
         var result = await _controller.GetAsync(request);
@@ -85,7 +86,7 @@ public class PeiIntegrationServiceUnitTests
     {
         //Arrange
         var wwwAuthenticateHeader = GetWwwAuthenticateResopnseHeader();
-        var request = AddHeadersModel("https://maps.com", "6d43ba5d-fd9d-4825-9b0f-f141bf5d6a9f", "7d3a0e7d-8a66-44b5-b144-efa8517fd787");
+        var request = AddHeadersModel("https://maps.com", "6d43ba5d-fd9d-4825-9b0f-f141bf5d6a9f", "0001f518264ba44564b186f42af6659b5822eb6e");
 
         _iCDAPiesServiceClient.Setup(x => x.GetPiesAsync(It.Is<CdaPiesServiceRequestModel>(x => !string.IsNullOrEmpty(x.Rpt))))
             .Returns(
@@ -121,6 +122,7 @@ public class PeiIntegrationServiceUnitTests
                         }
                     ));
 
+        _idValidator.Setup(mock => mock.IsValidPeisId(It.IsAny<string>())).Returns(true);
         _idValidator.Setup(mock => mock.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act

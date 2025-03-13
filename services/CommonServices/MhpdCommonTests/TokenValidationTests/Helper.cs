@@ -21,7 +21,7 @@ public static class Helper
         var logger4 = new Mock<ILogger<ClaimTokenFormatNotPensionDashboardRqpValidator>>();
         var logger5 = new Mock<ILogger<ScopeNotOwnerValidator>>();
         var logger6 = new Mock<ILogger<ScopeNotPresentValidator>>();
-        var logger7 = new Mock<ILogger<TicketNotAJwtValidator>>();
+        var logger7 = new Mock<ILogger<TicketNotAJweValidator>>();
         var logger8 = new Mock<ILogger<TicketQueryNotPresentValidator>>();
         var logger9 = new Mock<ILogger<ClientIdNotPresentValidation>>();
         var logger10 = new Mock<ILogger<ClientIdInvalidFormatValidation>>();
@@ -49,7 +49,7 @@ public static class Helper
             new ClaimTokenFormatNotPensionDashboardRqpValidator(logger4.Object),
             new ScopeNotOwnerValidator(logger5.Object),
             new ScopeNotPresentValidator(logger6.Object),
-            new TicketNotAJwtValidator(logger7.Object),
+            new TicketNotAJweValidator(logger7.Object),
             new TicketQueryNotPresentValidator(logger8.Object),
             new ClientIdNotPresentValidation(logger9.Object),
             new ClientIdInvalidFormatValidation(logger10.Object),
@@ -77,7 +77,7 @@ public static class Helper
         var logger2 = new Mock<ILogger<RqpNotPresentValidator>>();
         var logger3 = new Mock<ILogger<RqpNotAJwtValidator>>();
         var logger4 = new Mock<ILogger<TicketNotPresentTokenIntegrationValidator>>();
-        var logger5 = new Mock<ILogger<TicketNotAJwtTokenIntegrationValidator>>();
+        var logger5 = new Mock<ILogger<TicketNotAJweTokenIntegrationValidator>>();
         var logger6 = new Mock<ILogger<AsUriNotPresentValidator>>();
         var logger7 = new Mock<ILogger<AsUriNotAUrlValidator>>();
 
@@ -87,7 +87,7 @@ public static class Helper
             new RqpNotPresentValidator(logger2.Object),
             new RqpNotAJwtValidator(logger3.Object),
             new TicketNotPresentTokenIntegrationValidator(logger4.Object),
-            new TicketNotAJwtTokenIntegrationValidator(logger5.Object),
+            new TicketNotAJweTokenIntegrationValidator(logger5.Object),
             new AsUriNotPresentValidator(logger6.Object),
             new AsUriNotAUrlValidator(logger7.Object)
         };

@@ -15,7 +15,7 @@ builder.Services.AddScoped<ICdaServiceClient, CdaServiceClient>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, RqpNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, RqpNotAJwtValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, TicketNotPresentTokenIntegrationValidator>();
-builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, TicketNotAJwtTokenIntegrationValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, TicketNotAJweTokenIntegrationValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, AsUriNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<TokenIntegrationRequestModel>, AsUriNotAUrlValidator>();
 builder.Services.AddScoped<TokenIntegrationRequestValidatorPipeline>();

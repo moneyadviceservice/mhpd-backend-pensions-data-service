@@ -9,6 +9,7 @@ public static class TokenValidationMessages
     public const string MissingAuthorisationCode = "Missing authorisation code";
     public const string InvalidTicketQuery = "Invalid ticket query";
     public const string InvalidTicketQueryFormat = "Invalid ticket query format, not in jwt format";
+    public const string InvalidJweTicketQueryFormat = "Invalid ticket query format, not in jwe format";
     public const string InvalidRqpFormat = "Invalid rqp format, not in jwt format";
     public const string InvalidClaimToken = "Invalid claim token";
     public const string InvalidClaimTokenFormat = "Invalid claim token format";
@@ -39,6 +40,7 @@ public static class TokenValidationMessages
     public const string ScopeNotPresent = "Scope not provided in request";
     public const string TicketNotPresent = "Ticket not provided in request";
     public const string TicketNotAJwt = "Ticket not a jwt";
+    public const string TicketNotAJwe = "Ticket not a jwe";
     public const string RqpNotAJwt = "Rqp not a jwt";
     public const string ClaimTokenNotAJwt = "Claim token not a jwt";
     public const string ClientIdNotPresent = "client_id not provided in request";

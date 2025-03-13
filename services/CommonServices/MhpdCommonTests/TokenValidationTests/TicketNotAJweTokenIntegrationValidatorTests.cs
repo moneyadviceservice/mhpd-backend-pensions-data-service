@@ -5,24 +5,23 @@ using Moq;
 
 namespace MhpdCommonTests.TokenValidationTests;
 
-public class TicketNotAJwtValidatorTests
+public class TicketNotAJweTokenIntegrationValidatorTests
 {
-    private readonly TicketNotAJwtValidator _validator;
+    private readonly TicketNotAJweTokenIntegrationValidator _validator;
 
-    public TicketNotAJwtValidatorTests()
+    public TicketNotAJweTokenIntegrationValidatorTests()
     {
-        Mock<ILogger<TicketNotAJwtValidator>> loggerMock = new();
-        _validator = new TicketNotAJwtValidator(loggerMock.Object);
+        Mock<ILogger<TicketNotAJweTokenIntegrationValidator>> loggerMock = new();
+        _validator = new TicketNotAJweTokenIntegrationValidator(loggerMock.Object);
     }
 
     [Fact]
     public void Validate_ShouldReturnFailure_WhenTicketIsNotJwt()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new TokenIntegrationRequestModel
         {
             Ticket = "invalid.jwt.token", // Invalid JWT format
-            GrantType = TokenQueryParams.UmaGrantType
         };
 
         // Act
@@ -30,17 +29,16 @@ public class TicketNotAJwtValidatorTests
 
         // Assert
         Assert.False(result.IsValid); // Validation should fail
-        Assert.Equal(TokenValidationMessages.InvalidTicketQueryFormat, result.ErrorMessage);
+        Assert.Equal(TokenValidationMessages.InvalidJweTicketQueryFormat, result.ErrorMessage);
     }
 
     [Fact]
     public void Validate_ShouldReturnSuccess_WhenTicketIsValidJwt()
     {
         // Arrange
-        var request = new CdaTokenRequestModel
+        var request = new TokenIntegrationRequestModel
         {
-            Ticket = TokenQueryParams.ValidJwtToken,
-            GrantType = TokenQueryParams.UmaGrantType
+            Ticket = TokenQueryParams.ValidJweToken,
         };
 
         // Act
@@ -48,6 +46,5 @@ public class TicketNotAJwtValidatorTests
 
         // Assert
         Assert.True(result.IsValid); // Validation should succeed
-        Assert.Equal(10, _validator.Order);
     }
 }

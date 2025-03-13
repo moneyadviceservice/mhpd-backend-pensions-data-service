@@ -157,7 +157,7 @@ public class CdaTokenControllerTests
             ClaimToken = TokenQueryParams.ValidJwtToken,
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
             Scope = TokenQueryParams.Owner,
-            Ticket = TokenQueryParams.ValidJwtToken
+            Ticket = TokenQueryParams.ValidJweToken
         };
         _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 

@@ -91,7 +91,7 @@ builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTo
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTokenFormatNotPensionDashboardRqpValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ScopeNotOwnerValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ScopeNotPresentValidator>();
-builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, TicketNotAJwtValidator>();
+builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, TicketNotAJweValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, TicketQueryNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientIdNotPresentValidation>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClientIdInvalidFormatValidation>();

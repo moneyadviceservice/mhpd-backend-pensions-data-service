@@ -17,7 +17,7 @@ public class TokenRequestValidatorPipelineTests
             Scope = TokenQueryParams.Owner,
             ClaimToken = TokenQueryParams.ValidJwtToken,
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
-            Ticket = TokenQueryParams.ValidJwtToken
+            Ticket = TokenQueryParams.ValidJweToken
         };
 
         // Get ordered validators

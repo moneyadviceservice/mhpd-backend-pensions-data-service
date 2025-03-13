@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace MhpdCommon.TokenValidation;
 
-public class TicketNotAJwtTokenIntegrationValidator(ILogger<TicketNotAJwtTokenIntegrationValidator> logger) : 
+public class TicketNotAJweTokenIntegrationValidator(ILogger<TicketNotAJweTokenIntegrationValidator> logger) : 
     ITokenRequestValidator<TokenIntegrationRequestModel>
 {
     public int Order => 4;
@@ -12,10 +12,10 @@ public class TicketNotAJwtTokenIntegrationValidator(ILogger<TicketNotAJwtTokenIn
     
     public ValidationResult Validate(TokenIntegrationRequestModel request)
     {
-        if (request.Ticket != null && !JwtValidator.IsJwtFormatValid(request.Ticket))
+        if (request.Ticket != null && !JweValidator.IsJweFormatValid(request.Ticket))
         {
-            logger.LogError(TokenValidationMessages.TicketNotAJwt);
-            return ValidationResult.Failure(TokenValidationMessages.InvalidTicketQueryFormat);
+            logger.LogError(TokenValidationMessages.TicketNotAJwe);
+            return ValidationResult.Failure(TokenValidationMessages.InvalidJweTicketQueryFormat);
         }
 
         return ValidationResult.Success();

@@ -51,7 +51,7 @@ public static class Helper
         var logger2 = new Mock<ILogger<RqpNotPresentValidator>>();
         var logger3 = new Mock<ILogger<RqpNotAJwtValidator>>();
         var logger4 = new Mock<ILogger<TicketNotPresentTokenIntegrationValidator>>();
-        var logger5 = new Mock<ILogger<TicketNotAJwtTokenIntegrationValidator>>();
+        var logger5 = new Mock<ILogger<TicketNotAJweTokenIntegrationValidator>>();
         var logger6 = new Mock<ILogger<AsUriNotPresentValidator>>();
         var logger7 = new Mock<ILogger<AsUriNotAUrlValidator>>();
 
@@ -61,7 +61,7 @@ public static class Helper
             new RqpNotPresentValidator(logger2.Object),
             new RqpNotAJwtValidator(logger3.Object),
             new TicketNotPresentTokenIntegrationValidator(logger4.Object),
-            new TicketNotAJwtTokenIntegrationValidator(logger5.Object),
+            new TicketNotAJweTokenIntegrationValidator(logger5.Object),
             new AsUriNotPresentValidator(logger6.Object),
             new AsUriNotAUrlValidator(logger7.Object)
         };

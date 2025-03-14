@@ -41,6 +41,7 @@ public class MessageParserTests
     [InlineData(@"TestData/PensionRetrieval/EmptyIssPensionRetrievalMessage.json")]
     [InlineData(@"TestData/PensionRetrieval/InvalidPensionRetrievalMessage.json")]
     [InlineData(@"TestData/PensionRetrieval/NullSessionPensionRetrievalMessage.json")]
+    [InlineData(@"TestData/PensionRetrieval/InvalidAccessTokenRetrievalMessage.json")]
     public void WhenAnInvalidRetrievalPayloadIsParsed_ItThrowsAnException(string payloadFile)
     {
         var payloadData = File.ReadAllText(payloadFile);

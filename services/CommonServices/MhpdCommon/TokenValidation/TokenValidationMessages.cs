@@ -19,7 +19,7 @@ public static class TokenValidationMessages
     public const string InvalidCodeFormat = "Invalid code format";
     public const string InvalidAuthorisationCodeFormat = "Invalid authorisation code format";
     public const string InvalidClientSecretFormat = "Invalid client_secret";
-    public const string InvalidRedirectUri = "Invalid rediect_uri";
+    public const string InvalidRedirectUri = "Invalid redirect_uri";
     public const string InvalidCodeVerifierFormat = "Invalid code_verifier";
     public const string UnknownAuthorizationCode = "Unknown authorization code";
     public const string UnsupportedGrantType = "Unsupported grant_type";
@@ -57,4 +57,12 @@ public static class TokenValidationMessages
     public const string AsUriNotValidFormat = "as_uri incorrect format";
     public const string RqpNotPresent = "Rqp not provided in request";
     public const string AsUriNotPresent = "as_uri not provided in request";
+
+    // Claims Gathering responses
+    public const string AdditionalClaimsMessage = "Additional information is required to determine whether the client is authorized to access the requested resource.";
+    public const string AdditionalClaimsReason = "need_info";
+    public const string InvalidClaimiRedirectUri = "claims_redirect_uri is not a valid uri";
+    public const string InvalidState = "state is not valid";
+    public const string InvalidRequestId = "request_id is not valid";
+    public const string InvalidPermissionTicket = "permission ticket is not valid";
 }

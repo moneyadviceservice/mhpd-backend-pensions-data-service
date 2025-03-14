@@ -133,8 +133,8 @@ public class PeisControllerTests
         // Arrange
         string peis_id = "8586-4483-9899-17dd85af9074";
         var responseHeaderValue = "realm=\"PensionDashboard\", " + 
-            $"as_uri=\"{_httpConfiguration.CdaTokenEndpoint}\", " + 
-            "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
+            $"as_uri=\"{_httpConfiguration.CdaTokenEndpoint}\", " +
+            $"ticket=\"{SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket}\"";
 
         // Act
         var result = await _controller.GetAsync(peis_id, _xRequestId);
@@ -330,7 +330,7 @@ public class PeisControllerTests
     
     private void AddAuthorisationHeader()
     {
-        _httpContext.Request.Headers[HeaderNames.Authorization] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        _httpContext.Request.Headers[HeaderNames.Authorization] = $"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
     }
 
     private void AddInCorrectAuthorisationHeader()

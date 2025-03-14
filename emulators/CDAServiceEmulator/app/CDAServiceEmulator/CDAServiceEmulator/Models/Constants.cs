@@ -11,12 +11,12 @@ public static class Constants
 
     public static class TokenConstants
     {
-        public const string NoKidTokenCode = "0093";
-        public const string UnknownKidTokenCode = "0094";
-        public const string ExpiredTokenCode = "0095";
-        public const string UnknownKeyTokenCode = "0096";
-        public const string NullIdTokenCode = "0097";
-        public const string InvalidIdTokenCode = "0098";
-        public const string MissingPeisTokenCode = "0099";
+        public const string NoKidTokenCode = "9993";
+        public const string UnknownKidTokenCode = "9994";
+        public const string ExpiredTokenCode = "9995";
+        public const string UnknownKeyTokenCode = "9996";
+        public const string NullIdTokenCode = "9997";
+        public const string InvalidIdTokenCode = "9998";
+        public const string MissingPeisTokenCode = "9999";
     }
 }

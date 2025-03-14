@@ -1,13 +1,12 @@
-﻿using System.Net.Http.Headers;
-using CDAServiceEmulator.CosmosRepository;
+﻿using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
 using MhpdCommon.Constants;
-using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
+using System.Net.Http.Headers;
 
 namespace CDAServiceEmulator.Controllers;
 
@@ -103,7 +102,7 @@ public class PeisController(
 
     private static string GetPeisStartCode(string peisId)
     {
-        return peisId.Substring(0, 4);
+        return peisId[..4];
     }
 
     private bool ValidateAuthHeader()
@@ -122,12 +121,12 @@ public class PeisController(
             parameter = headerValue.Parameter;
         }
 
-        if (string.IsNullOrEmpty(parameter))
+        if (string.IsNullOrWhiteSpace(parameter))
         {
             var headers = Response.Headers;
             headers.Append("WWW-Authenticate", "realm=\"PensionDashboard\", " +
                                                $"as_uri=\"{_configuration.CdaTokenEndpoint}\", " +
-                                               "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"");
+                                               $"ticket=\"{SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket}\"");
             return false;
         }
 

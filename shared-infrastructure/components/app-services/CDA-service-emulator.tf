@@ -33,6 +33,7 @@ module "CDA_service_emulator" {
     "MhpdCosmosConfiguration__CdaPeisEmulatorTestInstanceDataContainerName"   = "cdaPeisEmulatorTestInstanceData"
     "MhpdCosmosConfiguration__HolderNameConfigurationModelsContainerName"     = "holdernameViewConfigurationEmulatorData"
     "MhpdCosmosConfiguration__TokenEmulatorPiesIdScenarioModelsContainerName" = "tokenEmulatorPiesIdScenarioModels"
+    "MhpdCosmosConfiguration__ViewDataModelContainerName"                     = "viewdatapayloads"
     "MhpdCosmosConfiguration__DatabaseName"                                   = "mhpd-testharness-${var.env}"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                                         = "true"
     "XDT_MicrosoftApplicationInsights_BaseExtensions"                         = "disabled"

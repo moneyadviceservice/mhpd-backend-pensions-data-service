@@ -32,6 +32,14 @@ public static class QueryParams
         {
             public const string Guid = "holdernameGuid";
         }
+
+        public static class ClaimsGathering
+        {
+            public const string State = "state";
+            public const string ClaimsRedirectUri = "claims_redirect_uri";
+            public const string RqpToken = "rqp_token";
+            public const string RequestId = "request_id";
+        }
     }
 
     public const string RetrievalRecordId = "pensionsRetrievalRecordId";

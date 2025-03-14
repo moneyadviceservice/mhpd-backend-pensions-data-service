@@ -12,4 +12,7 @@ public class PensionRetrievalPayload
         
     [JsonPropertyName("userSessionId")]
     public string? UserSessionId { get; set; }
+
+    [JsonPropertyName("accessToken")]
+    public string? AccessToken { get; set; }
 }

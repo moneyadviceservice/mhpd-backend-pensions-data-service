@@ -17,7 +17,7 @@ public partial class TokenUtility : ITokenUtility
     // Use the GeneratedRegexAttribute to compile the regex pattern at compile-time
     [GeneratedRegex(@"^[a-zA-Z0-9\-\.\\_\~]{43,128}$")]
     private static partial Regex CodeVerifierPattern();
-    
+
     private readonly JwtSettings _jwtSettings;
     private readonly int _expiryInSeconds;
 

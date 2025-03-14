@@ -11,4 +11,6 @@ public class MhpdCosmosConfiguration
     public string TokenEmulatorPiesIdScenarioModelsContainerName { get; set; } = string.Empty;
 
     public string HolderNameConfigurationModelsContainerName { get; set; } = string.Empty;
+
+    public string ViewDataModelContainerName { get; set; } = string.Empty;
 }

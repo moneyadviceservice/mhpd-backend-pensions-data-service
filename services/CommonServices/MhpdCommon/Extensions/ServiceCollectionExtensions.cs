@@ -12,6 +12,7 @@ using MhpdCommon.Models.MHPDModels.JwkUri;
 using MhpdCommon.Constants;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Caching;
+using PensionRequestFunction.Transformer;
 
 namespace MhpdCommon.Extensions
 {
@@ -23,6 +24,7 @@ namespace MhpdCommon.Extensions
             services.AddScoped<IIdValidator, IdValidator>();
             services.AddScoped<IMessageParser, MessageParser>();
             services.AddScoped<ITokenUtility, TokenUtility>();
+            services.AddScoped<IViewDataTransformer, ViewDataTransformer>();
 
             return services;
         }

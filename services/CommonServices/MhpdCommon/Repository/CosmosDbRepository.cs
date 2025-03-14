@@ -15,6 +15,17 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
 
     protected Container Container { get { return _container; } }
 
+    public async Task<IEnumerable<T>> GetAllAsync()
+    {
+        var query = new QueryDefinition("SELECT * FROM c");
+
+        var iterator = _container.GetItemQueryIterator<T>(query);
+
+        var response = await iterator.ReadNextAsync();
+
+        return [.. response];
+    }
+
     public async Task<T?> GetByIdAsync(string id, string partitionKey)
     {
         try

@@ -1,8 +1,8 @@
 ﻿using MhpdCommon.Constants;
 using MhpdCommon.Models.MessageBodyModels;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Schema;
-using System.Text.Json;
 
 namespace MhpdCommon.Utils;
 
@@ -33,16 +33,61 @@ public class MessageParser : IMessageParser
         var schemaData = ResourceProvider.GetString(schemaName);
 
         JSchema schema = JSchema.Parse(schemaData);
-        JObject json = JObject.Parse(messageContent);
 
-        if (!json.IsValid(schema, out IList<string> errors))
+        List<string> errors = [];
+
+        using (JsonTextReader reader = new(new StringReader(messageContent)))
         {
-            throw new AggregateException(errors.Select(error =>
+            JSchemaValidatingReader validatingReader = new(reader)
             {
-                return new Exception(error);
-            }));
+                Schema = schema
+            };
+
+            validatingReader.ValidationEventHandler += (sender, args) =>
+            {
+                UnwrapNestedErrors(args.ValidationError, errors);
+            };
+
+            using JsonReader jsonReader = new JsonTextReader(new StringReader(messageContent));
+            JObject.Load(validatingReader);
         }
 
-        return JsonSerializer.Deserialize<TPayload>(messageContent);
+        if (errors.Count > 0)
+        {
+            throw new AggregateException(errors.Distinct().Select(error => new Exception(error)));
+        }
+
+        return System.Text.Json.JsonSerializer.Deserialize<TPayload>(messageContent);
+    }
+
+    static void UnwrapNestedErrors(ValidationError error, List<string> errorList, string parentPath = "")
+    {
+        string errorPath = string.IsNullOrEmpty(error.Path) ? "root" : error.Path;
+        string errorMessage = error.Message;
+
+        // Get the actual name of failed schemas
+        if (errorMessage.Contains("$ref"))
+        {
+            errorMessage = errorMessage.Replace("$ref", error.Schema!.Ref!.Title);
+        }
+
+        // Handle 'oneOf' validation errors for schema branches
+        if (errorMessage.Contains("oneOf"))
+        {
+            errorMessage += $" (Possible expected schemas: {string.Join(", ", error.Schema.OneOf.Select(one => one.Title))})";
+        }
+
+        if (!string.IsNullOrEmpty(parentPath))
+        {
+            errorPath = $"{parentPath}.{errorPath}";
+        }
+
+        errorList.Add($"Error at {errorPath}: {errorMessage}");
+
+        // Recursively process all child errors
+        foreach (var childError in error.ChildErrors)
+        {
+            UnwrapNestedErrors(childError, errorList, errorPath);
+        }
     }
 }

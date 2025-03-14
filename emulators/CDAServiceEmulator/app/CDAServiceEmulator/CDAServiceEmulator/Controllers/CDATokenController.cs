@@ -1,17 +1,19 @@
-﻿using System.Security.Cryptography;
-using System.Text;
-using CDAServiceEmulator.CosmosRepository;
+﻿using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.MHPDModels.JwkUri;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace CDAServiceEmulator.Controllers;
 
@@ -22,9 +24,12 @@ public class CdaTokenController(
     IIdValidator idValidator,
     TokenRequestValidatorPipeline tokenRequestValidators, 
     TokenEmulatorPiesIdScenarioModelsRepository tokenEmulatorPiesIdScenarioModelRepository,
-    ITokenUtility tokenUtility)
+    ITokenUtility tokenUtility,
+    IOptions<CommonHttpConfiguration> options)
     : ControllerBase
 {
+    private readonly CommonHttpConfiguration httpConfiguration = options.Value;
+
     [HttpPost]
     [Route("token")]
     public async Task<IActionResult> GenerateTokenAsync([FromForm] CdaTokenRequestModel request,
@@ -45,29 +50,59 @@ public class CdaTokenController(
             return await Task.FromResult<IActionResult>(BadRequest(validationResult.ErrorMessage));
         }
 
-        CdaTokenResponseModel response;
-        
         // Validate code when grant_type is authorization_code
         if (request is { Code: not null, GrantType: TokenQueryParams.AuthorizationCodeGrantType })
         {
-            var data = await tokenEmulatorPiesIdScenarioModelRepository.GetByIdAsync(request.Code, request.Code);
-            if (data != null && !string.IsNullOrEmpty(data.PeisIdStartCode))
-            {
-               response = CreateResponse(true, data.PeisIdStartCode);
-            }
-            else
-            {
-                return BadRequest(TokenValidationMessages.UnknownAuthorizationCode);
-            }
+            return await ProcessIdToken(request.Code);
         }
         else
         {
-            response = CreateResponse();
+            return ProcessAccessToken(request.Ticket);
+        }
+    }
+
+    private async Task<IActionResult> ProcessIdToken(string code)
+    {
+        var data = await tokenEmulatorPiesIdScenarioModelRepository.GetByIdAsync(code, code);
+        if (data != null && !string.IsNullOrEmpty(data.PeisIdStartCode))
+        {
+            var response = CreateResponse(true, data.PeisIdStartCode);
+
+            LogInfoWithJsonObject("Response: ", response);
+            return Ok(response);
+        }
+        else
+        {
+            LogError(TokenValidationMessages.UnknownAuthorizationCode);
+            return BadRequest(TokenValidationMessages.UnknownAuthorizationCode);
+        }
+    }
+
+    private IActionResult ProcessAccessToken(string? ticket)
+    {
+        if (string.Equals(ticket, SecurityConstants.Jwe.AuthorizedPermissionTicket))
+        {
+            var response = CreateResponse();
+
+            LogInfoWithJsonObject("Response: ", response);
+            return Ok(response);
         }
 
-        LogInfoWithJsonObject("Response: ", response);
-        
-        return await Task.FromResult<IActionResult>(Ok(response));
+        if (string.Equals(ticket, SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket))
+        {
+            var redirectResponse = new
+            {
+                ticket = SecurityConstants.Jwe.ClaimsRequiredPermissionTicket,
+                error_description = TokenValidationMessages.AdditionalClaimsMessage,
+                error = TokenValidationMessages.AdditionalClaimsReason,
+                redirect_user = UrlHelper.ConstructPath(httpConfiguration.CdaServiceUrl, HttpEndpoints.External.ClaimsGathering)
+            };
+
+            LogError(TokenValidationMessages.AdditionalClaimsMessage);
+            return StatusCode(403, redirectResponse);
+        }
+
+        return BadRequest(TokenValidationMessages.InvalidTicketQuery);
     }
 
     private CdaTokenResponseModel CreateResponse(bool isAuthorizationCodeGrantType = false, string peisStartCode = "")

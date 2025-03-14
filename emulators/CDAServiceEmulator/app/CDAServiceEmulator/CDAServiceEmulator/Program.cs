@@ -83,6 +83,14 @@ builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameConfigurat
     return new HolderNameViewDataRepository(cosmosClient, config.DatabaseName, config.HolderNameConfigurationModelsContainerName);
 });
 
+builder.Services.AddSingleton(provider =>
+{
+    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+
+    return new ViewDataRepository(cosmosClient, config.DatabaseName, config.ViewDataModelContainerName);
+});
+
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, GrantTypeNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, UnsupportedGrantTypeValidation>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, ClaimTokenNotPresentValidation>();

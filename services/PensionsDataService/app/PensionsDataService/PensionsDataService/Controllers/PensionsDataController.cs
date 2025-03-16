@@ -9,6 +9,7 @@ using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using PensionsDataService.CosmosRepository;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
 
@@ -21,9 +22,8 @@ public class PensionsDataController(
     IIdValidator idValidator,
     PensionsDataRequestValidatorPipeline requestValidators,
     PensionServiceClients serviceClients,
-    IOptions<CommonServiceBusConfiguration> serviceBusOptions,
     IOptions<PeiOrchestrationSettings> peiRetrievalOptions,
-    IMessagingService messagingService)
+    UserSessionDataRepository userSessionDataRepository)
     : ControllerBase
 {
     private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClient = serviceClients.TokenIntegrationServiceClient;
@@ -128,17 +128,26 @@ public class PensionsDataController(
         var result = await _tokenIntegrationServiceClient
             .PostAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader);
         
-        // Post a message to initiate a process to retrieve the Pensions Data for the userSessionId
-        var message = CreateRequestPayload(result, requestHeader);
-        logger.LogInformation("Post a message to initiate a process to retrieve the Pensions Data for the userSessionId {UserSessionId}",
-            message.UserSessionId);
-        await messagingService.SendMessageAsync(message, serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
+        logger.LogResponse(result);
 
-        var response = Accepted(new
+        var userSessionId = requestHeader.UserSessionId!;
+
+        if (!IsValidUserSessionData(userSessionId, result.PeisId))
         {
-            predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime
-        });
+            return await Task.FromResult<IActionResult>(StatusCode(500, "Internal server error"));
+        }
+        
+        // Add the idToken to the userSessionData container against the userSessionId for downstream use
+        await userSessionDataRepository.InsertItemAsync(new UserSessionData
+        {
+            Id = userSessionId,
+            UserSessionId = userSessionId,
+            PeisId = result.PeisId!
+        }, userSessionId);
+        
+        logger.LogInformation("UserSessionData created for {UserSessionId} with {PeisId}", userSessionId, result.PeisId);
 
+        var response = Accepted();
         logger.LogResponse(response);
         
         return await Task.FromResult<IActionResult>(response);
@@ -232,16 +241,6 @@ public class PensionsDataController(
         return true;
     }
 
-    private static PensionRetrievalPayload CreateRequestPayload(PeiRetrievalDetailsResponseModel response, RequestHeaderModel requestHeader)
-    {
-        return new PensionRetrievalPayload
-        {
-            Iss = requestHeader.Iss,
-            PeisId = response.PeisId,
-            UserSessionId = requestHeader.UserSessionId
-        };
-    }
-    
     private static PensionsDataRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request, ILogger<PensionsDataController> logger)
     {
         var requestModel = new PensionsDataRequestModel
@@ -395,5 +394,22 @@ public class PensionsDataController(
             linkedExternalPolicies.Add(policyId, [item]);
             policyList.Add(pensionPolicyId, policyId);
         }
+    }
+
+    private bool IsValidUserSessionData(string userSessionId, string? peisId)
+    {
+        if (string.IsNullOrEmpty(userSessionId))
+        {
+            logger.LogError("UserSessionId is missing");
+            return false;
+        }
+        
+        if (string.IsNullOrEmpty(peisId))
+        {
+            logger.LogError("PeisId is missing");
+            return false;
+        }
+
+        return true;
     }
 }

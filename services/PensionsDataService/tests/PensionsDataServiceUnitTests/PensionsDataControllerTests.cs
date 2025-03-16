@@ -8,11 +8,13 @@ using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using PensionsDataService;
 using PensionsDataService.Controllers;
+using PensionsDataService.CosmosRepository;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
 
@@ -25,6 +27,8 @@ public class PensionsDataControllerTests
     private readonly Mock<IRetrievalRecordServiceClient> _mockRetrievalRecordFunctionClient;
     private readonly Mock<IRetrievedPensionsRecordClient> _mockRetrievedPensionsRecordClient;
     private readonly PensionsDataController _controller;
+    private readonly Mock<Container> _mockUserSessionDataContainer;
+    private const string ValidPeisId = "0001f518264ba44564b186f42af6659b5822eb6e";
 
     private readonly RequestHeaderModel _validRequestHeader = new()
     {
@@ -40,6 +44,32 @@ public class PensionsDataControllerTests
         Mock<IMessagingService> mockMessagingService = new();
         Mock<IOptions<CommonServiceBusConfiguration>> mockServiceBusOptions = new();
         Mock<IOptions<PeiOrchestrationSettings>> mockOrchestrationSettings = new();
+        Mock<UserSessionDataRepository> mockUserSessionDataRepository = new();
+        
+        Mock<CosmosClient> mockCosmosClient = new();
+        _mockUserSessionDataContainer = new();
+        Mock<Database> mockDatabase = new();
+        
+        var configuration = new CosmosBusinessConfiguration
+        {
+            DatabaseId = "TestDatabase",
+            UserSessionDataContainer = "TestUserSessionDataContainer",
+        };
+        
+        Mock<IOptions<CosmosBusinessConfiguration>> mockCosmosConfigOptions = new();
+        mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
+
+        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseId))
+            .Returns(mockDatabase.Object);
+
+        mockDatabase.Setup(mock => mock.GetContainer(configuration.UserSessionDataContainer))
+            .Returns(_mockUserSessionDataContainer.Object);
+        
+        var mockScenarioModelRepository = new Mock<UserSessionDataRepository>(
+            mockCosmosClient.Object,
+            configuration.DatabaseId,
+            configuration.UserSessionDataContainer
+        );
 
         // Arrange: Set up the mocks for the dependencies
         _mockTokenIntegrationServiceClient = new Mock<ITokenIntegrationServiceClient>();
@@ -80,10 +110,9 @@ public class PensionsDataControllerTests
             mockLogger.Object, 
             _mockIdValidator.Object, 
             mockValidatorPipeline.Object, 
-            mockServiceClients.Object,
-            mockServiceBusOptions.Object, 
+            mockServiceClients.Object, 
             mockOrchestrationSettings.Object,
-            mockMessagingService.Object
+            mockScenarioModelRepository.Object
         );
     }
 
@@ -251,7 +280,10 @@ public class PensionsDataControllerTests
 
         // Mock the token integration service client to simulate a successful response
         _mockTokenIntegrationServiceClient.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
-            .ReturnsAsync(new PeiRetrievalDetailsResponseModel());
+            .ReturnsAsync(new PeiRetrievalDetailsResponseModel
+            {
+                PeisId = ValidPeisId
+            });
 
         // Act
         var result = await _controller.PostPensionsDataAsync(request, _validRequestHeader);
@@ -259,6 +291,40 @@ public class PensionsDataControllerTests
         // Assert
         var statusCodeResult = Assert.IsType<AcceptedResult>(result);
         Assert.Equal((int)HttpStatusCode.Accepted, statusCodeResult.StatusCode);
+        _mockTokenIntegrationServiceClient.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
+            It.Is<RequestHeaderModel>(model => model.CorrelationId == _validRequestHeader.CorrelationId)), Times.Once);
+    }
+    
+    [Fact]
+    public async Task PostPensionsDataAsync_WhenRequestIsInValid_ThenReturnsNoContent()
+    {
+        // Arrange
+        var request = new PensionsDataRequestModel
+        {
+            ClientId = TokenQueryParams.ValidClientId,
+            ClientSecret = TokenQueryParams.ValidClientSecret,
+            AuthorisationCode = TokenQueryParams.ValidCode,
+            RedirectUrl = "https://example.com",
+            CodeVerifier = TokenQueryParams.ValidCodeVerifier
+        };
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Set up a mock validator to return a success
+        var mockValidator = new Mock<ITokenRequestValidator<PensionsDataRequestModel>>();
+        mockValidator.Setup(v => v.Validate(It.IsAny<PensionsDataRequestModel>()))
+            .Returns(ValidationResult.Success);
+
+        // Mock the token integration service client to simulate a successful response
+        _mockTokenIntegrationServiceClient.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new PeiRetrievalDetailsResponseModel());
+
+        // Act
+        var result = await _controller.PostPensionsDataAsync(request, _validRequestHeader);
+
+        // Assert
+        var statusCodeResult = Assert.IsType<ObjectResult>(result);
+        Assert.Equal((int)HttpStatusCode.InternalServerError, statusCodeResult.StatusCode);
         _mockTokenIntegrationServiceClient.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
             It.Is<RequestHeaderModel>(model => model.CorrelationId == _validRequestHeader.CorrelationId)), Times.Once);
     }

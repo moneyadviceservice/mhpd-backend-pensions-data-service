@@ -5,6 +5,10 @@ using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using PensionsDataService.HttpClients;
 using System.Diagnostics.CodeAnalysis;
+using MhpdCommon.Models.Configuration;
+using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
+using PensionsDataService.CosmosRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,19 @@ builder.Services.AddMhpdServiceBusTools();
 builder.Services.AddMhpdHttpClients();
 builder.Services.AddCommonConfigurations();
 builder.Services.AddApplicationInsightsTelemetry();
+
+builder.Services.AddMhpdCosmosDb(builder.Configuration);
+builder.Services.Configure<CosmosBusinessConfiguration>(builder.Configuration.GetSection("CosmosBusinessConfiguration"));
+
+// Register UserSessionDataRepo
+builder.Services.AddSingleton<UserSessionDataRepository>(provider =>
+{
+    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+    var config = provider.GetRequiredService<IOptions<CosmosBusinessConfiguration>>().Value;
+
+    return new UserSessionDataRepository(cosmosClient, config.DatabaseId, config.UserSessionDataContainer);
+});
+
 
 builder.Services.AddControllers();
 

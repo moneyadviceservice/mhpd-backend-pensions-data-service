@@ -1,4 +1,3 @@
-using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.CosmosRepository;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
@@ -22,6 +21,7 @@ var mtlsCertificate = await builder!.ConfigureMtlsWithClientCertificateAsync();
 // Add services to the container.
 builder.Services.AddMhpdHttpClients();
 builder.Services.AddMhpdUtilities();
+builder.Services.AddMhpdCosmosDb();
 builder.Services.AddControllers();
 
 builder.Services.AddApplicationInsightsTelemetry();
@@ -45,13 +45,11 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
     return new CosmosClient(connString, options);
 });
 
-builder.Services.Configure<MhpdCosmosConfiguration>(builder.Configuration.GetSection("MhpdCosmosConfiguration"));
-
 // Register CdaPeisEmulatorScenarioModelRepository
 builder.Services.AddSingleton<CdaPeisEmulatorScenarioModelRepository>(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
     
     return new CdaPeisEmulatorScenarioModelRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorScenarioModelContainerName);
 });
@@ -60,7 +58,7 @@ builder.Services.AddSingleton<CdaPeisEmulatorScenarioModelRepository>(provider =
 builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
     
     return new CdaPeisEmulatorTestInstanceDataRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorTestInstanceDataContainerName);
 });
@@ -69,7 +67,7 @@ builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provide
 builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
     
     return new TokenEmulatorPiesIdScenarioModelsRepository(cosmosClient, config.DatabaseName, config.TokenEmulatorPiesIdScenarioModelsContainerName);
 });
@@ -78,7 +76,7 @@ builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provi
 builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameConfigurationModel>>(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
 
     return new HolderNameViewDataRepository(cosmosClient, config.DatabaseName, config.HolderNameConfigurationModelsContainerName);
 });
@@ -86,7 +84,7 @@ builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameConfigurat
 builder.Services.AddSingleton(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
 
     return new ViewDataRepository(cosmosClient, config.DatabaseName, config.ViewDataModelContainerName);
 });

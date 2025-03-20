@@ -1,6 +1,6 @@
-﻿using CDAServiceEmulator.Configuration;
-using CDAServiceEmulator.Controllers;
+﻿using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Utils;
 using Microsoft.Azure.Cosmos;
@@ -23,7 +23,7 @@ public class ScenarioControllerTests
     {
         Mock<ILogger<ScenarioController>> logger = new();
 
-        var configuration = new MhpdCosmosConfiguration
+        var configuration = new CosmosTestHarnessConfiguration
         {
             DatabaseName = "TestDatabase",
             TokenEmulatorPiesIdScenarioModelsContainerName = "tokenEmulatorPiesIdScenarioModels",

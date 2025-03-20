@@ -1,4 +1,4 @@
-﻿using TokenIntegrationService.Models;
+﻿using MhpdCommon.Models.MessageBodyModels;
 
 namespace TokenIntegrationService.HttpClients;
 

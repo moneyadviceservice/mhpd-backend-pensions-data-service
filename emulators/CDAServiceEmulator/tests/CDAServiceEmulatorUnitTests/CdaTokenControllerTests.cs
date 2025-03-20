@@ -1,4 +1,3 @@
-using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
@@ -26,7 +25,7 @@ public class CdaTokenControllerTests
 
     public CdaTokenControllerTests()
     {
-        var configuration = new MhpdCosmosConfiguration
+        var configuration = new CosmosTestHarnessConfiguration
         {
             DatabaseName = "TestDatabase",
             TokenEmulatorPiesIdScenarioModelsContainerName = "TokenEmulatorPiesIdScenarioModelsRepository",
@@ -45,7 +44,7 @@ public class CdaTokenControllerTests
         mockDatabase.Setup(mock => mock.GetContainer(configuration.TokenEmulatorPiesIdScenarioModelsContainerName))
             .Returns(_mockScenarioModelContainer.Object);
 
-        Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
+        Mock<IOptions<CosmosTestHarnessConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
 
         // Instantiate the TokenEmulatorPiesIdScenarioModelsRepository with the mocked CosmosClient and configuration
@@ -225,7 +224,7 @@ public class CdaTokenControllerTests
         if (expectedCode == (int)HttpStatusCode.OK)
         {
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<CdaTokenResponseModel>(okResult.Value);
+            var response = Assert.IsType<CDAServiceEmulator.Models.Token.CdaTokenResponseModel>(okResult.Value);
             Assert.NotNull(response.AccessToken);
             Assert.Equal(TokenQueryParams.TokenTypeRpt, response.TokenType);
         }
@@ -285,7 +284,7 @@ public class CdaTokenControllerTests
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
-        var responseValue = Assert.IsType<CdaTokenResponseModel>(okResult.Value);
+        var responseValue = Assert.IsType<CDAServiceEmulator.Models.Token.CdaTokenResponseModel>(okResult.Value);
         Assert.NotNull(responseValue.AccessToken);
         if(startCode != Constants.TokenConstants.NullIdTokenCode)
             Assert.NotNull(responseValue.IdToken);

@@ -13,6 +13,7 @@ public static class HttpEndpoints
         public const string IntegrationPeis = "peis";
         public const string Rqp = "rqp";
         public const string Rpts = "rpts";
+        public const string ClaimsGathering = "claims-gathering-redirect";
     }
 
     public static class External

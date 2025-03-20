@@ -1,27 +1,20 @@
-﻿using MhpdCommon.Constants;
-using MhpdCommon.Extensions;
+﻿using MhpdCommon.Extensions;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models;
 using PeiIntegrationService.Models.CdaPiesService;
-using PeiIntegrationService.Models.MapsCdaService;
 using PeiIntegrationService.Models.PeiIntegrationService;
-using PeiIntegrationService.Models.TokenIntegrationService;
-using System.Net;
 
 namespace PeiIntegrationService.Controllers;
 
 [Route("/")]
 [ApiController]
-public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServiceClient iMapsRqpService,
-    ITokenIntegrationServiceClient iTokenIntegrationService, IIdValidator validator, ILogger<PeIController> logger) : ControllerBase
+public class PeIController(ICdaPiesServiceClient iCDAPiesService, IIdValidator validator, ILogger<PeIController> logger) : ControllerBase
 {
-    private readonly ICdaPiesServiceClient _iCDAPiesService = iCDAPiesService;
-    private readonly IMapsRqpServiceClient _iMapsRqpService = iMapsRqpService;
+    private readonly ICdaPiesServiceClient _peisServiceClient = iCDAPiesService;
     private readonly IIdValidator _iIdValidator = validator;
     private readonly ILogger<PeIController> _logger = logger;
-    private readonly ITokenIntegrationServiceClient _iTokenIntegrationService = iTokenIntegrationService;
 
     [HttpGet]
     [Route("peis")]
@@ -41,41 +34,12 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
             CorrelationId = requestModel.CorrelationId,
         };
 
-        var peidData =  await FetchPeiData(requestModel, cdaPeisRequest);
+        var peidData =  await _peisServiceClient.GetPiesAsync(cdaPeisRequest);
 
         _logger.LogResponse(peidData);
 
-        if (peidData == null)
-        {
-            return StatusCode((int)HttpStatusCode.InternalServerError);
-        }
-
         return Ok(peidData);
     }
-
-    private async Task<IEnumerable<PeiModel>?> FetchPeiData(PeiIntegrationServiceRequestModel requestModel, CdaPiesServiceRequestModel cdaPeisRequest)
-    {
-        var result = await CallCdaPiesService(cdaPeisRequest);
-
-        if (result!.Peis != null)
-        {
-            CreateSuccessResponseHeaders(cdaPeisRequest);
-            return result!.Peis;
-        }
-        else
-        {
-            var resultAuthorisationDance = await PerformAuthorisationDance(result!, cdaPeisRequest, requestModel);
-            if (resultAuthorisationDance!.Peis != null)
-            {
-                CreateSuccessResponseHeaders(cdaPeisRequest);
-                return resultAuthorisationDance!.Peis;
-            }
-        }
-
-        return null;
-    }
-
-    #region Private Methods
 
     private bool TryValidateRequestHeaders (PeiIntegrationServiceRequestModel request, out string? message)
     {
@@ -111,67 +75,4 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IMapsRqpServic
         message = null;
         return true;
     }
-
-    private void CreateSuccessResponseHeaders(CdaPiesServiceRequestModel request)
-    {
-        var headers = Response.Headers;
-        headers.Append(HeaderConstants.Rpt, request.Rpt);
-    }
-
-    private async Task<CdaPiesServiceResponseModel?> PerformAuthorisationDance(CdaPiesServiceResponseModel cdaPiesServiceResponseModel, 
-        CdaPiesServiceRequestModel cdaPeisRequest, PeiIntegrationServiceRequestModel requestModel)
-    {
-        var mapsRqpServiceRqpResponseModel = await CallMapsRqpService(requestModel);
-        var tokenIntegrationResponseModel = await CallTokenIntegrationService(cdaPiesServiceResponseModel, mapsRqpServiceRqpResponseModel, requestModel.CorrelationId);
-
-        cdaPeisRequest!.Rpt = tokenIntegrationResponseModel!.Rpt;
-
-        return await CallCdaPiesService(cdaPeisRequest);
-    }
-
-    private async Task<CdaPiesServiceResponseModel?> CallCdaPiesService(CdaPiesServiceRequestModel cdaPiesServiceRequestModel)
-    {
-        return await _iCDAPiesService.GetPiesAsync(cdaPiesServiceRequestModel);
-    }
-
-    private async Task<TokenIntegrationResponseModel> CallTokenIntegrationService(CdaPiesServiceResponseModel cdaServiceResponseModel, 
-        MapsRqpServiceResponseModel mapsCdaServiceResponseModel, string correlationId)
-    {
-        var ticketValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
-        var asUriValue = ExtractWWWAuthenticateHeaderValue(cdaServiceResponseModel.ResponseMessage!.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
-
-        var tokenIntegrationServiceRequestModel = new TokenIntegrationServiceRequestModel
-        {
-            Ticket = ticketValue,
-            Rqp = mapsCdaServiceResponseModel!.Rqp,
-            As_Uri = asUriValue,
-            CorrelationId = correlationId
-        };
-
-        var tokenIntegrationResponseModel = await _iTokenIntegrationService.PostRpt(tokenIntegrationServiceRequestModel);
-
-        return tokenIntegrationResponseModel;
-    }
-
-    private async Task<MapsRqpServiceResponseModel> CallMapsRqpService(PeiIntegrationServiceRequestModel requestModel)
-    {
-        MapsRqpServiceRequestModel mapsRqpServiceRequestModel = new()
-        {
-            Iss = requestModel.Iss,
-            UserSessionId = requestModel.UserSessionId,
-            CorrelationId = requestModel.CorrelationId,
-        };
-
-        var mapsRqpServiceResponseModel = await _iMapsRqpService.PostRqp(mapsRqpServiceRequestModel);
-
-        return mapsRqpServiceResponseModel!;
-    }
-
-    private string ExtractWWWAuthenticateHeaderValue(string wwwAuthenticateHeader, string tokenToExtract)
-    {
-        var token = wwwAuthenticateHeader.Split(tokenToExtract)[1];
-        return token.Split(",")[0].Replace("\"", "");
-    }
-
-    #endregion
 }

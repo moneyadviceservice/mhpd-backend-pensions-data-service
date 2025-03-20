@@ -1,6 +1,5 @@
 ﻿using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
-using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
@@ -14,6 +13,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Security.Cryptography;
 using System.Text;
+using CdaTokenResponseModel = CDAServiceEmulator.Models.Token.CdaTokenResponseModel;
 
 namespace CDAServiceEmulator.Controllers;
 
@@ -90,12 +90,12 @@ public class CdaTokenController(
 
         if (string.Equals(ticket, SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket))
         {
-            var redirectResponse = new
+            var redirectResponse = new ClaimsGatheringResponseModel
             {
-                ticket = SecurityConstants.Jwe.ClaimsRequiredPermissionTicket,
-                error_description = TokenValidationMessages.AdditionalClaimsMessage,
-                error = TokenValidationMessages.AdditionalClaimsReason,
-                redirect_user = UrlHelper.ConstructPath(httpConfiguration.CdaServiceUrl, HttpEndpoints.External.ClaimsGathering)
+                Ticket = SecurityConstants.Jwe.ClaimsRequiredPermissionTicket,
+                ErrorDescription = TokenValidationMessages.AdditionalClaimsMessage,
+                Error = TokenValidationMessages.AdditionalClaimsReason,
+                RedirectUser = UrlHelper.ConstructPath(httpConfiguration.CdaServiceUrl, HttpEndpoints.External.ClaimsGathering)
             };
 
             LogError(TokenValidationMessages.AdditionalClaimsMessage);

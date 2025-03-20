@@ -107,7 +107,7 @@ public class CdaServiceClientUnitTests
 
 
     [Fact]
-    public async Task PostRpt_Should_Throw_ServiceCommunicationException_When_HttpRequestException_Occurs()
+    public async Task PostRpt_Should_Throw_InvalidOperationException_When_HttpRequestException_Occurs()
     {
         var request = new CdaTokenRequestModel();
 
@@ -119,11 +119,10 @@ public class CdaServiceClientUnitTests
                 ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
-        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await _sut.PostAsync(request)
         );
 
-        Assert.Equal("Error during CDA Service Token POST", ex.Message);
         Assert.IsType<HttpRequestException>(ex.InnerException);
     }
 
@@ -145,7 +144,7 @@ public class CdaServiceClientUnitTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
 
-        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await _sut.PostAsync(request)
         );
 
@@ -165,11 +164,10 @@ public class CdaServiceClientUnitTests
                 ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new Exception("Unexpected error"));
 
-        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await _sut.PostAsync(request)
         );
 
-        Assert.Equal("An unexpected error occurred during CDA Service Token POST.", ex.Message);
         Assert.IsType<Exception>(ex.InnerException);
     }
 }

@@ -1,5 +1,3 @@
-using System.Net;
-using CDAServiceEmulator.Configuration;
 using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
@@ -13,6 +11,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
+using System.Net;
 
 namespace CDAServiceEmulatorUnitTests;
 
@@ -28,7 +27,7 @@ public class PeisControllerTests
 
     public PeisControllerTests()
     {
-        var configuration = new MhpdCosmosConfiguration
+        var configuration = new CosmosTestHarnessConfiguration
         {
             DatabaseName = "TestDatabase",
             CdaPeisEmulatorScenarioModelContainerName = "ScenarioModelContainer",
@@ -59,7 +58,7 @@ public class PeisControllerTests
         _mockIdValidatorMock.Setup(x => x.IsValidPeisId(It.IsAny<string>())).Returns(true);
         _mockIdValidatorMock.Setup(x => x.IsValidPeI(It.IsAny<string>())).Returns(false);
         
-        Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
+        Mock<IOptions<CosmosTestHarnessConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
 
         Mock<IOptions<CommonHttpConfiguration>> mockHttpConfigOptions = new();
@@ -335,7 +334,7 @@ public class PeisControllerTests
 
     private void AddInCorrectAuthorisationHeader()
     {
-        _httpContext.Request.Headers[HeaderNames.Authorization] = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+        _httpContext.Request.Headers[HeaderNames.Authorization] = " Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ";
     }
     
         

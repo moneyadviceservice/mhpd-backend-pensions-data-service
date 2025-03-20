@@ -10,9 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
 // Add services to the container.
-builder.Services.AddTransient<ICdaPiesServiceClient, CdaPiesServiceClient>();
-builder.Services.AddTransient<IMapsRqpServiceClient, MapsCdaServiceClient>();
-builder.Services.AddTransient<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
+builder.Services.AddTransient<ICdaPiesServiceClient, CdaPeisServiceClient>();
 
 builder.Services.AddMhpdUtilities();
 builder.Services.AddMhpdHttpClients(builder.Configuration);

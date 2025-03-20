@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -12,14 +13,14 @@ namespace PeiIntegrationService.UnitTests;
 
 public class CDAPiesServiceClientUnitTests
 {
-    private readonly CdaPiesServiceClient _sut;
+    private readonly CdaPeisServiceClient _sut;
     private readonly Mock<HttpMessageHandler> _handlerMoq = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
 
     public CDAPiesServiceClientUnitTests()
     {
-        var logger = new Mock<ILogger<CdaPiesServiceClient>>();
-        _sut = new CdaPiesServiceClient(_httpClientFactoryMock.Object, logger.Object);
+        var logger = new Mock<ILogger<CdaPeisServiceClient>>();
+        _sut = new CdaPeisServiceClient(_httpClientFactoryMock.Object, logger.Object);
     }
 
     [Fact]
@@ -67,6 +68,6 @@ public class CDAPiesServiceClientUnitTests
         var result = await _sut.GetPiesAsync(request);
 
         Assert.NotNull(result);
-        Assert.True(result.GetType() == typeof(CdaPiesServiceResponseModel));
+        Assert.True(result.GetType() == typeof(CdaPeisServiceResponseModel));
     }
 }

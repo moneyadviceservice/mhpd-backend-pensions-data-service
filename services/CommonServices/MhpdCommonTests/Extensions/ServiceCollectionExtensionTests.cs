@@ -40,65 +40,57 @@ public class ServiceCollectionExtensionTests
     public void WhenServiceCollection_AddsIntegrationServices_ServicesAreRegistered()
     {
         //Arrange
-        var inMemorySettings = new Dictionary<string, string>
-        {
-            {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:DatabaseId", "integration-db"},
-            {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:HolderNameCacheContainer", "holderNameCache"}
-        };
-
-        IConfiguration configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(inMemorySettings!)
-            .Build();
-
-        var configurationSectionMock = new Mock<IConfigurationSection>();
-        configurationSectionMock
-            .Setup(x => x[DatabaseConstants.ConfigurationSections.IntegrationLayer])
-            .Returns((string key) => configuration[$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:{key}"]);
-
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration
-           .Setup(x => x.GetSection(DatabaseConstants.ConfigurationSections.IntegrationLayer))
-           .Returns(configurationSectionMock.Object);
-
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(mockConfiguration.Object);
 
         //Act
         serviceCollection.AddIntegrationServices();
-        _serviceCollectionMock.ServiceCollection.AddIntegrationServices(mockConfiguration.Object);
+        _serviceCollectionMock.ServiceCollection.AddIntegrationServices();
 
         //Assert
-        var provider = serviceCollection.BuildServiceProvider();
-
-        var integrationConfig = provider.GetRequiredService(typeof(IOptions<CosmosIntegrationConfiguration>));
-        Assert.NotNull(integrationConfig);
-
         _serviceCollectionMock.ContainsScopedService<IJwtUtility, JwtUtility>();
         _serviceCollectionMock.ContainsScopedService<ISharedHttpClient, SharedHttpClient>();
         _serviceCollectionMock.ContainsScopedService<IHolderNameConfigurationCache<HolderNameConfigurationModel>, HolderNameConfigurationCache>();
         _serviceCollectionMock.ContainsScopedService<IJwkKeyCache<JwkUriResponseModel>, JwkKeyCache>();
+        _serviceCollectionMock.ContainsScopedService<IPeiServiceClient, PeiServiceClient>();
+        _serviceCollectionMock.ContainsScopedService<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
     }
 
     [Fact]
     public void WhenServiceCollection_AddsMhpdCosmosDb_ClientIsRegistered()
     {
         //Arrange
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(x => x[CommonCosmosConfiguration.ConnectionStringVariable]).Returns("AccountEndpoint=https://localhost/;AccountKey=test");
+        var inMemorySettings = new Dictionary<string, string>
+        {
+            {$"{DatabaseConstants.ConfigurationSections.BusinessLayer}:DatabaseId", "business-db"},
+            {$"{DatabaseConstants.ConfigurationSections.BusinessLayer}:PensionsRetrievalContainer", "pensionsContainer"},
+            {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:DatabaseId", "integration-db"},
+            {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:HolderNameCacheContainer", "holderNameCache"},
+            {$"{DatabaseConstants.ConfigurationSections.TestHarness}:DatabaseId", "testharness-db"},
+            {$"{DatabaseConstants.ConfigurationSections.TestHarness}:ViewdatapayloadsContainerName", "viewdataContainer"},
+            {$"{DatabaseConstants.ConnectionStringVariable}", "AccountEndpoint=https://localhost/;AccountKey=test"}
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
 
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(mockConfiguration.Object);
 
         //Act
-        serviceCollection.AddMhpdCosmosDb();
+        serviceCollection.AddMhpdCosmosDb(configuration);
 
         //Assert
         var provider = serviceCollection.BuildServiceProvider();
         var cosmosClient = provider.GetRequiredService(typeof(CosmosClient));
         Assert.NotNull(cosmosClient);
 
-        var config = provider.GetRequiredService(typeof(IOptions<CommonCosmosConfiguration>));
-        Assert.NotNull(config);
+        var businessLayerConfig = provider.GetRequiredService(typeof(IOptions<CosmosBusinessConfiguration>));
+        var integrationLayerConfig = provider.GetRequiredService(typeof(IOptions<CosmosIntegrationConfiguration>));
+        var testHarnessConfig = provider.GetRequiredService(typeof(IOptions<CosmosTestHarnessConfiguration>));
+
+        Assert.NotNull(businessLayerConfig);
+        Assert.NotNull(integrationLayerConfig);
+        Assert.NotNull(testHarnessConfig);
     }
 
     [Fact]

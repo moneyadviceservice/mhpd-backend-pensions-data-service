@@ -24,7 +24,7 @@ namespace CDAServiceEmulator.Controllers
 
             var response = new
             {
-                pmt = SecurityConstants.Jwe.AuthorizedPermissionTicket
+                ticket = SecurityConstants.Jwe.AuthorizedPermissionTicket
             };
 
             logger.LogResponse(response);

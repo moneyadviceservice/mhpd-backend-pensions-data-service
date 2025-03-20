@@ -30,16 +30,14 @@ namespace MhpdCommon.Extensions
         }
 
         public static IServiceCollection AddIntegrationServices(
-            this IServiceCollection services, IConfiguration? configuration = null)
+            this IServiceCollection services)
         {
-            configuration = GetConfiguration(services, configuration);
-
-            services.Configure<CosmosIntegrationConfiguration>(configuration.GetSection(DatabaseConstants.ConfigurationSections.IntegrationLayer));
-
             services.AddScoped<IHolderNameConfigurationCache<HolderNameConfigurationModel>, HolderNameConfigurationCache>();
             services.AddScoped<IJwkKeyCache<JwkUriResponseModel>, JwkKeyCache>();
             services.AddScoped<IJwtUtility, JwtUtility>();
             services.AddScoped<ISharedHttpClient, SharedHttpClient.SharedHttpClient>();
+            services.AddScoped<IPeiServiceClient, PeiServiceClient>();
+            services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
 
             return services;
         }
@@ -51,7 +49,7 @@ namespace MhpdCommon.Extensions
 
             services.AddSingleton(provider =>
             {
-                var connString = configuration[CommonCosmosConfiguration.ConnectionStringVariable];
+                var connString = configuration[DatabaseConstants.ConnectionStringVariable];
 
                 JsonSerializerOptions jsonSerializerOptions = new()
                 {
@@ -66,12 +64,9 @@ namespace MhpdCommon.Extensions
                 return new CosmosClient(connString, options);
             });
 
-            services.AddOptions<CommonCosmosConfiguration>().Configure(option =>
-            {
-                option.DatabaseId = configuration[CommonCosmosConfiguration.DatabaseVariable];
-                option.ContainerId = configuration[CommonCosmosConfiguration.ContainerVariable];
-                option.ContainerPartitionKey = configuration[CommonCosmosConfiguration.PartitionVariable];
-            }).ValidateOnStart();
+            AddCosmosConfiguration<CosmosBusinessConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.BusinessLayer);
+            AddCosmosConfiguration<CosmosIntegrationConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.IntegrationLayer);
+            AddCosmosConfiguration<CosmosTestHarnessConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.TestHarness);
 
             return services;
         }
@@ -138,6 +133,18 @@ namespace MhpdCommon.Extensions
                 option.ViewDataRetrievalDuration = TryParseNumeric(configuration[PeiOrchestrationSettings.ViewDataDurationVariable],
                     PeiOrchestrationSettings.DefaultViewDataDuration);
             });
+
+            return services;
+        }
+
+        private static IServiceCollection AddCosmosConfiguration<T>(IServiceCollection services, IConfiguration configuration, string configurationSection) where T : class
+        {
+            var section = configuration.GetSection(configurationSection);
+
+            if (section != null)
+            {
+                services.Configure<T>(section);
+            }
 
             return services;
         }

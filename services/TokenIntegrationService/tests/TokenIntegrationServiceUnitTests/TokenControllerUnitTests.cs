@@ -12,6 +12,7 @@ using TokenIntegrationService.Models;
 using Moq;
 using MhpdCommon.Models.MHPDModels.JwkUri;
 using MhpdCommon.SharedHttpClient;
+using MhpdCommon.Constants;
 
 namespace TokenIntegrationServiceUnitTests;
 
@@ -115,19 +116,17 @@ public class TokenControllerUnitTests
         
         _iCdaToken
             .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
-            .Returns(Task.FromResult(new CdaTokenResponseModel { AccessToken = RqpValue }));
+            .Returns(Task.FromResult(new CdaTokenResponseModel { AccessToken = RqpValue, StatusCode = HttpStatusCode.OK }));
 
         // Act
         var result = await _controller.PostAsync(request, _requestHeaderModel); 
         var okResult = (OkObjectResult)result;
-        var data = (TokenIntegrationResponseModel)okResult.Value!;
+        var data = (CdaTokenResponseModel)okResult.Value!;
 
         // Assert
         Assert.NotNull(result);
-        Assert.True(result.GetType() == typeof(OkObjectResult));
-        Assert.True(data.GetType() == typeof(TokenIntegrationResponseModel));
         Assert.True(okResult.StatusCode == (int)HttpStatusCode.OK);
-        Assert.Equal(RqpValue, data.Rpt);
+        Assert.Equal(RqpValue, data.AccessToken);
     }
     
     [Fact]
@@ -611,7 +610,7 @@ public class TokenControllerUnitTests
         // Simulate a response with an empty IdToken
         _iCdaToken
             .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
-            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = string.Empty });
+            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = string.Empty, StatusCode = HttpStatusCode.OK });
 
         // Act
         var result = await _controller.PostAsync(request, _requestHeaderModel);
@@ -653,6 +652,137 @@ public class TokenControllerUnitTests
         Assert.Equal("Internal server error", internalErrorResult.Value);
     }
 
+    [Fact]
+    public async void When_RedirectDetails_TicketIsNotJwe_ShouldReturnInternalServerError()
+    {
+        // Arrange           
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        var response = new CdaTokenResponseModel
+        {
+            StatusCode = HttpStatusCode.Forbidden,
+            UserRedirectDetails = new ClaimsGatheringResponseModel
+            {
+                RedirectUser = "http://localhost:5044",
+                Ticket = "InvalidTicket"
+            }
+        };
+
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .Returns(Task.FromResult(response));
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var errorResult = (ObjectResult)result;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(errorResult.StatusCode == (int)HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async void When_RedirectDetails_UrlIsNotValid_ShouldReturnInternalServerError()
+    {
+        // Arrange           
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        var response = new CdaTokenResponseModel
+        {
+            StatusCode = HttpStatusCode.Forbidden,
+            UserRedirectDetails = new ClaimsGatheringResponseModel
+            {
+                RedirectUser = "NotAUri",
+                Ticket = SecurityConstants.Jwe.ClaimsRequiredPermissionTicket
+            }
+        };
+
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .Returns(Task.FromResult(response));
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var errorResult = (ObjectResult)result;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(errorResult.StatusCode == (int)HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async void When_RedirectDetails_IsNull_ShouldReturnInternalServerError()
+    {
+        // Arrange           
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        var response = new CdaTokenResponseModel
+        {
+            StatusCode = HttpStatusCode.Forbidden
+        };
+
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .Returns(Task.FromResult(response));
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var errorResult = (ObjectResult)result;
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(errorResult.StatusCode == (int)HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
+    public async void When_RedirectDetails_IsValid_ShouldReturn200Ok()
+    {
+        // Arrange           
+        var request = new TokenIntegrationRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue
+        };
+
+        var response = new CdaTokenResponseModel
+        {
+            StatusCode = HttpStatusCode.Forbidden,
+            UserRedirectDetails = new ClaimsGatheringResponseModel
+            {
+                RedirectUser = "http://localhost:5044",
+                Ticket = SecurityConstants.Jwe.ClaimsRequiredPermissionTicket
+            }
+        };
+
+        _iCdaToken
+            .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
+            .Returns(Task.FromResult(response));
+
+        // Act
+        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var okResult = (OkObjectResult)result;
+        var data = (CdaTokenResponseModel)okResult.Value!;
+
+        // Assert
+        Assert.NotNull(data);
+    }
+
     [Theory]
     [InlineData(JwkConstants.TestTokenNoKid, true, 500)]
     [InlineData(JwkConstants.TestTokenUnknownKid, true, 500)]
@@ -672,7 +802,7 @@ public class TokenControllerUnitTests
         // Simulate a response with an invalid IdToken
         _iCdaToken
             .Setup(x => x.PostAsync(It.IsAny<CdaTokenRequestModel>()))
-            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = token });
+            .ReturnsAsync(new CdaTokenResponseModel { AccessToken = token, StatusCode = (HttpStatusCode)code });
         var client = new Mock<ISharedHttpClient>();
         client.Setup(mock => mock.GetAsync()).ReturnsAsync(JwkUriResponseModel.Default);
 

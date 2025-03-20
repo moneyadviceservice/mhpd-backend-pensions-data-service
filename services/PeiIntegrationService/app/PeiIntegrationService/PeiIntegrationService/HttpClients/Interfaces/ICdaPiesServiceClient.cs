@@ -1,9 +1,10 @@
-﻿using PeiIntegrationService.Models.CdaPiesService;
+﻿using MhpdCommon.Models.MHPDModels;
+using PeiIntegrationService.Models.CdaPiesService;
 
 namespace PeiIntegrationService.HttpClients.Interfaces
 {
     public interface ICdaPiesServiceClient
     {
-        Task<CdaPiesServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request);
+        Task<CdaPeisServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request);
     }
 }

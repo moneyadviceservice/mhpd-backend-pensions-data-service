@@ -26,7 +26,7 @@ module "pension_data_service" {
     "ViewDataRetrievalDuration"                             = "5"
     "CosmosBusinessConfiguration__DatabaseId"               = "mhpd-business-layer"
     "CosmosBusinessConfiguration__UserSessionDataContainer" = "mhpdUserSessionData"
-    "CosmosDBConnectionString"                              = "AccountEndpoint=https://mhpd-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}",
+    "CosmosDBConnectionString"                              = "AccountEndpoint=https://mhpd-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}",
   }
   tags = {}
 }

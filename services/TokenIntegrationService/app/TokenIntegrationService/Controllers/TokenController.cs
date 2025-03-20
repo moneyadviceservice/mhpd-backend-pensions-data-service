@@ -4,6 +4,7 @@ using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using TokenIntegrationService.HttpClients;
 using TokenIntegrationService.Models;
 
@@ -35,30 +36,12 @@ public class TokenController(
         logger.LogRequest(request);
         
         var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
-        var result = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
-        
-        // Check if AccessToken is null and handle the error
-        if (string.IsNullOrEmpty(result.AccessToken))
-        {
-            logger.LogError("AccessToken is null in the response");
-            return await GetInternalServerErrorResponse();
-        }
+        var response = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
 
-        try
+        if (!await ValidateTokenResponseAsync(response))
         {
-            // Validate the Jwt token signature
-            await jwtUtility.ValidateJwtTokenWithKidAsync(result.AccessToken, logger);
-        }
-        catch(Exception ex)
-        {
-            logger.LogError(ex, "AccessToken signature invalid");
             return await GetInternalServerErrorResponse();
         }
-        
-        var response = new TokenIntegrationResponseModel
-        {
-            Rpt = result.AccessToken
-        };
         
         logger.LogResponse(response);
         return Ok(response);
@@ -116,6 +99,61 @@ public class TokenController(
     
         logger.LogResponse(response);
         return Ok(response);
+    }
+
+    private async Task<bool> ValidateTokenResponseAsync(CdaTokenResponseModel response)
+    {
+        if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Forbidden)
+        {
+            logger.LogError("Token request was not successful");
+            return false;
+        }
+
+        if(response.StatusCode == HttpStatusCode.Forbidden && !ValidateRedirectResponse(response.UserRedirectDetails))
+        {
+            return false;
+        }
+
+        if (response.StatusCode == HttpStatusCode.OK)
+        {
+            // Check if AccessToken is null and handle the error
+            if (string.IsNullOrEmpty(response.AccessToken))
+            {
+                logger.LogError("AccessToken is null in the response");
+                return false;
+            }
+
+            try
+            {
+                // Validate the Jwt token signature
+                await jwtUtility.ValidateJwtTokenWithKidAsync(response.AccessToken!, logger);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "AccessToken signature invalid");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool ValidateRedirectResponse(ClaimsGatheringResponseModel? response)
+    {
+        if( response == null)
+        {
+            logger.LogError("No redirect details were returned for claim gathering");
+            return false;
+        }
+
+        var result = response.IsValidClaimsGatheringResponse();
+
+        if (!result.IsValid)
+        {
+            logger.LogError("Invalid ClaimsGatheringResponse: {ErrorMessage}", result.ErrorMessage);
+            return false;
+        }
+        return true;
     }
 
     private bool TryValidateRequest<T>(IRequestValidator<T> validator, T request, RequestHeaderModel headerModel, out string? message)

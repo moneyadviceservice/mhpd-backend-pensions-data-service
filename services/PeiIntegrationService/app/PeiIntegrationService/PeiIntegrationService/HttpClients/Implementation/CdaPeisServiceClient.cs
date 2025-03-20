@@ -3,18 +3,19 @@ using System.Web;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models.CdaPeisServiceClient;
 using PeiIntegrationService.Models.CdaPiesService;
 
 namespace PeiIntegrationService.HttpClients.Implementation;
 
-public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaPiesServiceClient> logger) : ICdaPiesServiceClient
+public class CdaPeisServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaPeisServiceClient> logger) : ICdaPiesServiceClient
 {
     private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-    private readonly ILogger<CdaPiesServiceClient> _logger = logger;
+    private readonly ILogger<CdaPeisServiceClient> _logger = logger;
 
-    public async Task<CdaPiesServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request)
+    public async Task<CdaPeisServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request)
     {
         _logger.LogRequest(request);
 
@@ -34,7 +35,7 @@ public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory, ILogger<
         return response;
     }
 
-    private static async Task<CdaPiesServiceResponseModel> CreateResponse(HttpResponseMessage? response)
+    private static async Task<CdaPeisServiceResponseModel> CreateResponse(HttpResponseMessage? response)
     {
         if (response!.StatusCode == System.Net.HttpStatusCode.OK)
         {
@@ -42,7 +43,7 @@ public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory, ILogger<
 
             ApplyRetrievalStatus(result!);
 
-            return new CdaPiesServiceResponseModel
+            return new CdaPeisServiceResponseModel
             {
                 Peis = [.. result!.PeiList!],
                 ResponseMessage = new ResponseMessage
@@ -52,13 +53,13 @@ public class CdaPiesServiceClient(IHttpClientFactory httpClientFactory, ILogger<
             };
         }
 
-        return new CdaPiesServiceResponseModel
+        return new CdaPeisServiceResponseModel
         {
             Peis = null,
             ResponseMessage = new ResponseMessage
             {
                 ResponseStatusCode = response!.StatusCode,
-                WWWAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
+                WwwAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
             }
         };
 

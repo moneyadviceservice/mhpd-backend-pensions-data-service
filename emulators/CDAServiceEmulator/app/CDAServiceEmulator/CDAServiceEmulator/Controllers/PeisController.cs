@@ -121,7 +121,7 @@ public class PeisController(
             parameter = headerValue.Parameter;
         }
 
-        if (string.IsNullOrWhiteSpace(parameter))
+        if (parameter == null || !JwtValidator.IsJwtFormatValid(parameter))
         {
             var headers = Response.Headers;
             headers.Append("WWW-Authenticate", "realm=\"PensionDashboard\", " +

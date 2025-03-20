@@ -12,5 +12,5 @@ public class CosmosTestHarnessConfiguration
 
     public string HolderNameConfigurationModelsContainerName { get; set; } = string.Empty;
 
-    public string ViewdatapayloadsContainerName { get; set; } = string.Empty;
+    public string ViewDataModelContainerName { get; set; } = string.Empty;
 }

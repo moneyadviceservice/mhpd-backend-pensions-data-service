@@ -8,7 +8,7 @@
     "/view-data/{assetGuid}": {
       "get": {
         "tags": [
-          "PdpViewData"
+          "PdpViewDataa"
         ],
         "parameters": [
           {

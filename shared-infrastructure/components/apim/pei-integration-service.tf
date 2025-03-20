@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "pei-integration-service" {
   description           = "This API describes service that provides RQP tokens for clients interacting with CDA components."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "1"
+  revision              = "2"
   display_name          = "pei-integration-service"
   path                  = "pei-integration-service"
   service_url           = "https://pei-integration-service-${var.env}.azurewebsites.net"

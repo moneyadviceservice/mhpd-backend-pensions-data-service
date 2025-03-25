@@ -12,7 +12,7 @@ public class TestHttpClientExecutor(
     {
         return ExecuteAsync<TResponse>(
             "TestClient",
-            client => client.GetAsync("/test"),
+            client => new HttpRequestMessage(HttpMethod.Get, "/test"),
             operationDescription);
     }
 }

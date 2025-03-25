@@ -19,22 +19,20 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     ITokenUtility tokenUtility,
     IIdValidator idValidator) : ControllerBase
 {
-    [Route("rqp")]
-    [HttpPost]
-    [ProducesResponseType(typeof(RedirectRequestPayload), StatusCodes.Status200OK)]
+    [HttpGet("rqp")]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public IActionResult PostRqp([FromBody] RedirectRequestPayload request, [FromHeader] RequestHeaderModel headerModel)
+    public IActionResult PostRqp([FromHeader] RequestHeaderModel headerModel)
     {
-        if (!TryValidateRqpRequest(request, headerModel, out var message))
+        if (!TryValidateRqpRequest(headerModel, out var message))
         {
             logger.LogWarning("Invalid request: {Message}", message);
             return BadRequest(message);
         }
 
         using var scope = logger.BeginCorrelationScope(headerModel.CorrelationId!, $"{Constants.LogSource} Rqp");
-        logger.LogRequest(request);
+        logger.LogRequest(headerModel);
         
-        var response = new RqpResponseModel { Rqp = GetToken(request) };
+        var response = new RqpResponseModel { Rqp = GetToken(headerModel.UserSessionId, headerModel.Iss) };
         logger.LogResponse(response);
 
         return Ok(response);
@@ -46,7 +44,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public IActionResult RedirectDetails([FromBody] RedirectRequestPayload request, [FromHeader] RequestHeaderModel headerModel)
     {
-        if (!TryValidateRqpRequest(request, headerModel, out var message, true))
+        if (!TryValidateRedirectRequest(request, headerModel, out var message, true))
         {
             logger.LogWarning("Invalid request: {Message}", message);
             return BadRequest(message);
@@ -61,33 +59,32 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
         return Ok(response);
     }
 
-    private bool TryValidateRqpRequest(RedirectRequestPayload request, RequestHeaderModel headerModel,
-        out string? message, bool redirectPurposeCheck = false)
+    private bool TryValidateRequestBase(string? iss, string? userSessionId, string? correlationId, out string? updatedCorrelationId, out string? message)
     {
-        if (redirectPurposeCheck && string.IsNullOrWhiteSpace(request.RedirectPurpose))
-        {
-            message = Constants.MissingOrInvalidRedirectPurpose;
-            return false;
-        }
-        
-        if (string.IsNullOrWhiteSpace(request.Iss))
+        if (string.IsNullOrWhiteSpace(iss))
         {
             message = Constants.MissingOrInvalidIss;
+            updatedCorrelationId = correlationId;
             return false;
         }
 
-        if (!idValidator.IsValidGuid(request.UserSessionId))
+        if (!idValidator.IsValidGuid(userSessionId))
         {
             message = Constants.MissingOrInvalidUserSessionId;
+            updatedCorrelationId = correlationId;
             return false;
         }
 
-        if (string.IsNullOrEmpty(headerModel.CorrelationId))
+        if (string.IsNullOrEmpty(correlationId))
         {
-            headerModel.CorrelationId = Guid.NewGuid().ToString();
+            updatedCorrelationId = Guid.NewGuid().ToString();
+        }
+        else
+        {
+            updatedCorrelationId = correlationId;
         }
 
-        if (!idValidator.IsValidGuid(headerModel.CorrelationId))
+        if (!idValidator.IsValidGuid(updatedCorrelationId))
         {
             message = Constants.InvalidCorrelationId;
             return false;
@@ -97,12 +94,33 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
         return true;
     }
 
-    private string GetToken(RedirectRequestPayload request)
+    private bool TryValidateRedirectRequest(RedirectRequestPayload request, RequestHeaderModel headerModel,
+        out string? message, bool redirectPurposeCheck = false)
+    {
+        if (redirectPurposeCheck && string.IsNullOrWhiteSpace(request.RedirectPurpose))
+        {
+            message = Constants.MissingOrInvalidRedirectPurpose;
+            return false;
+        }
+    
+        var isValid = TryValidateRequestBase(request.Iss, request.UserSessionId, headerModel.CorrelationId, out var updatedCorrelationId, out message);
+        headerModel.CorrelationId = updatedCorrelationId;
+        return isValid;
+    }
+
+    private bool TryValidateRqpRequest(RequestHeaderModel request, out string? message)
+    {
+        var isValid = TryValidateRequestBase(request.Iss, request.UserSessionId, request.CorrelationId, out var updatedCorrelationId, out message);
+        request.CorrelationId = updatedCorrelationId;
+        return isValid;
+    }
+
+    private string GetToken(string? userSessionId, string? iss)
     {
         return tokenUtility.GenerateJwt(new CustomClaimDataModel
         {
-            Subject = request.UserSessionId + "@" + request.Iss,
-            Issuer = request.Iss
+            Subject = userSessionId + "@" + iss,
+            Issuer = iss
         });
     }
     
@@ -112,7 +130,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
         return new RedirectResponseModel
         {
             RedirectTargetUrl = uriSettings.Value.RedirectTargetUrl,
-            Rqp = GetToken(request),
+            Rqp = GetToken(request.UserSessionId, request.Iss),
             Scope = Constants.Scope,
             ResponseType = Constants.ResponseType,
             Prompt = Constants.Prompt,

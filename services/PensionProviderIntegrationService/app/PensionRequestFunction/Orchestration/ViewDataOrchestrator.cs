@@ -93,7 +93,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
 
     private async Task<string> DoAuthenticationDance(PdpServiceResponseModel viewDataResponse, string iss, string userSessionId, string correlationId)
     {
-        var rqpResponse = await _rqpClient.PostRqp(new RequestHeaderModel { Iss = iss, UserSessionId = userSessionId, CorrelationId = correlationId });
+        var rqpResponse = await _rqpClient.GetRqp(new RequestHeaderModel { Iss = iss, UserSessionId = userSessionId, CorrelationId = correlationId });
         if (string.IsNullOrEmpty(rqpResponse.Rqp))
         {
             logger.LogWarning(StatusConstants.FetchingRqp, correlationId);

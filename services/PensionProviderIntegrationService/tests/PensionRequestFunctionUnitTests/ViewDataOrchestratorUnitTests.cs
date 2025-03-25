@@ -57,7 +57,7 @@ public class ViewDataOrchestratorUnitTests
                 ResponseMessage = new ResponseMessage { ResponseStatusCode = HttpStatusCode.OK }
             });
 
-        _mockMapsRqpService.Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+        _mockMapsRqpService.Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = rqp });
 
         _mockTokenIntegrationService.Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))

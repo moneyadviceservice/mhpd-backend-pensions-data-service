@@ -34,7 +34,7 @@ public class MapsCdaServiceClientTests
         };
 
         // Act
-        var result = await client.PostRqp(request);
+        var result = await client.GetRqp(request);
 
         //Assert
         Assert.NotNull(result);

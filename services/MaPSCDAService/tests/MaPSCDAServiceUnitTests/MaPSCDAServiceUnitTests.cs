@@ -47,15 +47,14 @@ public class MapsCdaServiceControllerTests
     public void PostRqp_ValidRequest_ReturnsOkResponse()
     {
         // Arrange
-        var request = new RedirectRequestPayload { Iss = "issuer", UserSessionId = Guid.NewGuid().ToString() };
-        var header = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString() };
+        var header = new RequestHeaderModel { Iss = "issuer", UserSessionId = Guid.NewGuid().ToString(), CorrelationId = Guid.NewGuid().ToString() };
 
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.UserSessionId)).Returns(true);
+        _mockIdValidator.Setup(v => v.IsValidGuid(header.UserSessionId)).Returns(true);
         _mockIdValidator.Setup(v => v.IsValidGuid(header.CorrelationId)).Returns(true);
         _mockTokenUtility.Setup(t => t.GenerateJwt(It.IsAny<CustomClaimDataModel>())).Returns("mocked_token");
 
         // Act
-        var result = _controller.PostRqp(request, header);
+        var result = _controller.PostRqp(header);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -67,11 +66,10 @@ public class MapsCdaServiceControllerTests
     public void PostRqp_InvalidRequest_MissingIss_ReturnsBadRequest()
     {
         // Arrange
-        var request = new RedirectRequestPayload { Iss = "", UserSessionId = Guid.NewGuid().ToString() };
-        var header = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString() };
-
+        var header = new RequestHeaderModel { Iss = "", UserSessionId = Guid.NewGuid().ToString(), CorrelationId = Guid.NewGuid().ToString() };
+        
         // Act
-        var result = _controller.PostRqp(request, header);
+        var result = _controller.PostRqp(header);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -99,14 +97,11 @@ public class MapsCdaServiceControllerTests
     public void PostRqp_InvalidRequest_InvalidUserSessionId_ReturnsBadRequest()
     {
         // Arrange
-        var request = new RedirectRequestPayload { Iss = "issuer", UserSessionId = "invalid_guid", RedirectPurpose = "FIND"};
-        var header = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString() };
-
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.RedirectPurpose)).Returns(true);
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.UserSessionId)).Returns(false);
+        var header = new RequestHeaderModel { Iss = "issuer", UserSessionId = "invalid_guid", CorrelationId = Guid.NewGuid().ToString() };
+        _mockIdValidator.Setup(v => v.IsValidGuid(header.CorrelationId)).Returns(true);
 
         // Act
-        var result = _controller.PostRqp(request, header);
+        var result = _controller.PostRqp(header);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -117,14 +112,12 @@ public class MapsCdaServiceControllerTests
     public void PostRqp_InvalidRequest_InvalidCorrelationId_ReturnsBadRequest()
     {
         // Arrange
-        var request = new RedirectRequestPayload { Iss = "issuer", UserSessionId = Guid.NewGuid().ToString(), RedirectPurpose = "FIND"};
-        var header = new RequestHeaderModel { CorrelationId = "invalid_guid" };
+        var header = new RequestHeaderModel { CorrelationId = "invalid_guid", UserSessionId = Guid.NewGuid().ToString(), Iss = "issuer" };
 
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.RedirectPurpose)).Returns(true);
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.UserSessionId)).Returns(true);
+        _mockIdValidator.Setup(v => v.IsValidGuid(header.UserSessionId)).Returns(true);
 
         // Act
-        var result = _controller.PostRqp(request, header);
+        var result = _controller.PostRqp(header);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);

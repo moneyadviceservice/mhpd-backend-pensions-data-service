@@ -31,7 +31,7 @@ public class SharedHttpClient(IHttpClientFactory httpClientFactory, ILogger<Shar
         }
 
         response = await ExecuteAsync<JwkUriResponseModel>(HttpClientNames.CdaService,
-            httpClient => httpClient.GetAsync(HttpEndpoints.External.JwkUri),
+            _ => new HttpRequestMessage(HttpMethod.Get, HttpEndpoints.External.JwkUri),
             HttpClientOperationName.CdaServiceJwkUriGet);
 
         response.Id = JwkCacheId;

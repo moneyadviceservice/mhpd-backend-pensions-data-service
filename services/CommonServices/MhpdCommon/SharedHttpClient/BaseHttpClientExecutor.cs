@@ -11,18 +11,23 @@ public abstract class BaseHttpClientExecutor(
 {
     protected async Task<TResponse> ExecuteAsync<TResponse>(
         string httpClientName,
-        Func<HttpClient, Task<HttpResponseMessage>> httpRequestFunc,
-        string operationDescription)
+        Func<HttpClient, HttpRequestMessage> createRequestFunc,
+        string operationDescription,
+        Action<HttpRequestMessage>? configureRequest = null)
     {
         try
         {
             var httpClient = httpClientFactory.CreateClient(httpClientName);
             logger.LogWarning("Sending request for operation: {OperationDescription}", operationDescription);
 
-            var response = await httpRequestFunc(httpClient);
+            var request = createRequestFunc(httpClient);
+            
+            // Apply optional header modifications
+            configureRequest?.Invoke(request);
 
+            var response = await httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
-
+            
             var result = await response.Content.ReadFromJsonAsync<TResponse>();
             logger.LogResponse(result);
 

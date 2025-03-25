@@ -17,7 +17,7 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
 {
     [Function(nameof(RetrievalFunction))]
     public async Task Run(
-        [ServiceBusTrigger("%CommonServiceBusConfiguration:InboundQueue%", Connection = "ServiceBusConnectionstring")]
+        [ServiceBusTrigger("outbound", Connection = "ServiceBusConnectionstring")]
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {

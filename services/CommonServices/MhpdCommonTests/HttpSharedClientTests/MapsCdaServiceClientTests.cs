@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text;
 using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
@@ -51,7 +52,7 @@ public class MapsCdaServiceClientTests
             });
 
         // Act
-        var result = await _serviceClient.PostRqp(new RequestHeaderModel());
+        var result = await _serviceClient.GetRqp(new RequestHeaderModel());
 
         // Assert
         Assert.NotNull(result);
@@ -68,7 +69,7 @@ public class MapsCdaServiceClientTests
             .ThrowsAsync(new HttpRequestException("Network error"));
 
         // Act & Assert
-        await Assert.ThrowsAsync<ServiceCommunicationException>(() => _serviceClient.PostRqp(new RequestHeaderModel()));
+        await Assert.ThrowsAsync<ServiceCommunicationException>(() => _serviceClient.GetRqp(new RequestHeaderModel()));
     }
 
     [Fact]
@@ -84,6 +85,60 @@ public class MapsCdaServiceClientTests
             });
 
         // Act & Assert
-        await Assert.ThrowsAsync<ServiceCommunicationException>(() => _serviceClient.PostRqp(new RequestHeaderModel()));
+        await Assert.ThrowsAsync<ServiceCommunicationException>(() => _serviceClient.GetRqp(new RequestHeaderModel()));
     }
+    
+    [Fact]
+    public async Task PostRqp_ShouldSucceed_WhenNoHeadersAreAdded()
+    {
+        // Arrange
+        var responseContent = "{\"someProperty\": \"someValue\"}"; // Simulating a valid JSON response
+        _httpMessageHandlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(responseContent, Encoding.UTF8, "application/json")
+            });
+
+        // Act
+        var result = await _serviceClient.GetRqp(new RequestHeaderModel());
+
+        // Assert
+        Assert.NotNull(result);
+    }
+    
+    [Fact]
+    public async Task PostRqp_ShouldIncludeHeaders_WhenRequestHeaderModelIsProvided()
+    {
+        // Arrange
+        var requestHeaderModel = new RequestHeaderModel
+        {
+            CorrelationId = "12345",
+            UserSessionId = "test-token",
+            Iss = "iss"
+        };
+
+        HttpRequestMessage capturedRequest = null;
+
+        _httpMessageHandlerMock.Protected()
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedRequest = req) // Capture request
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{}", Encoding.UTF8, "application/json")
+            });
+
+        // Act
+        await _serviceClient.GetRqp(requestHeaderModel);
+
+        // Assert
+        Assert.NotNull(capturedRequest);
+        Assert.True(capturedRequest.Headers.Contains("mhpdCorrelationId"));
+        Assert.Contains("12345", capturedRequest.Headers.GetValues("mhpdCorrelationId"));
+        Assert.True(capturedRequest.Headers.Contains("userSessionId"));
+        Assert.Contains("test-token", capturedRequest.Headers.GetValues("userSessionId"));
+    }
+
 }

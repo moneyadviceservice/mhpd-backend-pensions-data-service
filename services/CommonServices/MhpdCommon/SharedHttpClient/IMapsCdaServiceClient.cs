@@ -5,5 +5,5 @@ namespace MhpdCommon.SharedHttpClient;
 
 public interface IMapsCdaServiceClient
 {
-    Task<MapsRqpServiceResponseModel> PostRqp(RequestHeaderModel request);
+    Task<MapsRqpServiceResponseModel> GetRqp(RequestHeaderModel request);
 }

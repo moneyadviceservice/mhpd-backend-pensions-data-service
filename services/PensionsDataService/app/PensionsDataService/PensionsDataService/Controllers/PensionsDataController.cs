@@ -39,6 +39,7 @@ public class PensionsDataController(
     private const string ErrorCode = "errorCode";
     private const string ExternalPensionPolicyId = "externalPensionPolicyId";
     private const string ErrorMessage = "Error: {ErrorMessage}";
+    private const string AsUri = "https://example.com"; //NOSONAR
 
     private static readonly IEnumerable<string> CompletedStates =
     [
@@ -537,7 +538,7 @@ public class PensionsDataController(
         string userSessionId)
     {
         var tokenResult = await _tokenIntegrationServiceClientRpts.PostRptAsync(
-            CreateCdaTokenServiceRptsRequestModel(request.Ticket!, rqp, requestHeader.CorrelationId!, logger, null));
+            CreateCdaTokenServiceRptsRequestModel(request.Ticket!, rqp, requestHeader.CorrelationId!, logger, AsUri));
 
         if (!IsValidJwt(tokenResult.Pct) || !IsValidJwt(tokenResult.AccessToken))
         {

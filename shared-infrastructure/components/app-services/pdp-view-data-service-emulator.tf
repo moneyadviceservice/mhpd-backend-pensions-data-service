@@ -16,21 +16,20 @@ module "pdp_view_data_service_emulator" {
     value = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
   }]
   app_settings = {
-    "JwtSettings__ExpiryInSeconds"                           = "600"
-    "JwtSettings__PrivateKey"                                = data.azurerm_key_vault_secret.cda_service_emulator_private_key.value
-    "JwtSettings__Audience"                                  = "https://pdp/ig/token"
-    "JwtSettings__Issuer"                                    = "https://emulators.maps.org.uk/am/oauth2"
-    "JwtSettings__Kid"                                       = data.azurerm_key_vault_secret.jwt_settings_kid.value
-    "JwtSettings__Subject"                                   = data.azurerm_key_vault_secret.jwt_settings_subject.value
-    "MhpdCosmosConfiguration__DatabaseName"                  = "mhpd-testharness-${var.env}"
-    "MhpdCosmosConfiguration__ViewdatapayloadsContainerName" = "viewdatapayloads"
-    "CosmosDBConnectionString"                               = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
-    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                        = true
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"                  = "InstrumentationKey=${module.pdp_view_data_service_emulator.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pdp_view_data_service_emulator.app_insights_app_id}"
-    "Mtls__ClientCertificate"                                = "PdpMtls"
-    "Mtls__EnforceClientCertificate"                         = "False"
-    "Mtls__VaultUri"                                         = "https://${var.product}-${var.env}.vault.azure.net/"
-    "CdaServiceUrl"                                          = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
+    "JwtSettings__ExpiryInSeconds"                               = "600"
+    "JwtSettings__PrivateKey"                                    = data.azurerm_key_vault_secret.cda_service_emulator_private_key.value
+    "JwtSettings__Audience"                                      = "https://pdp/ig/token"
+    "JwtSettings__Issuer"                                        = "https://emulators.maps.org.uk/am/oauth2"
+    "JwtSettings__Kid"                                           = data.azurerm_key_vault_secret.jwt_settings_kid.value
+    "JwtSettings__Subject"                                       = data.azurerm_key_vault_secret.jwt_settings_subject.value
+    "CosmosTestHarnessConfiguration__ViewDataModelContainerName" = "viewdatapayloads"
+    "CosmosTestHarnessConfiguration__DatabaseName"               = "mhpd-testharness-${var.env}"
+    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                            = true
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"                      = "InstrumentationKey=${module.pdp_view_data_service_emulator.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pdp_view_data_service_emulator.app_insights_app_id}"
+    "Mtls__ClientCertificate"                                    = "PdpMtls"
+    "Mtls__EnforceClientCertificate"                             = "False"
+    "Mtls__VaultUri"                                             = "https://${var.product}-${var.env}.vault.azure.net/"
+    "CdaServiceUrl"                                              = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
   }
   tags = {}
 }

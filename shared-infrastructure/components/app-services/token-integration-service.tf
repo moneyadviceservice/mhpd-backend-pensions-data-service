@@ -12,6 +12,11 @@ module "token_integration_service" {
   dotnet_stack            = true
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
+  connection_strings = [{
+    name  = "CosmosDBConnectionString"
+    type  = "Custom"
+    value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+  }]
 
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                    = module.token_integration_service.instrumentation_key
@@ -32,7 +37,6 @@ module "token_integration_service" {
     "CdaServiceUrl"                                     = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
     "CosmosIntegrationConfiguration__DatabaseId"        = "mhpd-integration-layer"
     "CosmosIntegrationConfiguration__JwkCacheContainer" = "jwkUriEmulatorData"
-    "CosmosDBConnectionString"                          = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
   }
   tags = {}
 }

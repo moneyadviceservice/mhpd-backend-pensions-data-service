@@ -12,10 +12,21 @@ module "pension_data_service" {
   dotnet_stack            = true
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
+  connection_strings = [
+    {
+      name  = "CosmosDBConnectionString"
+      type  = "Custom"
+      value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+    },
+    {
+      name  = "ServiceBusConnectionString"
+      type  = "Custom"
+      value = data.azurerm_servicebus_namespace.this.default_primary_connection_string
+    }
+  ]
 
   app_settings = {
     "CommonServiceBusConfiguration__OutboundQueue"          = "pensions-retrieval-job"
-    "ServiceBusConnectionString"                            = data.azurerm_servicebus_namespace.this.default_primary_connection_string
     "PensionRetrievalServiceUrl"                            = "https://maps-api-management-${var.env}.azure-api.net/pension-retrieval-service/"
     "RetrievedPensionsServiceUrl"                           = "https://maps-api-management-${var.env}.azure-api.net/retrieved-pensions-record-service/"
     "tokenIntegrationServiceUrl"                            = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
@@ -26,7 +37,6 @@ module "pension_data_service" {
     "ViewDataRetrievalDuration"                             = "5"
     "CosmosBusinessConfiguration__DatabaseId"               = "mhpd-business-layer"
     "CosmosBusinessConfiguration__UserSessionDataContainer" = "mhpdUserSessionData"
-    "CosmosDBConnectionString"                              = "AccountEndpoint=https://mhpd-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}",
   }
   tags = {}
 }

@@ -12,6 +12,18 @@ module "pension_request_function" {
   dotnet_stack            = true
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
+  connection_strings = [
+    {
+      name  = "CosmosDBConnectionString"
+      type  = "Custom"
+      value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+    },
+    {
+      name  = "ServiceBusConnectionString"
+      type  = "Custom"
+      value = data.azurerm_servicebus_namespace.this.default_primary_connection_string
+    }
+  ]
 
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING"                    = "InstrumentationKey=${module.pension_request_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pension_request_function.app_insights_app_id}"
@@ -19,15 +31,8 @@ module "pension_request_function" {
     "PdpServiceUrl"                                            = "https://maps-api-management-${var.env}.azure-api.net/view-data-external/"
     "TokenIntegrationServiceUrl"                               = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
     "MapsCdaServiceUrl"                                        = "https://maps-api-management-${var.env}.azure-api.net/maps-cda-service/"
-    "ContainerId"                                              = "${var.product}holderNameViewConfigurationData"
-    "ContainerPartitionKey"                                    = "/holdernameGuid"
-    "DatabaseId"                                               = "${var.product}-integration-layer"
-    "CosmosDBConnectionString"                                 = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
     "FUNCTIONS_EXTENSION_VERSION"                              = "~4"
     "FUNCTIONS_WORKER_RUNTIME"                                 = "dotnet-isolated"
-    "InboundQueue"                                             = "pension-details-request"
-    "OutboundQueue"                                            = "retrieved-pension-details"
-    "ServiceBusConnectionString"                               = data.azurerm_servicebus_namespace.this.default_primary_connection_string
     "WEBSITE_CONTENTSHARE"                                     = "pensionrequestfunctionaee5"
     "WEBSITE_RUN_FROM_PACKAGE"                                 = "1"
     "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"                   = "1"
@@ -36,6 +41,8 @@ module "pension_request_function" {
     "CosmosIntegrationConfiguration__JwkCacheContainer"        = "jwkUriEmulatorData"
     "CosmosBusinessConfiguration__DatabaseId"                  = "mhpd-business-layer"
     "CosmosBusinessConfiguration__UserSessionDataContainer"    = "mhpdUserSessionData"
+    "CommonServiceBusConfiguration__InboundQueue"              = "pension-details-request"
+    "CommonServiceBusConfiguration__OutboundQueue"             = "retrieved-pension-details"
     # "AzureWebJobsStorage"                      				= "DefaultEndpointsProtocol=https;AccountName=mhpdcloudservicespenfunc;AccountKey=${module.retrieved_pensions_details_function.sa_primary_access_key};EndpointSuffix=core.windows.net"
     # "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING" 				= "DefaultEndpointsProtocol=https;AccountName=mhpdcloudservicespenfunc;AccountKey=${module.retrieved_pensions_details_function.sa_primary_access_key};EndpointSuffix=core.windows.net"
   }

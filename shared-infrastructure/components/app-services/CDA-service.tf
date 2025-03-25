@@ -11,7 +11,11 @@ module "CDA_service" {
   app_command_line       = "dotnet MaPSCDAService.dll"
   dotnet_stack           = true
   enable_client_affinity = true
-
+  connection_strings = [{
+    name  = "CosmosDBConnectionString"
+    type  = "Custom"
+    value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+  }]
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
 
@@ -42,7 +46,6 @@ module "CDA_service" {
     "PeiIntegrationServiceUrl"                              = "https://maps-api-management-${var.env}.azure-api.net/pei-integration-service/"
     "CosmosBusinessConfiguration__DatabaseId"               = "mhpd-business-layer"
     "CosmosBusinessConfiguration__UserSessionDataContainer" = "mhpdUserSessionData"
-    "CosmosDBConnectionString"                              = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
   }
   tags = {}
 }

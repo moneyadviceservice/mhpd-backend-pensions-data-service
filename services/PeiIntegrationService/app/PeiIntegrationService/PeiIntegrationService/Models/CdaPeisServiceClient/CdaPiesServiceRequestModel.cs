@@ -1,4 +1,4 @@
-﻿namespace PeiIntegrationService.Models.CdaPiesService
+﻿namespace PeiIntegrationService.Models.CdaPeisServiceClient
 {
     public class CdaPiesServiceRequestModel
     {

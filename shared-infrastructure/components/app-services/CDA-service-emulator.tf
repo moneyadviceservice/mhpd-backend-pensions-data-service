@@ -17,38 +17,38 @@ module "CDA_service_emulator" {
     value = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
   }]
   app_settings = {
-    "APPINSIGHTS_INSTRUMENTATIONKEY"                                          = module.CDA_service.instrumentation_key
-    "APPINSIGHTS_PROFILERFEATURE_VERSION"                                     = "1.0.0"
-    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"                                     = "1.0.0"
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"                                   = "InstrumentationKey=${module.CDA_service_emulator.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.CDA_service_emulator.app_insights_app_id}"
-    "APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION"                            = "disabled"
-    "ApplicationInsightsAgent_EXTENSION_VERSION"                              = "~2"
-    "DISABLE_APPINSIGHTS_SDK"                                                 = "disabled"
-    "DiagnosticServices_EXTENSION_VERSION"                                    = "~3"
-    "IGNORE_APPINSIGHTS_SDK"                                                  = "disabled"
-    "InstrumentationEngine_EXTENSION_VERSION"                                 = "disabled"
-    "CosmosDBConnectionString"                                                = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
-    "SnapshotDebugger_EXTENSION_VERSION"                                      = "disabled"
-    "MhpdCosmosConfiguration__CdaPeisEmulatorScenarioModelContainerName"      = "cdaPeisEmulatorScenarioModels"
-    "MhpdCosmosConfiguration__CdaPeisEmulatorTestInstanceDataContainerName"   = "cdaPeisEmulatorTestInstanceData"
-    "MhpdCosmosConfiguration__HolderNameConfigurationModelsContainerName"     = "holdernameViewConfigurationEmulatorData"
-    "MhpdCosmosConfiguration__TokenEmulatorPiesIdScenarioModelsContainerName" = "tokenEmulatorPiesIdScenarioModels"
-    "MhpdCosmosConfiguration__ViewDataModelContainerName"                     = "viewdatapayloads"
-    "MhpdCosmosConfiguration__DatabaseName"                                   = "mhpd-testharness-${var.env}"
-    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                                         = "true"
-    "XDT_MicrosoftApplicationInsights_BaseExtensions"                         = "disabled"
-    "XDT_MicrosoftApplicationInsights_Mode"                                   = "recommended"
-    "XDT_MicrosoftApplicationInsights_PreemptSdk"                             = "disabled"
-    "JwtSettings__ExpiryInSeconds"                                            = "600"
-    "JwtSettings__PrivateKey"                                                 = data.azurerm_key_vault_secret.cda_service_emulator_private_key.value
-    "JwtSettings__Audience"                                                   = "https://pdp/ig/token"
-    "JwtSettings__Issuer"                                                     = "https://emulators.maps.org.uk/am/oauth2"
-    "JwtSettings__Kid"                                                        = data.azurerm_key_vault_secret.jwt_settings_kid.value
-    "JwtSettings__Subject"                                                    = data.azurerm_key_vault_secret.jwt_settings_subject.value
-    "Mtls__ClientCertificate"                                                 = "PdpMtls"
-    "Mtls__EnforceClientCertificate"                                          = "False"
-    "Mtls__VaultUri"                                                          = "https://${var.product}-${var.env}.vault.azure.net/"
-    "CdaServiceUrl"                                                           = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
+    "APPINSIGHTS_INSTRUMENTATIONKEY"                                                 = module.CDA_service.instrumentation_key
+    "APPINSIGHTS_PROFILERFEATURE_VERSION"                                            = "1.0.0"
+    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"                                            = "1.0.0"
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"                                          = "InstrumentationKey=${module.CDA_service_emulator.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.CDA_service_emulator.app_insights_app_id}"
+    "APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION"                                   = "disabled"
+    "ApplicationInsightsAgent_EXTENSION_VERSION"                                     = "~2"
+    "DISABLE_APPINSIGHTS_SDK"                                                        = "disabled"
+    "DiagnosticServices_EXTENSION_VERSION"                                           = "~3"
+    "IGNORE_APPINSIGHTS_SDK"                                                         = "disabled"
+    "InstrumentationEngine_EXTENSION_VERSION"                                        = "disabled"
+    "CosmosDBConnectionString"                                                       = "AccountEndpoint=https://${var.product}-cosmos-testharness.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.testharness.primary_key}"
+    "SnapshotDebugger_EXTENSION_VERSION"                                             = "disabled"
+    "CosmosTestHarnessConfiguration__CdaPeisEmulatorScenarioModelContainerName"      = "cdaPeisEmulatorScenarioModels"
+    "CosmosTestHarnessConfiguration__CdaPeisEmulatorTestInstanceDataContainerName"   = "cdaPeisEmulatorTestInstanceData"
+    "CosmosTestHarnessConfiguration__HolderNameConfigurationModelsContainerName"     = "holdernameViewConfigurationEmulatorData"
+    "CosmosTestHarnessConfiguration__TokenEmulatorPiesIdScenarioModelsContainerName" = "tokenEmulatorPiesIdScenarioModels"
+    "CosmosTestHarnessConfiguration__ViewDataModelContainerName"                     = "viewdatapayloads"
+    "CosmosTestHarnessConfiguration__DatabaseName"                                   = "mhpd-testharness-${var.env}"
+    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                                                = "true"
+    "XDT_MicrosoftApplicationInsights_BaseExtensions"                                = "disabled"
+    "XDT_MicrosoftApplicationInsights_Mode"                                          = "recommended"
+    "XDT_MicrosoftApplicationInsights_PreemptSdk"                                    = "disabled"
+    "JwtSettings__ExpiryInSeconds"                                                   = "600"
+    "JwtSettings__PrivateKey"                                                        = data.azurerm_key_vault_secret.cda_service_emulator_private_key.value
+    "JwtSettings__Audience"                                                          = "https://pdp/ig/token"
+    "JwtSettings__Issuer"                                                            = "https://emulators.maps.org.uk/am/oauth2"
+    "JwtSettings__Kid"                                                               = data.azurerm_key_vault_secret.jwt_settings_kid.value
+    "JwtSettings__Subject"                                                           = data.azurerm_key_vault_secret.jwt_settings_subject.value
+    "Mtls__ClientCertificate"                                                        = "PdpMtls"
+    "Mtls__EnforceClientCertificate"                                                 = "False"
+    "Mtls__VaultUri"                                                                 = "https://${var.product}-${var.env}.vault.azure.net/"
+    "CdaServiceUrl"                                                                  = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
   }
   tags = {}
 }

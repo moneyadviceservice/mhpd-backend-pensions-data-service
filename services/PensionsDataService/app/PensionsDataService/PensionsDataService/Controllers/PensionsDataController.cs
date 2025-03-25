@@ -5,11 +5,12 @@ using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Repository;
+using MhpdCommon.SharedHttpClient;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using PensionsDataService.CosmosRepository;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
 
@@ -26,13 +27,18 @@ public class PensionsDataController(
     UserSessionDataRepository userSessionDataRepository)
     : ControllerBase
 {
-    private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClient = serviceClients.TokenIntegrationServiceClient;
+    private readonly ITokenIntegrationServiceIdTokenClient _tokenIntegrationServiceIdTokenClient = serviceClients.TokenIntegrationServiceIdTokenClient;
+    private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClientRpts = serviceClients.TokenIntegrationServiceClientRpts;
+    private readonly IMapsCdaServiceClient _mapsCdaServiceClient = serviceClients.MapsCdaServiceClient;
     private readonly IRetrievalRecordServiceClient _retrievalRecordServiceClient = serviceClients.RetrievalRecordServiceClient;
     private readonly IRetrievedPensionsRecordClient _retrievedPensionsRecordClient = serviceClients.RetrievedPensionsRecordClient;
+    private readonly IOptions<CommonServiceBusConfiguration> _serviceBusOptions = serviceClients.ServiceBusOptions;
+    private readonly IMessagingService _messagingService = serviceClients.MessagingService;
     private readonly int _predictedTotalDataRetrievalTime = peiRetrievalOptions.Value.TotalPensionRetrievalDuration;
 
     private const string ErrorCode = "errorCode";
     private const string ExternalPensionPolicyId = "externalPensionPolicyId";
+    private const string ErrorMessage = "Error: {ErrorMessage}";
 
     private static readonly IEnumerable<string> CompletedStates =
     [
@@ -46,7 +52,7 @@ public class PensionsDataController(
     {
         if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
         {
-            logger.LogError("Error: {ErrorMessage}", validationMessage);
+            logger.LogError(ErrorMessage, validationMessage);
             return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
         }
 
@@ -116,7 +122,7 @@ public class PensionsDataController(
     {
         if (!TryValidateRequests(request, requestHeader, out var validationMessage))
         {
-            logger.LogError("Error: {ErrorMessage}", validationMessage);
+            logger.LogError(ErrorMessage, validationMessage);
             return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
         }
 
@@ -125,7 +131,7 @@ public class PensionsDataController(
         logger.LogRequest(request);
 
         // Get pei from the token integration service
-        var result = await _tokenIntegrationServiceClient
+        var result = await _tokenIntegrationServiceIdTokenClient
             .PostAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader);
         
         logger.LogResponse(result);
@@ -145,7 +151,7 @@ public class PensionsDataController(
             PeisId = result.PeisId!
         }, userSessionId);
         
-        logger.LogInformation("UserSessionData created for {UserSessionId} with {PeisId}", userSessionId, result.PeisId);
+        logger.LogInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
 
         var response = Accepted();
         logger.LogResponse(response);
@@ -153,13 +159,56 @@ public class PensionsDataController(
         return await Task.FromResult<IActionResult>(response);
     }
 
+    // This endpoint is called once the claims gathering process has been completed
+    [HttpPost]
+    [Route("pensions-data-retrieval")]
+    public async Task<IActionResult> PostPensionsDataRetrievalAsync([FromBody] PensionsDataRetrievalRequest request,
+        [FromHeader] RequestHeaderModel requestHeader)
+    {
+        if (!TryValidateDataRetrievalRequests(request, requestHeader, out var validationMessage))
+        {
+            logger.LogError(ErrorMessage, validationMessage);
+            return BadRequest(validationMessage);
+        }
+
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST PensionsDataRetrieval");
+        logger.LogRequest(requestHeader);
+        logger.LogRequest(request);
+
+        var userSessionId = requestHeader.UserSessionId!;
+
+        var rqpResponse = await GetRqpFromMapsCdaService(requestHeader, userSessionId);
+        if (rqpResponse is null || string.IsNullOrEmpty(rqpResponse.Rqp))
+        {
+            return InternalServerErrorResult();
+        }
+
+        var tokenResult = await GetAccessToken(request, rqpResponse.Rqp, requestHeader, userSessionId);
+        if (tokenResult is null)
+        {
+            return InternalServerErrorResult();
+        }
+
+        var peisId = await StoreSessionData(userSessionId, tokenResult);
+        if (string.IsNullOrEmpty(peisId))
+        {
+            return InternalServerErrorResult();
+        }
+
+        await PostPensionDataRetrievalMessage(peisId, requestHeader, userSessionId);
+
+        var response = Accepted(new { predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime });
+        logger.LogResponse(response);
+        return response;
+    }
+    
     [HttpDelete]
     [Route("pensions-data")]
     public async Task<IActionResult> DeletePensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
     {
         if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
         {
-            logger.LogError("Error: {ErrorMessage}", validationMessage);
+            logger.LogError(ErrorMessage, validationMessage);
             return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
         }
 
@@ -217,6 +266,35 @@ public class PensionsDataController(
         message = null;
         return true;
     }
+    
+    private bool TryValidateDataRetrievalRequests(PensionsDataRetrievalRequest request, RequestHeaderModel requestHeader, out string? message)
+    {
+        if (!TryValidateRequestHeader(requestHeader, out message))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(requestHeader.Iss))
+        {
+            message = TokenValidationMessages.MissingIss;
+            return false;
+        }
+        
+        if (string.IsNullOrWhiteSpace(request.Ticket))
+        {
+            message = TokenValidationMessages.InvalidPermissionTicket;
+            return false;
+        }
+        
+        if (!JweValidator.IsJweFormatValid(request.Ticket))
+        {
+            message = TokenValidationMessages.InvalidJweTicketQueryFormat;
+            return false;
+        }
+        
+        message = null;
+        return true;
+    }
 
     private bool TryValidateRequestHeader(RequestHeaderModel requestHeader, out string? message)
     {
@@ -239,6 +317,24 @@ public class PensionsDataController(
 
         message = null;
         return true;
+    }
+
+    private static TokenClientRequestModel CreateCdaTokenServiceRptsRequestModel(string ticket, 
+        string rqp, 
+        string correlationId,
+        ILogger<PensionsDataController> logger, string? asUri)
+    {
+        var request = new TokenClientRequestModel
+        {
+            Ticket = ticket,
+            Rqp = rqp,
+            AsUri = asUri,
+            CorrelationId = correlationId
+        };
+        
+        logger.LogRequest(request);
+
+        return request;
     }
 
     private static PensionsDataRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request, ILogger<PensionsDataController> logger)
@@ -374,6 +470,16 @@ public class PensionsDataController(
             }
         }
     }
+    
+    private static PensionRetrievalPayload CreateRequestPayload(string peisId, RequestHeaderModel requestHeader)
+    {
+        return new PensionRetrievalPayload
+        {
+            PeisId = peisId,
+            Iss = requestHeader.Iss,
+            UserSessionId = requestHeader.UserSessionId
+        };
+    }
 
     private static void ProcessRecord(string policyId,
         JsonElement item,
@@ -412,4 +518,67 @@ public class PensionsDataController(
 
         return true;
     }
+    
+    private async Task<MapsRqpServiceResponseModel?> GetRqpFromMapsCdaService(RequestHeaderModel requestHeader, string userSessionId)
+    {
+        var rqpResponse = await _mapsCdaServiceClient.PostRqp(requestHeader);
+        if (string.IsNullOrEmpty(rqpResponse.Rqp) || !JwtValidator.IsJwtFormatValid(rqpResponse.Rqp))
+        {
+            logger.LogError("Invalid RQP for Id {UserSessionId}", userSessionId);
+            return null;
+        }
+        return rqpResponse;
+    }
+
+    private async Task<CdaTokenResponseModel?> GetAccessToken(
+        PensionsDataRetrievalRequest request,
+        string rqp,
+        RequestHeaderModel requestHeader,
+        string userSessionId)
+    {
+        var tokenResult = await _tokenIntegrationServiceClientRpts.PostRptAsync(
+            CreateCdaTokenServiceRptsRequestModel(request.Ticket!, rqp, requestHeader.CorrelationId!, logger, null));
+
+        if (!IsValidJwt(tokenResult.Pct) || !IsValidJwt(tokenResult.AccessToken))
+        {
+            logger.LogError("Invalid token(s) for Id {UserSessionId}", userSessionId);
+            return null;
+        }
+        return tokenResult;
+    }
+
+    private async Task<string?> StoreSessionData(string userSessionId, CdaTokenResponseModel tokenResult)
+    {
+        var userSessionData = await userSessionDataRepository.GetByIdAsync(userSessionId, userSessionId);
+        if (userSessionData == null) return null;
+
+        var peisId = userSessionData.PeisId;
+        if (string.IsNullOrEmpty(peisId))
+        {
+            logger.LogError("Invalid peisId for UserSessionData Id {UserSessionId}", userSessionId);
+            return null;
+        }
+
+        await userSessionDataRepository.InsertItemAsync(new UserSessionData
+        {
+            Id = userSessionId,
+            UserSessionId = userSessionId,
+            AccessToken = tokenResult.AccessToken!,
+            PeisId = peisId,
+            Pct = tokenResult.Pct
+        }, userSessionId);
+
+        return peisId;
+    }
+
+    private async Task PostPensionDataRetrievalMessage(string peisId, RequestHeaderModel requestHeader, string userSessionId)
+    {
+        var message = CreateRequestPayload(peisId, requestHeader);
+        logger.LogInformation("Posting message to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
+        await _messagingService.SendMessageAsync(message, _serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
+    }
+
+    private static bool IsValidJwt(string? token) => !string.IsNullOrEmpty(token) && JwtValidator.IsJwtFormatValid(token);
+
+    private ObjectResult InternalServerErrorResult() => StatusCode(500, "Internal server error");
 }

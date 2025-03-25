@@ -1,14 +1,18 @@
-﻿using MhpdCommon.Models.Configuration;
+﻿using System.Net;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
+using MhpdCommon.SharedHttpClient;
+using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using PensionsRetrievalFunction.HttpClients;
-using PensionsRetrievalFunction.Models;
 using PensionsRetrievalFunction.Orchestration;
 using PensionsRetrievalFunction.Repository;
+using ResponseMessage = MhpdCommon.Models.MHPDModels.ResponseMessage;
 
 namespace PensionsRetrievalFunctionTests;
 
@@ -17,6 +21,8 @@ public class PeiIntegrationOrchestratorTests
     private readonly Mock<ILogger<PeiIntegrationOrchestrator>> _logger;
     private readonly Mock<IMessagingService> _messagingService;
     private readonly Mock<IPensionRetrievalRepository> _repository;
+    private readonly Mock<UserSessionDataRepository> _mockUserSessionDataRepository;
+    private readonly Mock<Container> _mockUserContainer;
     private const string InboundQueue = "data-in";
     private const string OutboundQueue = "data-out";
 
@@ -26,6 +32,33 @@ public class PeiIntegrationOrchestratorTests
         _messagingService = new Mock<IMessagingService>();
         _messagingService.Setup(mock => mock.SendMessageAsync(It.IsAny<PensionRequestPayload>(), OutboundQueue, It.IsAny<string>())).Verifiable();
 
+        Mock<CosmosClient> mockCosmosClient = new();
+        _mockUserContainer = new Mock<Container>();
+        Mock<Database> mockDatabase = new();
+        
+        var configuration = new CosmosBusinessConfiguration
+        {
+            DatabaseId = "TestDatabase",
+            UserSessionDataContainer = "TestUserSessionDataContainer",
+        };
+        
+        Mock<IOptions<CosmosBusinessConfiguration>> mockCosmosConfigOptions = new();
+        mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
+
+        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseId))
+            .Returns(mockDatabase.Object);
+
+        mockDatabase.Setup(mock => mock.GetContainer(configuration.UserSessionDataContainer))
+            .Returns(_mockUserContainer.Object);
+        
+        UserSessionData? model = null;
+
+        var response = new Mock<ItemResponse<UserSessionData>>();
+        response.Setup(r => r.Resource).Returns(model!);
+        
+        // Instantiate the _mockUserSessionDataRepository with the mocked CosmosClient and configuration
+        _mockUserSessionDataRepository = new Mock<UserSessionDataRepository>(mockCosmosClient.Object, mockCosmosConfigOptions.Object);
+        
         _repository = new Mock<IPensionRetrievalRepository>();
     }
 
@@ -73,8 +106,19 @@ public class PeiIntegrationOrchestratorTests
         _repository.Setup(mock => mock.CreateRecordIfNotExistsAsync(It.IsAny<PensionRetrievalPayload>())).ReturnsAsync(record);
         _repository.Setup(mock => mock.UpdatePensionsRetrievalRecordAsync(It.IsAny<PensionsRetrievalRecord>())).Verifiable();
 
+        var testInstanceData = new UserSessionData
+        {
+            UserSessionId = Guid.NewGuid().ToString(),
+            AccessToken = TokenQueryParams.ValidJwtToken
+        };
+        
+        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
+        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
+        _mockUserContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+        
         var orchestrator = new PeiIntegrationOrchestrator(sbOptions, apiOptions, _messagingService.Object,
-            client.Object, _repository.Object, _logger.Object);
+            client.Object, _repository.Object, _logger.Object, _mockUserSessionDataRepository.Object);
 
         var correlationId = Guid.NewGuid().ToString();
 
@@ -82,7 +126,7 @@ public class PeiIntegrationOrchestratorTests
         await orchestrator.RunAsync(payload, correlationId);
 
         //Assert
-        client.Verify(mock => mock.GetPeiDataAsync(It.Is<PeiRequest>(request => request.Iss == payload.Iss && 
+        client.Verify(mock => mock.GetPeiDataAsync(It.Is<PeiRequestModel>(request => request.Iss == payload.Iss && 
         request.PeisId == payload.PeisId && request.UserSessionId == payload.UserSessionId)), Times.Exactly(expectedClientCallCount));
 
         _messagingService.Verify(mock => mock.SendMessageAsync(It.IsAny<PensionRequestPayload>(), OutboundQueue, correlationId),
@@ -99,7 +143,7 @@ public class PeiIntegrationOrchestratorTests
         var attempts = 1;
 
         var sequence = httpClientMock
-            .SetupSequence(mock => mock.GetPeiDataAsync(It.IsAny<PeiRequest>()));
+            .SetupSequence(mock => mock.GetPeiDataAsync(It.IsAny<PeiRequestModel>()));
 
         while (simulationAttempts > attempts)
         {
@@ -110,7 +154,7 @@ public class PeiIntegrationOrchestratorTests
         return httpClientMock;
     }
 
-    private static PeiDataResponse CreateResponse(bool withData)
+    private static CdaPeisServiceResponseModel CreateResponse(bool withData)
     {
         var response = new List<PeiDataModel>
         {
@@ -121,6 +165,13 @@ public class PeiIntegrationOrchestratorTests
                 RetrievalStatus = "Started"
             }
         };
-        return new PeiDataResponse("rpt", withData ? response : []);
+        return new CdaPeisServiceResponseModel
+        {
+            Peis = withData ? response.ToArray() : [],
+            ResponseMessage = new ResponseMessage
+            {
+                ResponseStatusCode = HttpStatusCode.OK,
+            }
+        };
     }
 }

@@ -19,6 +19,7 @@ var mtlsCertificate = await builder!.ConfigureMtlsWithClientCertificateAsync();
 builder.Services.AddMhpdHttpClients();
 builder.Services.AddMhpdUtilities();
 builder.Services.AddControllers();
+builder.Services.AddMhpdCosmosDb();
 
 builder.Services.AddSingleton<CosmosClient>(_ =>
 {
@@ -35,15 +36,13 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
     return new CosmosClient(connString, options);
 });
 
-builder.Services.Configure<MhpdCosmosConfiguration>(builder.Configuration.GetSection("MhpdCosmosConfiguration"));
-
 // Register ViewdatapayloadsContainerName
 builder.Services.AddSingleton<ViewDataRepository>(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<MhpdCosmosConfiguration>>().Value;
+    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
     
-    return new ViewDataRepository(cosmosClient, config.DatabaseName, config.ViewdatapayloadsContainerName);
+    return new ViewDataRepository(cosmosClient, config.DatabaseName, config.ViewDataModelContainerName);
 });
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));

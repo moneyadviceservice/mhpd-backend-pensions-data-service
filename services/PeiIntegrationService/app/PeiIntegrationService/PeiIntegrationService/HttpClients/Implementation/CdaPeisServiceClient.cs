@@ -12,14 +12,11 @@ namespace PeiIntegrationService.HttpClients.Implementation;
 
 public class CdaPeisServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaPeisServiceClient> logger) : ICdaPiesServiceClient
 {
-    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-    private readonly ILogger<CdaPeisServiceClient> _logger = logger;
-
     public async Task<CdaPeisServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request)
     {
-        _logger.LogRequest(request);
+        logger.LogRequest(request);
 
-        var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
+        var client = httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, request.Rpt);
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
@@ -27,12 +24,13 @@ public class CdaPeisServiceClient(IHttpClientFactory httpClientFactory, ILogger<
 
         var endPoint = string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId));
 
-        var clientResponse = await client!.GetAsync(endPoint);
+        var response = await client.GetAsync(endPoint);
+        response.EnsureSuccessStatusCode();
 
-        var response = CreateResponse(clientResponse).Result;
+        var data = CreateResponse(response).Result;
 
-        _logger.LogResponse(response);
-        return response;
+        logger.LogResponse(data);
+        return data;
     }
 
     private static async Task<CdaPeisServiceResponseModel> CreateResponse(HttpResponseMessage? response)

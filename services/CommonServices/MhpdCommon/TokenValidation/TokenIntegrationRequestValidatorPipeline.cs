@@ -2,16 +2,16 @@ using MhpdCommon.Models.MessageBodyModels;
 
 namespace MhpdCommon.TokenValidation;
 
-public class TokenIntegrationRequestValidatorPipeline : IRequestValidator<TokenIntegrationRequestModel>
+public class TokenIntegrationRequestValidatorPipeline : IRequestValidator<TokenClientRequestModel>
 {
-    private readonly IEnumerable<ITokenRequestValidator<TokenIntegrationRequestModel>> _validators;
+    private readonly IEnumerable<ITokenRequestValidator<TokenClientRequestModel>> _validators;
 
-    public TokenIntegrationRequestValidatorPipeline(IEnumerable<ITokenRequestValidator<TokenIntegrationRequestModel>> validators)
+    public TokenIntegrationRequestValidatorPipeline(IEnumerable<ITokenRequestValidator<TokenClientRequestModel>> validators)
     {
         _validators = validators.OrderBy(v => v.Order);
     }
 
-    public ValidationResult Validate(TokenIntegrationRequestModel request)
+    public ValidationResult Validate(TokenClientRequestModel request)
     {
         if (!_validators.Any())
         {

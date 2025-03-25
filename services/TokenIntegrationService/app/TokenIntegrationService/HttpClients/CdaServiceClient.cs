@@ -18,7 +18,7 @@ public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaS
 
         var payload = request switch
         {
-            TokenIntegrationRequestModel tokenRequest => UrlHelper.ConstructFormEncodedPayload(tokenRequest),
+            TokenClientRequestModel tokenRequest => UrlHelper.ConstructFormEncodedPayload(tokenRequest),
             CdaTokenRequestModel cdaTokenRequest => UrlHelper.ConstructFormEncodedPayload(cdaTokenRequest),
             _ => throw new InvalidOperationException("Unsupported request type.")
         };

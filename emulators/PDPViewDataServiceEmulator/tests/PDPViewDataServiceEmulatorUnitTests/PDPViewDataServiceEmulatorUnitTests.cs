@@ -1,4 +1,5 @@
 using System.Net;
+using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
@@ -294,7 +295,7 @@ public class PdpViewDataServiceEmulatorUnitTests
     {
         return "realm=\"PensionDashboard\", " +
                $"as_uri=\"{_httpConfiguration.CdaTokenEndpoint}\", " +
-               "ticket=\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.cThIIoDvwdueQB468K5xDc5633seEFoqwxjF_xSJyQQ\"";
+               $"ticket=\"{SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket}";
     }
 
 }

@@ -1,16 +1,22 @@
-﻿using MhpdCommon.Models.MessageBodyModels;
+﻿using System.Net;
+using MhpdCommon.Models.Configuration;
+using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.MHPDModels.JwkUri;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Repository;
 using MhpdCommon.SharedHttpClient;
+using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using PensionRequestFunction.HttpClient;
-using PensionRequestFunction.HttpClient.Interfaces;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
-using PensionRequestFunction.Models.MapsRqpServiceClient;
-using PensionRequestFunction.Models.TokenIntegrationServiceClient;
 using PensionRequestFunction.Orchestration;
+using MapsRqpServiceResponseModel = MhpdCommon.Models.MHPDModels.MapsRqpServiceResponseModel;
+using ResponseMessage = MhpdCommon.Models.MHPDModels.ResponseMessage;
 
 namespace PensionRequestFunctionUnitTests;
 
@@ -26,6 +32,8 @@ public class ViewDataOrchestratorUnitTests
     private readonly Mock<ViewDataOrchestratorClients> _mockServiceClients;
     private readonly Mock<IIdValidator> _validator = new();
     private readonly Mock<ILogger<ViewDataOrchestrator>> _logger = new();
+    private readonly Mock<Container> _mockUserSessionDataContainer;
+    private readonly Mock<UserSessionDataRepository> _mockUserSessionDataRepository;
 
     public ViewDataOrchestratorUnitTests()
     {
@@ -34,22 +42,26 @@ public class ViewDataOrchestratorUnitTests
         var rpt = GetRpt();
 
         _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => string.IsNullOrEmpty(x)), It.IsAny<string>()))
-            .ReturnsAsync(new PdpServiceResponseModel { ViewDataToken = null, 
-                                                        ResponseMessage = new ResponseMessage { ResponseStatusCode = "Unauthorized", 
-                                                            WWWAuthenticateResponseHeader = responseHeader } } );
+            .ReturnsAsync(new PdpServiceResponseModel { 
+                ViewDataToken = null, 
+                ResponseMessage = new ResponseMessage { 
+                    ResponseStatusCode = HttpStatusCode.Unauthorized, 
+                    WwwAuthenticateResponseHeader = responseHeader 
+                }
+            });
 
         _mockPdpViewDataClient.Setup(x => x.GetPdpViewDataAsync(It.IsAny<string>(), It.IsAny<string>(), It.Is<string>(x => !string.IsNullOrEmpty(x)), It.IsAny<string>()))
             .ReturnsAsync(new PdpServiceResponseModel
             {
                 ViewDataToken = GetViewDataToken(ViewDataToken),
-                ResponseMessage = new ResponseMessage { ResponseStatusCode = "200" }
+                ResponseMessage = new ResponseMessage { ResponseStatusCode = HttpStatusCode.OK }
             });
 
-        _mockMapsRqpService.Setup(x => x.PostRqpAsync(It.IsAny<MapsRqpServiceRequestModel>()))
+        _mockMapsRqpService.Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = rqp });
 
-        _mockTokenIntegrationService.Setup(x => x.PostRptAsync(It.IsAny<TokenIntegrationServiceRequestModel>()))
-            .ReturnsAsync(new TokenIntegrationResponseModel {  Rpt = rpt });
+        _mockTokenIntegrationService.Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel {  AccessToken = rpt });
 
         var holderNameId = Guid.NewGuid().ToString();
         var assetId = Guid.NewGuid().ToString();
@@ -69,18 +81,55 @@ public class ViewDataOrchestratorUnitTests
         var jwtUtilityMock = new Mock<IJwtUtility>();
 
         // Create an instance of PensionServiceClients with mocked dependencies
-        _mockServiceClients = new(
+        _mockServiceClients = new Mock<ViewDataOrchestratorClients>(
             _holderNameClient.Object,
             _mockPdpViewDataClient.Object,
             _mockTokenIntegrationService.Object,
             _mockMapsRqpService.Object
         );
+        
+        Mock<CosmosClient> mockCosmosClient = new();
+        _mockUserSessionDataContainer = new Mock<Container>();
+        Mock<Database> mockDatabase = new();
+        
+        var configuration = new CosmosBusinessConfiguration
+        {
+            DatabaseId = "TestDatabase",
+            UserSessionDataContainer = "TestUserSessionDataContainer",
+        };
+        
+        Mock<IOptions<CosmosBusinessConfiguration>> mockCosmosConfigOptions = new();
+        mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
 
-        _orchestrator = new ViewDataOrchestrator(_logger.Object, 
-                                                       _validator.Object,
-                                                       _tokenUtility.Object,
-                                                       jwtUtilityMock.Object,
-                                                       _mockServiceClients.Object);
+        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseId))
+            .Returns(mockDatabase.Object);
+
+        mockDatabase.Setup(mock => mock.GetContainer(configuration.UserSessionDataContainer))
+            .Returns(_mockUserSessionDataContainer.Object);
+
+        // Instantiate the _mockUserSessionDataRepository with the mocked CosmosClient and configuration
+        _mockUserSessionDataRepository =
+            new Mock<UserSessionDataRepository>(mockCosmosClient.Object, mockCosmosConfigOptions.Object);
+        
+        var testInstanceData = new UserSessionData
+        {
+            UserSessionId = Guid.NewGuid().ToString(),
+            Pct = TokenQueryParams.ValidPersistedClaimsToken
+        };
+        
+        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
+        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
+        
+        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+        
+        _orchestrator = new ViewDataOrchestrator(
+            _logger.Object, 
+            _validator.Object,
+            _tokenUtility.Object,
+            jwtUtilityMock.Object,
+            _mockServiceClients.Object,
+            _mockUserSessionDataRepository.Object);
     }
 
     [Fact]
@@ -105,17 +154,20 @@ public class ViewDataOrchestratorUnitTests
             .ReturnsAsync(new PdpServiceResponseModel
             {
                 ViewDataToken = GetViewDataToken(viewDataToken),
-                ResponseMessage = new ResponseMessage { ResponseStatusCode = "200" }
+                ResponseMessage = new ResponseMessage { ResponseStatusCode = HttpStatusCode.Accepted }
             });
 
         var client = new Mock<ISharedHttpClient>();
         client.Setup(mock => mock.GetAsync()).ReturnsAsync(JwkUriResponseModel.Default);
 
-        _orchestrator = new ViewDataOrchestrator(_logger.Object,
-                                                       _validator.Object,
-                                                       _tokenUtility.Object,
-                                                       new JwtUtility(client.Object),
-                                                       _mockServiceClients.Object);
+        _orchestrator = new ViewDataOrchestrator(      
+            _logger.Object,
+            _validator.Object,
+            _tokenUtility.Object,
+            new JwtUtility(client.Object),
+            _mockServiceClients.Object,
+            _mockUserSessionDataRepository.Object
+            );
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() => _orchestrator.GetPensionViewDataAsync(Pei, Iss, UserSessionId, CorrelationId));

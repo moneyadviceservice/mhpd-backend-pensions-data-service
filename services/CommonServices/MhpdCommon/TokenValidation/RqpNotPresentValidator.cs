@@ -3,13 +3,13 @@ using Microsoft.Extensions.Logging;
 
 namespace MhpdCommon.TokenValidation;
 
-public class RqpNotPresentValidator(ILogger<RqpNotPresentValidator> logger) : ITokenRequestValidator<TokenIntegrationRequestModel>
+public class RqpNotPresentValidator(ILogger<RqpNotPresentValidator> logger) : ITokenRequestValidator<TokenClientRequestModel>
 {
     public int Order => 1;
 
     public string GrantType => String.Empty;
     
-    public ValidationResult Validate(TokenIntegrationRequestModel request)
+    public ValidationResult Validate(TokenClientRequestModel request)
     {
         if (string.IsNullOrEmpty(request.Rqp))
         {

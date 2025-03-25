@@ -1,10 +1,11 @@
 ﻿using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
+using MhpdCommon.SharedHttpClient;
 using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using PensionsRetrievalFunction.HttpClients;
 using PensionsRetrievalFunction.Models;
 using PensionsRetrievalFunction.Repository;
 using Polly;
@@ -16,43 +17,49 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
     IMessagingService messagingService, 
     IPeiServiceClient client, 
     IPensionRetrievalRepository repository,
-    ILogger<PeiIntegrationOrchestrator> logger) : IPeiIntegrationOrchestrator
+    ILogger<PeiIntegrationOrchestrator> logger,
+    UserSessionDataRepository userSessionDataRepository) : IPeiIntegrationOrchestrator
 {
     private readonly CommonServiceBusConfiguration _serviceBusConfiguration = sbOptions.Value;
     private readonly PeiOrchestrationSettings _settings = peiOptions.Value;
-    private readonly IMessagingService _messagingService = messagingService;
-    private readonly IPensionRetrievalRepository _repository = repository;
-    private readonly IPeiServiceClient _client = client;
-    private readonly ILogger<PeiIntegrationOrchestrator> _logger = logger;
 
     public async Task RunAsync(PensionRetrievalPayload payload, string correlationId)
     {
-        var record = await _repository.CreateRecordIfNotExistsAsync(payload);
+        var record = await repository.CreateRecordIfNotExistsAsync(payload);
         if (record == null)
         {
-            _logger.LogWarning("Pension retrieval record already exists for session: {session}. Skipping further processing...", payload.UserSessionId);
+            logger.LogWarning("Pension retrieval record already exists for session: {Session}. Skipping further processing...", payload.UserSessionId);
+            return;
+        }
+        
+        // Fetch userSessionData and get the access_token that was stored during the pensions-data-retrieval
+        var userSessionId = payload.UserSessionId!;
+        
+        var userSessionData = await userSessionDataRepository.GetByIdAsync(userSessionId,  userSessionId);
+        if (userSessionData == null)
+        {
+            logger.LogError("Error retrieving UserSessionData for Id {UserSessionId}", userSessionId);
             return;
         }
 
-        var peiResponse = new PeiDataResponse(null, []);
-
-        var retryCondition = new Func<PeiDataResponse, bool>(response =>
+        if (string.IsNullOrEmpty(userSessionData.AccessToken) || !JwtValidator.IsJwtFormatValid(userSessionData.AccessToken))
         {
-            //we want to keep trying until we reach the specified timeout
-            return true;
-        });
+            logger.LogError("Error retrieving Access Token from UserSessionData for Id {UserSessionId}", userSessionId);
+            return;
+        }
+        
+        var peiResponse = new PeiDataResponse(userSessionData.AccessToken, []);
+
+        var retryCondition = new Func<PeiDataResponse, bool>(_ => true);
 
         var retryPolicy = Policy
             .HandleResult(retryCondition)
             .WaitAndRetryAsync(
                 retryCount: _settings.RetryLimit,
-                sleepDurationProvider: retryAttempt =>
+                sleepDurationProvider: _ => TimeSpan.FromSeconds(_settings.PeiPollingInterval),
+                onRetry: (_, _, attemptCount, _) =>
                 {
-                    return TimeSpan.FromSeconds(_settings.PeiPollingInterval);
-                },
-                onRetry: (outcome, lapse, attemptCount, context) =>
-                {
-                    _logger.LogWarning("Retry attempt #{attemptCount} to fetch PEI data for user session {sessionId}", attemptCount, payload.UserSessionId);
+                    logger.LogWarning("Retry attempt #{AttemptCount} to fetch PEI data for user session {SessionId}", attemptCount, payload.UserSessionId);
                 }
             );
 
@@ -60,18 +67,16 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
         {
             await retryPolicy.ExecuteAsync(async () =>
             {
-                var response = await _client.GetPeiDataAsync(new PeiRequest
+                var response = await client.GetPeiDataAsync(new PeiRequestModel
                 {
-                    Iss = payload.Iss,
-                    Rpt = peiResponse.Rpt,
+                    Iss = payload.Iss!,
+                    Rpt = peiResponse.Rpt!, // RPT == Access_token
                     CorrelationId = correlationId,
-                    UserSessionId = payload.UserSessionId,
-                    PeisId = payload.PeisId,
+                    UserSessionId = payload.UserSessionId!,
+                    PeisId = payload.PeisId!,
                 });
-
-                peiResponse.SetRpt(response.Rpt);
-
-                foreach (var pei in response.PeiData)
+                
+                foreach (var pei in response.Peis!)
                 {
                     pei.RetrievalStatus = Constants.RetrievalStatus.Requested;
                     pei.RetrievalRequestedTimestamp = DateTime.UtcNow;
@@ -79,27 +84,26 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
                     if (peiResponse.TryAdd(pei))
                     {
                         var message = CreateRequestPayload(pei, record);
-                        _logger.LogWarning("Pension details request sent for PEI {pei} with retrieval Id {id}"
+                        logger.LogWarning("Pension details request sent for PEI {Pei} with retrieval Id {Id}"
                             , message.Pei, message.PensionRetrievalRecordId);
-                        await _messagingService.SendMessageAsync(message, _serviceBusConfiguration.OutboundQueue!, correlationId);
+                        await messagingService.SendMessageAsync(message, _serviceBusConfiguration.OutboundQueue!, correlationId);
 
                         record.PeiData.Add(pei);
-                        await _repository.UpdatePensionsRetrievalRecordAsync(record);
+                        await repository.UpdatePensionsRetrievalRecordAsync(record);
                     }
                 }
-                return response;
+                return peiResponse;
             });
 
-            record.PeisRpt = peiResponse.Rpt;
             record.PeiRetrievalComplete = true;
-            await _repository.UpdatePensionsRetrievalRecordAsync(record);
+            await repository.UpdatePensionsRetrievalRecordAsync(record);
         }
         catch (Exception error)
         {
-            _logger.LogError(error, "Error retrieving PEI data for Id {PeisId}", payload.PeisId);
+            logger.LogError(error, "Error retrieving PEI data for Id {PeisId}", payload.PeisId);
         }
 
-        _logger.LogWarning("Pei request orchestration complete");
+        logger.LogWarning("Pei request orchestration complete");
     }
 
     private static PensionRequestPayload CreateRequestPayload(PeiDataModel pei, PensionsRetrievalRecord record)

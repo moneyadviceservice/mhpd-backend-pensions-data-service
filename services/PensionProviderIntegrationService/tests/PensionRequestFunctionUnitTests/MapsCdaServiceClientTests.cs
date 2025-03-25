@@ -2,21 +2,17 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using PensionRequestFunction.HttpClient.Implementation;
-using PensionRequestFunction.Models.MapsRqpServiceClient;
 using System.Net;
 using System.Net.Http.Json;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.SharedHttpClient;
 
 namespace PensionRequestFunctionUnitTests;
 
 public class MapsCdaServiceClientTests
 {
-    private readonly Mock<IHttpClientFactory> _httpClientFactory;
-
-    public MapsCdaServiceClientTests()
-    {
-        _httpClientFactory = new Mock<IHttpClientFactory>();
-    }
+    private readonly Mock<IHttpClientFactory> _httpClientFactory = new();
 
     [Fact]
     public async Task WhenCdaClientIsInvoked_ModelDataIsReturned()
@@ -31,14 +27,14 @@ public class MapsCdaServiceClientTests
         var logger = new Mock<ILogger<MapsCdaServiceClient>>();
         var client = new MapsCdaServiceClient(_httpClientFactory.Object, logger.Object);
 
-        var request = new MapsRqpServiceRequestModel
+        var request = new RequestHeaderModel
         {
             Iss = Guid.NewGuid().ToString(),
             UserSessionId = Guid.NewGuid().ToString()
         };
 
         // Act
-        var result = await client.PostRqpAsync(request);
+        var result = await client.PostRqp(request);
 
         //Assert
         Assert.NotNull(result);

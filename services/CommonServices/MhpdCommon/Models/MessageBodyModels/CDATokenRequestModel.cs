@@ -35,4 +35,7 @@ public class CdaTokenRequestModel
 
     [FromForm(Name = QueryParams.Cda.Token.CodeVerifier)]
     public string? CodeVerifier { get; set; }
+    
+    [FromForm(Name = QueryParams.Cda.Token.Pct)]
+    public string? Pct { get; set; }
 }

@@ -17,11 +17,10 @@ public class PensionRetrievalRepositoryTests
 
     public PensionRetrievalRepositoryTests()
     {
-        var configuration = new CommonCosmosConfiguration
+        var configuration = new CosmosBusinessConfiguration
         {
             DatabaseId = "PensionDatabase",
-            ContainerId = "PensionContainer",
-            ContainerPartitionKey = "PensionPartition"
+            PensionsRetrievalContainer = "PensionContainer"
         };
 
         var options = Options.Create(configuration);
@@ -31,7 +30,7 @@ public class PensionRetrievalRepositoryTests
         _readResponse = new Mock<FeedResponse<PensionsRetrievalRecord>>();
         _writeResponse = new Mock<ItemResponse<PensionsRetrievalRecord>>();
 
-        client.Setup(mock => mock.GetContainer(configuration.DatabaseId, configuration.ContainerId))
+        client.Setup(mock => mock.GetContainer(configuration.DatabaseId, configuration.PensionsRetrievalContainer))
             .Returns(_container.Object);
 
         _container.Setup(mock => mock.GetItemQueryIterator<PensionsRetrievalRecord>(It.IsAny<QueryDefinition>(),

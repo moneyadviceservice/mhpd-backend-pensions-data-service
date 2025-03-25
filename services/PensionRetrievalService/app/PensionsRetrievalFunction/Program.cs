@@ -1,13 +1,12 @@
 using MhpdCommon.Extensions;
+using MhpdCommon.Repository;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using PensionsRetrievalFunction.HttpClients;
 using PensionsRetrievalFunction.Orchestration;
 using PensionsRetrievalFunction.Repository;
 
@@ -24,11 +23,14 @@ var host = new HostBuilder()
         services.AddMhpdCosmosDb(hostContext.Configuration);
         services.AddMhpdUtilities();
         services.AddMhpdHttpClients(hostContext.Configuration);
+        services.AddIntegrationServices();
         services.AddMhpdServiceBusTools(hostContext.Configuration);
         services.AddCommonConfigurations(hostContext.Configuration);
         services.AddScoped<IPensionRetrievalRepository, PensionRetrievalRepository>();
-        services.AddTransient<IPeiServiceClient, PeiServiceClient>();
         services.AddTransient<IPeiIntegrationOrchestrator, PeiIntegrationOrchestrator>();
+        
+        services.AddTransient<UserSessionDataRepository>();
+
         services.AddSingleton<IOpenApiConfigurationOptions>(_ =>
         {
             var options = new OpenApiConfigurationOptions()

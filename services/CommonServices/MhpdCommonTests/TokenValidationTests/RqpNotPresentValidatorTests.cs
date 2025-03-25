@@ -18,7 +18,7 @@ public class RqpNotPresentValidatorTests
     [Fact]
     public void Validate_ShouldReturnFailure_WhenRedirectUriIsMissing()
     {
-        var result = _notPresentValidationValidator.Validate(new TokenIntegrationRequestModel { Rqp = string.Empty });
+        var result = _notPresentValidationValidator.Validate(new TokenClientRequestModel { Rqp = string.Empty });
 
         Assert.False(result.IsValid);
         Assert.Equal(TokenValidationMessages.InvalidRqp, result.ErrorMessage);
@@ -27,7 +27,7 @@ public class RqpNotPresentValidatorTests
     [Fact]
     public void Validate_ShouldReturnSuccess_WhenRedirectUriIsProvided()
     {
-        var result = _notPresentValidationValidator.Validate(new TokenIntegrationRequestModel { Rqp = TokenQueryParams.ValidJwtToken });
+        var result = _notPresentValidationValidator.Validate(new TokenClientRequestModel { Rqp = TokenQueryParams.ValidJwtToken });
         Assert.True(result.IsValid);
     }
 }

@@ -19,7 +19,7 @@ public class TicketNotAJweTokenIntegrationValidatorTests
     public void Validate_ShouldReturnFailure_WhenTicketIsNotJwt()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Ticket = "invalid.jwt.token", // Invalid JWT format
         };
@@ -36,7 +36,7 @@ public class TicketNotAJweTokenIntegrationValidatorTests
     public void Validate_ShouldReturnSuccess_WhenTicketIsValidJwt()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Ticket = TokenQueryParams.ValidJweToken,
         };

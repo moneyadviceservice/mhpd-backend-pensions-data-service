@@ -17,12 +17,7 @@ using Moq;
 namespace MhpdCommonTests.Extensions;
 public class ServiceCollectionExtensionTests
 {
-    private readonly ServiceCollectionMock _serviceCollectionMock;
-
-    public ServiceCollectionExtensionTests()
-    {
-        _serviceCollectionMock = new ServiceCollectionMock();
-    }
+    private readonly ServiceCollectionMock _serviceCollectionMock = new();
 
     [Fact]
     public void WhenServiceCollection_AddsMhpdUtilities_UtilsAreRegistered()
@@ -67,7 +62,7 @@ public class ServiceCollectionExtensionTests
             {$"{DatabaseConstants.ConfigurationSections.IntegrationLayer}:HolderNameCacheContainer", "holderNameCache"},
             {$"{DatabaseConstants.ConfigurationSections.TestHarness}:DatabaseId", "testharness-db"},
             {$"{DatabaseConstants.ConfigurationSections.TestHarness}:ViewdatapayloadsContainerName", "viewdataContainer"},
-            {$"{DatabaseConstants.ConnectionStringVariable}", "AccountEndpoint=https://localhost/;AccountKey=test"}
+            {$"ConnectionStrings:{DatabaseConstants.ConnectionStringVariable}", "AccountEndpoint=https://localhost/;AccountKey=test"}
         };
 
         IConfiguration configuration = new ConfigurationBuilder()
@@ -97,15 +92,22 @@ public class ServiceCollectionExtensionTests
     public void WhenServiceCollection_AddsServiceBusTools_ClientIsRegistered()
     {
         //Arrange
-        var mockConfiguration = new Mock<IConfiguration>();
-        mockConfiguration.Setup(x => x[CommonServiceBusConfiguration.ConnectionStringVariable])
-            .Returns("Endpoint=sb://mhpd.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=K@y");
+        var inMemorySettings = new Dictionary<string, string>
+        {
+            {$"{nameof(CommonServiceBusConfiguration)}:OutboundQueue", "test"},
+            {$"ConnectionStrings:{CommonServiceBusConfiguration.ConnectionStringVariable}", 
+                "Endpoint=sb://mhpd.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=K@y"}
+        };
 
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(inMemorySettings!)
+            .Build();
+        
         var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(mockConfiguration.Object);
-
+        serviceCollection.AddSingleton(configuration);
+        
         //Act
-        _serviceCollectionMock.ServiceCollection.AddMhpdServiceBusTools(mockConfiguration.Object);
+        _serviceCollectionMock.ServiceCollection.AddMhpdServiceBusTools(configuration);
         serviceCollection.AddMhpdServiceBusTools();
 
         //Assert

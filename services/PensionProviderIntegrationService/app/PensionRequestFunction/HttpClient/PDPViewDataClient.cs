@@ -1,8 +1,10 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Web;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels;
 using Microsoft.Extensions.Logging;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
 
@@ -12,7 +14,7 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
 {
     public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt, string correlationId)       
     {
-        var scope = "owner";
+        const string scope = "owner";
         var client = httpClientFactory.CreateClient(HttpClientNames.PdpService);
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
@@ -33,16 +35,16 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
 
     private static async Task<PdpServiceResponseModel> CreateResponse(HttpResponseMessage? response)
     {
-        if (response!.StatusCode == System.Net.HttpStatusCode.OK)
+        if (response!.StatusCode == HttpStatusCode.OK)
         {
-            var result = await response!.Content.ReadAsStringAsync();
+            var result = await response.Content.ReadAsStringAsync();
 
             return new PdpServiceResponseModel
             {
                 ViewDataToken = result,
                 ResponseMessage = new ResponseMessage
                 {
-                    ResponseStatusCode = "200"
+                    ResponseStatusCode = HttpStatusCode.OK
                 }
             };
         }
@@ -52,8 +54,8 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
             ViewDataToken = null,
             ResponseMessage = new ResponseMessage
             {
-                ResponseStatusCode = response.StatusCode.ToString(),
-                WWWAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
+                ResponseStatusCode = response.StatusCode,
+                WwwAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
             }
         };
     }

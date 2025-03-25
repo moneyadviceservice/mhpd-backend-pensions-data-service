@@ -16,10 +16,6 @@ namespace PensionsRetrievalFunction;
 
 public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IPensionRetrievalRepository repository, IIdValidator validator)
 {
-    private readonly ILogger<RetrievalRecordFunction> _logger = logger;
-    private readonly IPensionRetrievalRepository _repository = repository;
-    private readonly IIdValidator _idValidator = validator;
-
     [Function("GetRetrievalRecords")]
     [OpenApiOperation(operationId: "get-pensions-retrieval-record-for-pension-owner-session",
         Summary = "Get Pensions Retrieval Record",
@@ -39,7 +35,7 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
     [OpenApiResponseWithoutBody(HttpStatusCode.GatewayTimeout, Description = "Gateway Timeout")]
     public async Task<IActionResult> GetAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "pensions-retrieval-records")] HttpRequest req)
     {
-        return await ProcessRetrievalRecords(req, _repository.GetRetrievalRecordAsync);
+        return await ProcessRetrievalRecords(req, repository.GetRetrievalRecordAsync);
     }
 
     [Function("DeleteRetrievalRecords")]
@@ -55,7 +51,7 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
     [OpenApiResponseWithoutBody(HttpStatusCode.NotFound, Description = "Not Found")]
     public async Task<IActionResult> DeleteAsync([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "pensions-retrieval-records")] HttpRequest req)
     {
-        return await ProcessRetrievalRecords(req, _repository.DeleteRetrievalRecordsAsync);
+        return await ProcessRetrievalRecords(req, repository.DeleteRetrievalRecordsAsync);
     }
 
     private async Task<IActionResult> ProcessRetrievalRecords<T>(HttpRequest req, Func<string, Task<T>> processor)
@@ -67,25 +63,25 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
             correlationId = Guid.NewGuid().ToString();
         }
 
-        if (!_idValidator.IsValidGuid(correlationId))
+        if (!validator.IsValidGuid(correlationId))
         {
             return new BadRequestObjectResult(Constants.ResponseType.InvalidCorrelationId);
         }
 
         var userSessionId = req.Headers[HeaderConstants.UserSessionId].ToString();
 
-        using var scope = _logger.BeginCorrelationScope(correlationId, Constants.LogSource.Http);
+        using var scope = logger.BeginCorrelationScope(correlationId, Constants.LogSource.Http);
 
-        _logger.LogRequest($"User session Id: {userSessionId}");
+        logger.LogRequest($"User session Id: {userSessionId}");
 
-        if (!_idValidator.IsValidGuid(userSessionId))
+        if (!validator.IsValidGuid(userSessionId))
         {
-            _logger.LogError("Unable to service request for sessionId [{sessionId}]: {reason}", userSessionId, Constants.ResponseType.InvalidSessionId);
+            logger.LogError("Unable to service request for sessionId [{sessionId}]: {reason}", userSessionId, Constants.ResponseType.InvalidSessionId);
             return new BadRequestObjectResult(Constants.ResponseType.InvalidSessionId);
         }
 
         var record = await processor(userSessionId);
-        _logger.LogResponse(record);
+        logger.LogResponse(record);
 
         return EqualityComparer<T>.Default.Equals(record, default) ? new OkResult() : new OkObjectResult(record);
     }

@@ -39,21 +39,18 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
         });
 
         var sessionData = await sessionDataRepository.GetByIdAsync(request.UserSessionId!, request.UserSessionId!);
-
         if(sessionData == null)
         {
             return GetServerErrorResponse(Constants.NoSessionDataFound);
         }
 
         var peiResponse = await GetPeiDataAsync(request, sessionData);
-
         if(peiResponse.ResponseMessage!.ResponseStatusCode != System.Net.HttpStatusCode.Unauthorized)
         {
             return GetServerErrorResponse(Constants.UnableToTriggerRedirect);
         }
 
         var tokenResponse = await GetAccessToken(peiResponse, rqp, request.CorrelationId!);
-
         if (tokenResponse.StatusCode != System.Net.HttpStatusCode.Forbidden || !ValidateRedirectResponse(tokenResponse.UserRedirectDetails))
         {
             return GetServerErrorResponse(Constants.UnableToTriggerRedirect);

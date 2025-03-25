@@ -19,7 +19,7 @@ public class RqpNotAJwtValidatorTests
     public void Validate_ShouldReturnFailure_WhenRqpIsNotJwt()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = "invalid.jwt.token", // Invalid JWT format
         };
@@ -36,7 +36,7 @@ public class RqpNotAJwtValidatorTests
     public void Validate_ShouldReturnSuccess_WhenRqpIsValidJwt()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = TokenQueryParams.ValidJwtToken,
         };

@@ -3,13 +3,14 @@ using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using PensionRequestFunction.Constants;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
-using PensionRequestFunction.Models.MapsRqpServiceClient;
-using PensionRequestFunction.Models.TokenIntegrationServiceClient;
 using Polly;
 using System.Net;
 using System.Text.Json;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Repository;
+using MhpdCommon.SharedHttpClient;
 using PensionRequestFunction.HttpClient;
-using PensionRequestFunction.HttpClient.Interfaces;
 
 namespace PensionRequestFunction.Orchestration;
 
@@ -17,9 +18,9 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
     IIdValidator validator,
     ITokenUtility tokenUtility,
     IJwtUtility jwtUtility,
-    ViewDataOrchestratorClients orchestratorClients) : IViewDataOrchestrator
+    ViewDataOrchestratorClients orchestratorClients,
+    UserSessionDataRepository userSessionDataRepository) : IViewDataOrchestrator
 {
-    
     private readonly IHolderNameClient _holderNameClient = orchestratorClients.HolderNameClient;
     private readonly IPdpViewDataClient _viewDataClient = orchestratorClients.ViewDataClient;
     private readonly ITokenIntegrationServiceClient _tokenClient = orchestratorClients.TokenClient;
@@ -55,7 +56,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         PdpServiceResponseModel? responseModel = null;
 
         var retryPolicy = Policy
-            .HandleResult<PdpServiceResponseModel>(r => r.ResponseMessage?.ResponseStatusCode == HttpStatusCode.Unauthorized.ToString())
+            .HandleResult<PdpServiceResponseModel>(r => r.ResponseMessage.ResponseStatusCode == HttpStatusCode.Unauthorized)
             .WaitAndRetryAsync(1, retryAttempt => TimeSpan.Zero, async (result, timeSpan, retryCount, context) =>
             {
                 logger.LogWarning(StatusConstants.FetchingRpt, correlationId);
@@ -92,28 +93,49 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
 
     private async Task<string> DoAuthenticationDance(PdpServiceResponseModel viewDataResponse, string iss, string userSessionId, string correlationId)
     {
-        var rqpResponse = await _rqpClient.PostRqpAsync(new MapsRqpServiceRequestModel { Iss = iss, UserSessionId = userSessionId, CorrelationId = correlationId });
+        var rqpResponse = await _rqpClient.PostRqp(new RequestHeaderModel { Iss = iss, UserSessionId = userSessionId, CorrelationId = correlationId });
+        if (string.IsNullOrEmpty(rqpResponse.Rqp))
+        {
+            logger.LogWarning(StatusConstants.FetchingRqp, correlationId);
+            throw new FormatException(StatusConstants.FetchingRqp); 
+        }
         
-        var rptResponse = await RetrieveRptAsync(viewDataResponse, rqpResponse.Rqp, correlationId);
-        return rptResponse.Rpt!;
+        var rptResponse = await RetrieveRptAsync(viewDataResponse, rqpResponse.Rqp, userSessionId, correlationId);
+        return rptResponse.AccessToken!;
     }
 
-    private async Task<TokenIntegrationResponseModel> RetrieveRptAsync(PdpServiceResponseModel pdpServiceResponseModel, string? rqp, string correlationId)
+    private async Task<CdaTokenResponseModel> RetrieveRptAsync(PdpServiceResponseModel pdpServiceResponseModel, string rqp, string userSessionId, string correlationId)
     {
-        var ticketValue = ExtractWwwAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
-        var asUriValue = ExtractWwwAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WWWAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
+        var ticketValue = ExtractWwwAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WwwAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
+        var asUriValue = ExtractWwwAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WwwAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
+        
+        Console.WriteLine("Retrieving userSessionData {0}", userSessionId);
+        
+        // Retrieve PCT and pass it downstream
+        var userSessionData = await userSessionDataRepository.GetByIdAsync(userSessionId, userSessionId);
+        if (userSessionData == null)
+        {
+            logger.LogWarning(StatusConstants.UserSessionDataNotFound, userSessionId, correlationId);
+            throw new FormatException(StatusConstants.UserSessionDataNotFound);
+        }
 
-        var tokenIntegrationServiceRequestModel = new TokenIntegrationServiceRequestModel
+        if (string.IsNullOrEmpty(userSessionData.Pct))
+        {
+            logger.LogWarning(StatusConstants.NoPctFound, userSessionId);
+            throw new FormatException(StatusConstants.NoPctFound);
+        }
+        
+        var request = new TokenClientRequestModel
         {
             Ticket = ticketValue,
             Rqp = rqp,
-            As_Uri = asUriValue,
-            CorrelationId = correlationId
+            AsUri = asUriValue,
+            CorrelationId = correlationId,
+            Pct = userSessionData.Pct
         };
 
-        var tokenIntegrationResponseModel = await _tokenClient.PostRptAsync(tokenIntegrationServiceRequestModel);
-        
-        return tokenIntegrationResponseModel;
+        Console.WriteLine("Retrieving RPT {0}", request);
+        return await _tokenClient.PostRptAsync(request);
     }
 
     private static string ExtractWwwAuthenticateHeaderValue(string wwwAuthenticateHeader, string tokenToExtract)

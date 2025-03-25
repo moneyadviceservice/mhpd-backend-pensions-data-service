@@ -5,6 +5,8 @@ using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
+using MhpdCommon.Repository;
+using MhpdCommon.SharedHttpClient;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -12,9 +14,7 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using PensionsDataService;
 using PensionsDataService.Controllers;
-using PensionsDataService.CosmosRepository;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
 
@@ -23,11 +23,15 @@ namespace PensionsDataServiceUnitTests;
 public class PensionsDataControllerTests
 {
     private readonly Mock<IIdValidator> _mockIdValidator;
+    private readonly Mock<ITokenIntegrationServiceIdTokenClient> _mockTokenIntegrationServiceClientIdToken;
     private readonly Mock<ITokenIntegrationServiceClient> _mockTokenIntegrationServiceClient;
+    private readonly Mock<IMapsCdaServiceClient> _mockMapsCdaServiceClient;
     private readonly Mock<IRetrievalRecordServiceClient> _mockRetrievalRecordFunctionClient;
     private readonly Mock<IRetrievedPensionsRecordClient> _mockRetrievedPensionsRecordClient;
+    private readonly Mock<IMessagingService> _mockMessagingService;
     private readonly PensionsDataController _controller;
     private readonly Mock<Container> _mockUserSessionDataContainer;
+
     private const string ValidPeisId = "0001f518264ba44564b186f42af6659b5822eb6e";
 
     private readonly RequestHeaderModel _validRequestHeader = new()
@@ -41,13 +45,11 @@ public class PensionsDataControllerTests
     {
         Mock<ILogger<PensionsDataController>> mockLogger = new();
         _mockIdValidator = new Mock<IIdValidator>();
-        Mock<IMessagingService> mockMessagingService = new();
         Mock<IOptions<CommonServiceBusConfiguration>> mockServiceBusOptions = new();
         Mock<IOptions<PeiOrchestrationSettings>> mockOrchestrationSettings = new();
-        Mock<UserSessionDataRepository> mockUserSessionDataRepository = new();
-        
+
         Mock<CosmosClient> mockCosmosClient = new();
-        _mockUserSessionDataContainer = new();
+        _mockUserSessionDataContainer = new Mock<Container>();
         Mock<Database> mockDatabase = new();
         
         var configuration = new CosmosBusinessConfiguration
@@ -65,23 +67,25 @@ public class PensionsDataControllerTests
         mockDatabase.Setup(mock => mock.GetContainer(configuration.UserSessionDataContainer))
             .Returns(_mockUserSessionDataContainer.Object);
         
-        var mockScenarioModelRepository = new Mock<UserSessionDataRepository>(
-            mockCosmosClient.Object,
-            configuration.DatabaseId,
-            configuration.UserSessionDataContainer
-        );
+        UserSessionData? model = null;
+
+        var response = new Mock<ItemResponse<UserSessionData>>();
+        response.Setup(r => r.Resource).Returns(model!);
+
+        // Instantiate the _mockUserSessionDataRepository with the mocked CosmosClient and configuration
+        var mockUserSessionDataRepository = new Mock<UserSessionDataRepository>(mockCosmosClient.Object, mockCosmosConfigOptions.Object);
 
         // Arrange: Set up the mocks for the dependencies
+        _mockTokenIntegrationServiceClientIdToken = new Mock<ITokenIntegrationServiceIdTokenClient>();
         _mockTokenIntegrationServiceClient = new Mock<ITokenIntegrationServiceClient>();
+        _mockMapsCdaServiceClient = new Mock<IMapsCdaServiceClient>();
         _mockRetrievalRecordFunctionClient = new Mock<IRetrievalRecordServiceClient>();
         _mockRetrievedPensionsRecordClient = new Mock<IRetrievedPensionsRecordClient>();
-
-        // Create an instance of PensionServiceClients with mocked dependencies
-        Mock<PensionServiceClients> mockServiceClients = new(
-            _mockTokenIntegrationServiceClient.Object,
-            _mockRetrievalRecordFunctionClient.Object,
-            _mockRetrievedPensionsRecordClient.Object
-        );
+        _mockMessagingService = new Mock<IMessagingService>();
+        
+        _mockMessagingService
+            .Setup(m => m.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
 
         // Set up the CommonServiceBusConfiguration with your required values
         var serviceBusConfig = new CommonServiceBusConfiguration
@@ -100,6 +104,17 @@ public class PensionsDataControllerTests
         mockServiceBusOptions.Setup(s => s.Value).Returns(serviceBusConfig);
         mockOrchestrationSettings.Setup(s => s.Value).Returns(peiOrchestrationSettings);
 
+        // Create an instance of PensionServiceClients with mocked dependencies
+        Mock<PensionServiceClients> mockServiceClients = new(
+            _mockTokenIntegrationServiceClientIdToken.Object,
+            _mockTokenIntegrationServiceClient.Object,
+            _mockRetrievalRecordFunctionClient.Object,
+            _mockRetrievedPensionsRecordClient.Object,
+            _mockMapsCdaServiceClient.Object,
+            mockServiceBusOptions.Object,
+            _mockMessagingService.Object      
+        );
+        
         // Get ordered validators
         var validators = Helper.GetOrderedValidators();
 
@@ -112,7 +127,7 @@ public class PensionsDataControllerTests
             mockValidatorPipeline.Object, 
             mockServiceClients.Object, 
             mockOrchestrationSettings.Object,
-            mockScenarioModelRepository.Object
+            mockUserSessionDataRepository.Object
         );
     }
 
@@ -279,7 +294,7 @@ public class PensionsDataControllerTests
             .Returns(ValidationResult.Success);
 
         // Mock the token integration service client to simulate a successful response
-        _mockTokenIntegrationServiceClient.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
+        _mockTokenIntegrationServiceClientIdToken.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new PeiRetrievalDetailsResponseModel
             {
                 PeisId = ValidPeisId
@@ -291,7 +306,7 @@ public class PensionsDataControllerTests
         // Assert
         var statusCodeResult = Assert.IsType<AcceptedResult>(result);
         Assert.Equal((int)HttpStatusCode.Accepted, statusCodeResult.StatusCode);
-        _mockTokenIntegrationServiceClient.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
+        _mockTokenIntegrationServiceClientIdToken.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
             It.Is<RequestHeaderModel>(model => model.CorrelationId == _validRequestHeader.CorrelationId)), Times.Once);
     }
     
@@ -316,7 +331,7 @@ public class PensionsDataControllerTests
             .Returns(ValidationResult.Success);
 
         // Mock the token integration service client to simulate a successful response
-        _mockTokenIntegrationServiceClient.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
+        _mockTokenIntegrationServiceClientIdToken.Setup(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new PeiRetrievalDetailsResponseModel());
 
         // Act
@@ -325,7 +340,7 @@ public class PensionsDataControllerTests
         // Assert
         var statusCodeResult = Assert.IsType<ObjectResult>(result);
         Assert.Equal((int)HttpStatusCode.InternalServerError, statusCodeResult.StatusCode);
-        _mockTokenIntegrationServiceClient.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
+        _mockTokenIntegrationServiceClientIdToken.Verify(client => client.PostAsync(It.IsAny<PensionsDataRequestModel>(), 
             It.Is<RequestHeaderModel>(model => model.CorrelationId == _validRequestHeader.CorrelationId)), Times.Once);
     }
     
@@ -760,5 +775,295 @@ public class PensionsDataControllerTests
 
         // Assert
         Assert.IsType<NoContentResult>(deleteResult);
+    }
+    
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsBadRequest_WhenValidationFails()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest();
+        var requestHeader = new RequestHeaderModel { CorrelationId = "123", UserSessionId = "session-123" };
+        
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+        
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenTokenServiceFails()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest();
+        var requestHeader = new RequestHeaderModel { CorrelationId = "123", UserSessionId = "session-123" };
+        
+        _mockMapsCdaServiceClient.Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel());
+        
+        _mockTokenIntegrationServiceClient.Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel { Pct = null, AccessToken = null });
+        
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+        
+        // Assert
+        var objectResult = Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Equal(400, objectResult.StatusCode);
+    }
+
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsAccepted_WhenSuccessful()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest
+        {
+            Ticket = TokenQueryParams.ValidJweToken
+        };
+        var requestHeader = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString(), UserSessionId = Guid.NewGuid().ToString(), Iss = "mhpd"};
+
+        _mockMapsCdaServiceClient.Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
+        
+        _mockTokenIntegrationServiceClientIdToken.Setup(x => x.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new PeiRetrievalDetailsResponseModel { PeisId = "0001f518264ba44564b186f42af6659b5822eb6e" });
+        
+        _mockTokenIntegrationServiceClient.Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel { Pct = TokenQueryParams.ValidJwtToken, AccessToken = TokenQueryParams.ValidJwtToken });
+        
+        var testInstanceData = new UserSessionData
+        {
+            UserSessionId = Guid.NewGuid().ToString(),
+            PeisId = "some-test-peis-id",
+        };
+        
+        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
+        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
+        
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        
+        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        _mockUserSessionDataContainer.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+        
+        _mockMessagingService.Setup(x => x.SendMessageAsync(It.IsAny<PensionRetrievalPayload>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+        
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+        
+        // Assert
+        Assert.IsType<AcceptedResult>(result);
+    }
+    
+    
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsAccepted_WhenSuccessfulx()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var requestHeader = new RequestHeaderModel 
+        { 
+            CorrelationId = Guid.NewGuid().ToString(), 
+            UserSessionId = Guid.NewGuid().ToString(), 
+            Iss = "mhpd"
+        };
+
+        _mockMapsCdaServiceClient
+            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
+
+        _mockTokenIntegrationServiceClient
+            .Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel 
+            { 
+                Pct = TokenQueryParams.ValidJwtToken, 
+                AccessToken = TokenQueryParams.ValidJwtToken 
+            });
+
+        var testInstanceData = new UserSessionData
+        {
+            UserSessionId = Guid.NewGuid().ToString(),
+            PeisId = "some-test-peis-id",
+        };
+        
+        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
+        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
+        
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        
+        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        _mockUserSessionDataContainer.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        _mockMessagingService
+            .Setup(x => x.SendMessageAsync(It.IsAny<PensionRetrievalPayload>(), It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+
+        // Assert
+        Assert.IsType<AcceptedResult>(result);
+    }
+    
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenRqpIsInvalid()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var requestHeader = new RequestHeaderModel 
+        { 
+            CorrelationId = Guid.NewGuid().ToString(), 
+            UserSessionId = Guid.NewGuid().ToString(), 
+            Iss = "mhpd"
+        };
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        
+        _mockMapsCdaServiceClient
+            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = string.Empty });
+
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, ((ObjectResult)result).StatusCode);
+    }
+
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenAccessTokenIsInvalid()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var requestHeader = new RequestHeaderModel 
+        { 
+            CorrelationId = Guid.NewGuid().ToString(), 
+            UserSessionId = Guid.NewGuid().ToString(), 
+            Iss = "mhpd"
+        };
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        
+        _mockMapsCdaServiceClient
+            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
+
+        _mockTokenIntegrationServiceClient
+            .Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel 
+            { 
+                Pct = string.Empty, 
+                AccessToken = string.Empty 
+            });
+
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, ((ObjectResult)result).StatusCode);
+    }
+
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenUserSessionDataIsNull()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var requestHeader = new RequestHeaderModel 
+        { 
+            CorrelationId = Guid.NewGuid().ToString(), 
+            UserSessionId = Guid.NewGuid().ToString(), 
+            Iss = "mhpd"
+        };
+        
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        _mockMapsCdaServiceClient
+            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
+
+        _mockTokenIntegrationServiceClient
+            .Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel 
+            { 
+                Pct = TokenQueryParams.ValidJwtToken, 
+                AccessToken = TokenQueryParams.ValidJwtToken 
+            });
+
+        UserSessionData? userSessionData = null;
+        
+        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
+        mockItemResponse.Setup(x => x.Resource).Returns(userSessionData!);
+        
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        
+        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        _mockUserSessionDataContainer.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, ((ObjectResult)result).StatusCode);
+    }
+
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenPeisIdIsInvalid()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var requestHeader = new RequestHeaderModel 
+        { 
+            CorrelationId = Guid.NewGuid().ToString(), 
+            UserSessionId = Guid.NewGuid().ToString(), 
+            Iss = "mhpd"
+        };
+
+        _mockMapsCdaServiceClient
+            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
+
+        _mockTokenIntegrationServiceClient
+            .Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .ReturnsAsync(new CdaTokenResponseModel 
+            { 
+                Pct = TokenQueryParams.ValidJwtToken, 
+                AccessToken = TokenQueryParams.ValidJwtToken 
+            });
+
+        var testInstanceData = new UserSessionData
+        {
+            UserSessionId = Guid.NewGuid().ToString(),
+            PeisId = string.Empty,
+        };
+        
+        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
+        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
+        
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+        
+        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        _mockUserSessionDataContainer.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(mockItemResponse.Object);
+
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+
+        // Assert
+        Assert.IsType<ObjectResult>(result);
+        Assert.Equal(500, ((ObjectResult)result).StatusCode);
     }
 }

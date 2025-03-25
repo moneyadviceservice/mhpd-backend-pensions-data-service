@@ -8,12 +8,12 @@ using UrlHelper = MhpdCommon.Utils.UrlHelper;
 
 namespace PensionsDataService.HttpClients;
 
-public class TokenIntegrationServiceClient : ITokenIntegrationServiceClient
+public class TokenIntegrationServiceIdTokenClient : ITokenIntegrationServiceIdTokenClient
 {
     private readonly HttpClient _httpClient;
-    private readonly ILogger<TokenIntegrationServiceClient> _logger;
+    private readonly ILogger<TokenIntegrationServiceIdTokenClient> _logger;
     
-    public TokenIntegrationServiceClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<TokenIntegrationServiceClient> logger)
+    public TokenIntegrationServiceIdTokenClient(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<TokenIntegrationServiceIdTokenClient> logger)
     {
         _logger = logger;
         

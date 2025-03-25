@@ -26,6 +26,8 @@ public static class QueryParams
             public const string PeisId = "peis_id";
             
             public const string Kid = "kid";
+            
+            public const string Pct = "pct";
         }
 
         public static class HolderName

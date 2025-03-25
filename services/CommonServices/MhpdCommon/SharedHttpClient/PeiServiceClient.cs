@@ -16,7 +16,7 @@ public class PeiServiceClient(IHttpClientFactory httpClientFactory, ILogger<PeiS
         ArgumentException.ThrowIfNullOrWhiteSpace(request.PeisId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.UserSessionId);
 
-        logger.LogWarning("Sending HTTP request for Pei data to {service} with Peis Id: [{peisId}], user session Id: [{userSessionId}] and rpt: [{rpt}]",
+        logger.LogWarning("Sending HTTP request for Pei data to {Service} with Peis Id: [{PeisId}], user session Id: [{UserSessionId}] and rpt: [{Rpt}]",
             HttpClientNames.PeiIntegrationService, request.PeisId, request.UserSessionId, request.Rpt);
 
         var client = httpClientFactory.CreateClient(HttpClientNames.PeiIntegrationService);

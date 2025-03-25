@@ -6,21 +6,20 @@ using Microsoft.Extensions.Options;
 
 namespace PensionsRetrievalFunction.Repository;
 
-public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> options, CosmosClient client) : IPensionRetrievalRepository
+public class PensionRetrievalRepository(IOptions<CosmosBusinessConfiguration> options, CosmosClient client) : IPensionRetrievalRepository
 {
-    private readonly CosmosClient _client = client;
-    private readonly CommonCosmosConfiguration _configuration = options.Value;
-    private readonly Container _container = client.GetContainer(options.Value.DatabaseId, options.Value.ContainerId);
+    private readonly CosmosBusinessConfiguration _configuration = options.Value;
 
     public async Task<PensionsRetrievalRecord?> CreateRecordIfNotExistsAsync(PensionRetrievalPayload payload)
     {
         var response = await GetMatchingRecordsAsync(payload.UserSessionId!);
+        var container = client.GetContainer(_configuration.DatabaseId, _configuration.PensionsRetrievalContainer);
 
         if(response.Count == 0)
         {
             var record = CreateRecord(payload);
 
-            var writeResponse = await _container.CreateItemAsync(
+            var writeResponse = await container.CreateItemAsync(
                 item: record,
                 partitionKey: new PartitionKey(record.UserSessionId)
             );
@@ -33,7 +32,7 @@ public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> opti
 
     public async Task UpdatePensionsRetrievalRecordAsync(PensionsRetrievalRecord record)
     {
-        var container = _client.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var container = client.GetContainer(_configuration.DatabaseId, _configuration.PensionsRetrievalContainer);
         await container.ReplaceItemAsync(record, record.Id, new PartitionKey(record.UserSessionId), null, default);
     }
 
@@ -45,7 +44,7 @@ public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> opti
 
     public async Task<int> DeleteRetrievalRecordsAsync(string userSessionId)
     {
-        var container = _client.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var container = client.GetContainer(_configuration.DatabaseId, _configuration.PensionsRetrievalContainer);
         var records = await GetMatchingRecordsAsync(userSessionId);
 
         foreach (var record in records)
@@ -61,7 +60,7 @@ public class PensionRetrievalRepository(IOptions<CommonCosmosConfiguration> opti
         var query = new QueryDefinition("SELECT TOP 1 * FROM c WHERE c.userSessionId = @partitionKey")
                 .WithParameter("@partitionKey", userSessionId);
 
-        var container = _client.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var container = client.GetContainer(_configuration.DatabaseId, _configuration.PensionsRetrievalContainer);
         var iterator = container.GetItemQueryIterator<PensionsRetrievalRecord>(query);
 
         return await iterator.ReadNextAsync();

@@ -4,21 +4,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
-using PensionRequestFunction.HttpClient.Implementation;
-using PensionRequestFunction.Models.TokenIntegrationServiceClient;
 using System.Net;
 using System.Net.Http.Json;
+using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.SharedHttpClient;
 
 namespace PensionRequestFunctionUnitTests;
 
 public class TokenIntegrationServiceClientTests
 {
-    private readonly Mock<IHttpClientFactory> _httpClientFactory;
-
-    public TokenIntegrationServiceClientTests()
-    {
-        _httpClientFactory = new Mock<IHttpClientFactory>();
-    }
+    private readonly Mock<IHttpClientFactory> _httpClientFactory = new();
 
     [Fact]
     public async Task WhenTokenClientIsInvoked_ModelDataIsReturned()
@@ -35,14 +30,14 @@ public class TokenIntegrationServiceClientTests
         _httpClientFactory.Setup(x => x.CreateClient(HttpClientNames.TokenIntegrationService))
                 .Returns(new HttpClient(handler.Object)
                 {
-                    BaseAddress = new Uri("http://localhost:1234"!)
+                    BaseAddress = new Uri("http://localhost:1234")
                 });
         var logger = new Mock<ILogger<TokenIntegrationServiceClient>>();
-        var client = new TokenIntegrationServiceClient(_httpClientFactory.Object, options, logger.Object);
+        var client = new TokenIntegrationServiceClient(logger.Object, _httpClientFactory.Object);
 
-        var request = new TokenIntegrationServiceRequestModel
+        var request = new TokenClientRequestModel
         {
-            As_Uri = "https://url.auth.com",
+            AsUri = "https://url.auth.com",
             Rqp = "RandomString",
             Ticket = "ticketValue"
         };
@@ -58,9 +53,9 @@ public class TokenIntegrationServiceClientTests
     {
         var httpMessageHandlerMock = new Mock<HttpMessageHandler>();
 
-        var response = new TokenIntegrationResponseModel
+        var response = new CdaTokenResponseModel
         {
-            Rpt = "JustARandomEncodedString.NothingToSeeHere"
+            AccessToken = "JustARandomEncodedString.NothingToSeeHere"
         };
 
         httpMessageHandlerMock
@@ -72,7 +67,7 @@ public class TokenIntegrationServiceClientTests
         return httpMessageHandlerMock;
     }
 
-    private static HttpResponseMessage CreateHttpResponse(TokenIntegrationResponseModel? content = null)
+    private static HttpResponseMessage CreateHttpResponse(CdaTokenResponseModel? content = null)
     {
         var response = new HttpResponseMessage(HttpStatusCode.OK);
         if (content != null)

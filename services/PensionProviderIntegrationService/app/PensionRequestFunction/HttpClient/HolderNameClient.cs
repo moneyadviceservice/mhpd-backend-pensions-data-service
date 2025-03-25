@@ -11,30 +11,26 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
     IHolderNameConfigurationCache<HolderNameConfigurationModel> cache,
     ILogger<HolderNameClient> logger) : IHolderNameClient
 {
-    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-    private readonly ILogger<HolderNameClient> _logger = logger;
-    private readonly IHolderNameConfigurationCache<HolderNameConfigurationModel> _cache = cache;
-
     public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId, string correlationId)
     {
         HolderNameConfigurationModel? cachedModel = null;
 
         try
         {
-            cachedModel = await _cache.GetByIdStreamAsync(holderNameId, holderNameId);
+            cachedModel = await cache.GetByIdStreamAsync(holderNameId, holderNameId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error reading holdername view configuration from cache. Fetching from source...");
+            logger.LogError(ex, "Error reading holdername view configuration from cache. Fetching from source...");
         }
 
         if (cachedModel != null)
         {
-            _logger.LogWarning("Cached version of holder name configuration found for {holderNameId}.", holderNameId);
+            logger.LogWarning("Cached version of holder name configuration found for {holderNameId}.", holderNameId);
             return cachedModel;
         }
 
-        var client = _httpClientFactory.CreateClient(HttpClientNames.CdaService);
+        var client = httpClientFactory.CreateClient(HttpClientNames.CdaService);
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
@@ -49,11 +45,11 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
         {
             try
             {
-                await _cache.InsertItemAsync(model, model.HolderNameGuid!);
+                await cache.InsertItemAsync(model, model.HolderNameGuid!);
             }
             catch (Exception error)
             {
-                _logger.LogError(error, "Error caching retrieved holdername view configuration");
+                logger.LogError(error, "Error caching retrieved holdername view configuration");
             }
         }
 
@@ -66,7 +62,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
 
         if (viewDataResponse?.ViewDataUrl == null)
         {
-            _logger.LogWarning("The holder name endpoint did not respond with exactly one configuration record");
+            logger.LogWarning("The holder name endpoint did not respond with exactly one configuration record");
             return null;
         }
 

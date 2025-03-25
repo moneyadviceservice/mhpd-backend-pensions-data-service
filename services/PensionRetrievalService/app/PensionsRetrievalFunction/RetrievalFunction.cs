@@ -15,25 +15,20 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
     IMessageParser messageParser,
     IPeiIntegrationOrchestrator orchestrator)
 {
-    private readonly ILogger<RetrievalFunction> _logger = logger;
-    private readonly IIdValidator _idValidator = idValidator;
-    private readonly IMessageParser _messageParser = messageParser;
-    private readonly IPeiIntegrationOrchestrator _orchestrator = orchestrator;
-
     [Function(nameof(RetrievalFunction))]
     public async Task Run(
-        [ServiceBusTrigger("%InboundQueue%", Connection = "ServiceBusConnectionstring")]
+        [ServiceBusTrigger("%CommonServiceBusConfiguration:InboundQueue%", Connection = "ServiceBusConnectionstring")]
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {
-        if (!_idValidator.IsValidGuid(message.CorrelationId))
+        if (!idValidator.IsValidGuid(message.CorrelationId))
         {
-            _logger.LogCritical("Missing or Invalid correlationId: {correlationId}", message.CorrelationId);
+            logger.LogCritical("Missing or Invalid correlationId: {correlationId}", message.CorrelationId);
             await messageActions.DeadLetterMessageAsync(message, deadLetterReason: $"Missing or Invalid correlationId: {message.CorrelationId}");
             return;
         }
 
-        using var scope = _logger.BeginCorrelationScope(message.CorrelationId, Constants.LogSource.Queue);
+        using var scope = logger.BeginCorrelationScope(message.CorrelationId, Constants.LogSource.Queue);
         LogRequestMesage(message);
 
         try
@@ -43,11 +38,11 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
             // Release the lock on the message
             await messageActions.CompleteMessageAsync(message);
 
-            await _orchestrator.RunAsync(payload, message.CorrelationId);
+            await orchestrator.RunAsync(payload, message.CorrelationId);
         }
         catch (Exception error)
         {
-            _logger.LogCritical(error, "{message}", error.Message);
+            logger.LogCritical(error, "{message}", error.Message);
             await messageActions.DeadLetterMessageAsync(message, deadLetterReason: error.Message);
         }
     }
@@ -55,12 +50,11 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
     private PensionRetrievalPayload ExtractAndValidateMessagePayload(ServiceBusReceivedMessage message)
     {
         var messageBody = Encoding.UTF8.GetString(message.Body);
-        string? logMessage;
         PensionRetrievalPayload? payload;
 
         try
         {
-            payload = _messageParser.ToPensionRetrievalPayload(messageBody);
+            payload = messageParser.ToPensionRetrievalPayload(messageBody);
         }
         catch (AggregateException error)
         {
@@ -71,7 +65,7 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
                 builder.AppendLine(ex.Message);
             }
 
-            logMessage = builder.ToString();
+            var logMessage = builder.ToString();
             throw new InvalidDataException(logMessage, error);
         }
 
@@ -82,6 +76,6 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
     {
         var logMessage = $"Message Received - CorrelationId:[{receivedMessage.CorrelationId}], " +
             $"MessageId: [{receivedMessage.MessageId}], ContentType: [{receivedMessage.ContentType}] {Environment.NewLine}";
-        _logger.LogWarning("Message Details : {details} Body: {body}", logMessage, receivedMessage.Body);
+        logger.LogWarning("Message Details : {details} Body: {body}", logMessage, receivedMessage.Body);
     }
 }

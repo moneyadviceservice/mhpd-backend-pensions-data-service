@@ -84,7 +84,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_WithInvalidCorrelationId_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange           
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -107,7 +107,7 @@ public class TokenControllerUnitTests
     public async void WhenController_RPTS_Endpoint_IsCalled_WithValidRequestBody_ThenItShouldReturn_OKRequest200Response()
     {
         // Arrange           
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -168,7 +168,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_EmptyRqp_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = string.Empty,
             Ticket = TicketValue,
@@ -188,7 +188,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_EmptyTicket_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = string.Empty,
@@ -208,7 +208,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_EmptyAsUri_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -228,7 +228,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_NoRqp_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {                
             Ticket = TicketValue,
             AsUri = AsUriValue
@@ -247,7 +247,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_NoTicket_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             AsUri = AsUriValue
@@ -266,7 +266,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_NoAsUri_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue
@@ -285,7 +285,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_NoValues_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel { };
+        var request = new TokenClientRequestModel { };
 
         // Act
         var result = await _controller.PostAsync(request, _requestHeaderModel);
@@ -300,7 +300,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_AllEmptyValues_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = string.Empty,
             Ticket = string.Empty,
@@ -320,7 +320,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_InvalidRqp_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = InvalidRqpValue,
             Ticket = TicketValue,
@@ -342,7 +342,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_InvalidTicket_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = InvalidTicketValue,
@@ -364,7 +364,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_SpecialCharRqp_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = SpecialCharRqpValue,
             Ticket = TicketValue,
@@ -384,7 +384,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_SpecialCharAs_Uri_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -404,7 +404,7 @@ public class TokenControllerUnitTests
     public async void WhenControllerIsCalled_SpecialCharTicketValue_ThenItShouldReturn_BadRequest400Response()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = SpecialCharTicketValue,
@@ -600,7 +600,7 @@ public class TokenControllerUnitTests
     public async Task When_AccessToken_Is_Empty_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -626,7 +626,7 @@ public class TokenControllerUnitTests
     public async Task When_AccessToken_Is_Invalid_ShouldReturnInternalServerError()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -656,7 +656,7 @@ public class TokenControllerUnitTests
     public async void When_RedirectDetails_TicketIsNotJwe_ShouldReturnInternalServerError()
     {
         // Arrange           
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -690,7 +690,7 @@ public class TokenControllerUnitTests
     public async void When_RedirectDetails_UrlIsNotValid_ShouldReturnInternalServerError()
     {
         // Arrange           
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -724,7 +724,7 @@ public class TokenControllerUnitTests
     public async void When_RedirectDetails_IsNull_ShouldReturnInternalServerError()
     {
         // Arrange           
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -753,7 +753,7 @@ public class TokenControllerUnitTests
     public async void When_RedirectDetails_IsValid_ShouldReturn200Ok()
     {
         // Arrange           
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
@@ -792,7 +792,7 @@ public class TokenControllerUnitTests
     public async Task When_AccessToken_Is_Not_Valid_ShouldReturnInternalServerError(string token, bool shouldfailValidation, int code)
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel
+        var request = new TokenClientRequestModel
         {
             Rqp = RqpValue,
             Ticket = TicketValue,

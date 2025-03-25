@@ -9,6 +9,8 @@ using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models.CdaPiesService;
 using PeiIntegrationService.Models.PeiIntegrationService;
 using System.Net;
+using PeiIntegrationService.Models.CdaPeisServiceClient;
+using PeiIntegrationService.Models.PeiIntegrationServiceClient;
 
 namespace PeiIntegrationService.UnitTests;
 

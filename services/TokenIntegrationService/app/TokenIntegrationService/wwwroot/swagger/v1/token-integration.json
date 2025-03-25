@@ -23,17 +23,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TokenIntegrationRequestModel"
+                "$ref": "#/components/schemas/TokenClientRequestModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/TokenIntegrationRequestModel"
+                "$ref": "#/components/schemas/TokenClientRequestModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/TokenIntegrationRequestModel"
+                "$ref": "#/components/schemas/TokenClientRequestModel"
               }
             }
           }
@@ -122,10 +122,14 @@
         },
         "additionalProperties": false
       },
-      "TokenIntegrationRequestModel": {
+      "TokenClientRequestModel": {
         "type": "object",
         "properties": {
           "rqp": {
+            "type": "string",
+            "nullable": true
+          },
+          "pct": {
             "type": "string",
             "nullable": true
           },
@@ -134,6 +138,10 @@
             "nullable": true
           },
           "as_uri": {
+            "type": "string",
+            "nullable": true
+          },
+          "correlationId": {
             "type": "string",
             "nullable": true
           }

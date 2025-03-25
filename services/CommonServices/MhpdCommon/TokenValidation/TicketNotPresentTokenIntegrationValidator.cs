@@ -4,13 +4,13 @@ using Microsoft.Extensions.Logging;
 namespace MhpdCommon.TokenValidation;
 
 public class TicketNotPresentTokenIntegrationValidator(ILogger<TicketNotPresentTokenIntegrationValidator> logger) : 
-    ITokenRequestValidator<TokenIntegrationRequestModel>
+    ITokenRequestValidator<TokenClientRequestModel>
 {
     public int Order => 3;
 
     public string GrantType => string.Empty;
     
-    public ValidationResult Validate(TokenIntegrationRequestModel request)
+    public ValidationResult Validate(TokenClientRequestModel request)
     {
         if (string.IsNullOrEmpty(request.Ticket))
         {

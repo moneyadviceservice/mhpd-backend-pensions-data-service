@@ -6,18 +6,19 @@ using Microsoft.AspNetCore.HttpLogging;
 using PensionsDataService.HttpClients;
 using System.Diagnostics.CodeAnalysis;
 using MhpdCommon.Models.Configuration;
-using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Options;
-using PensionsDataService.CosmosRepository;
+using MhpdCommon.Repository;
+using MhpdCommon.SharedHttpClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<IIdValidator, IdValidator>();
 builder.Services.AddScoped<PensionServiceClients>();
+builder.Services.AddScoped<ITokenIntegrationServiceIdTokenClient, TokenIntegrationServiceIdTokenClient>();
 builder.Services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
 builder.Services.AddScoped<IRetrievalRecordServiceClient, RetrievalRecordServiceClient>();
 builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsRecordClient>();
+builder.Services.AddScoped<IMapsCdaServiceClient, MapsCdaServiceClient>();
 
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
@@ -39,14 +40,7 @@ builder.Services.AddMhpdCosmosDb(builder.Configuration);
 builder.Services.Configure<CosmosBusinessConfiguration>(builder.Configuration.GetSection("CosmosBusinessConfiguration"));
 
 // Register UserSessionDataRepo
-builder.Services.AddSingleton<UserSessionDataRepository>(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosBusinessConfiguration>>().Value;
-
-    return new UserSessionDataRepository(cosmosClient, config.DatabaseId, config.UserSessionDataContainer);
-});
-
+builder.Services.AddScoped<UserSessionDataRepository>();
 
 builder.Services.AddControllers();
 

@@ -82,6 +82,46 @@
           }
         }
       }
+    },
+    "/pensions-data-retrieval": {
+      "post": {
+        "tags": [
+          "PensionsData"
+        ],
+        "parameters": [
+          {
+            "name": "requestHeader",
+            "in": "header",
+            "schema": {
+              "$ref": "#/components/schemas/RequestHeaderModel"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PensionsDataRetrievalRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PensionsDataRetrievalRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PensionsDataRetrievalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -106,6 +146,16 @@
             "nullable": true
           },
           "codeVerifier": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "PensionsDataRetrievalRequest": {
+        "type": "object",
+        "properties": {
+          "ticket": {
             "type": "string",
             "nullable": true
           }

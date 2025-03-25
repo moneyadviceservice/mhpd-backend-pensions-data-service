@@ -28,7 +28,7 @@ public class CdaTokenController(
     IOptions<CommonHttpConfiguration> options)
     : ControllerBase
 {
-    private readonly CommonHttpConfiguration httpConfiguration = options.Value;
+    private readonly CommonHttpConfiguration _httpConfiguration = options.Value;
 
     [HttpPost]
     [Route("token")]
@@ -55,10 +55,8 @@ public class CdaTokenController(
         {
             return await ProcessIdToken(request.Code);
         }
-        else
-        {
-            return ProcessAccessToken(request.Ticket);
-        }
+
+        return ProcessAccessToken(request.Ticket, request.Pct);
     }
 
     private async Task<IActionResult> ProcessIdToken(string code)
@@ -71,23 +69,27 @@ public class CdaTokenController(
             LogInfoWithJsonObject("Response: ", response);
             return Ok(response);
         }
-        else
-        {
-            LogError(TokenValidationMessages.UnknownAuthorizationCode);
-            return BadRequest(TokenValidationMessages.UnknownAuthorizationCode);
-        }
+
+        LogError(TokenValidationMessages.UnknownAuthorizationCode);
+        return BadRequest(TokenValidationMessages.UnknownAuthorizationCode);
     }
 
-    private IActionResult ProcessAccessToken(string? ticket)
+    private IActionResult ProcessAccessToken(string? ticket, string? pct = null)
     {
-        if (string.Equals(ticket, SecurityConstants.Jwe.AuthorizedPermissionTicket))
+        // Post claims-gathering (or authorized to get an access_token)
+        if (string.Equals(ticket, SecurityConstants.Jwe.AuthorizedPermissionTicket) ||
+            
+            // Authorized to get an access_token with a persisted claims token
+            (string.Equals(ticket, SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket) &&
+             !string.IsNullOrEmpty(pct) && JwtValidator.IsJwtFormatValid(pct)))
         {
             var response = CreateResponse();
 
             LogInfoWithJsonObject("Response: ", response);
             return Ok(response);
         }
-
+        
+        // Claims-gathering
         if (string.Equals(ticket, SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket))
         {
             var redirectResponse = new ClaimsGatheringResponseModel
@@ -95,7 +97,7 @@ public class CdaTokenController(
                 Ticket = SecurityConstants.Jwe.ClaimsRequiredPermissionTicket,
                 ErrorDescription = TokenValidationMessages.AdditionalClaimsMessage,
                 Error = TokenValidationMessages.AdditionalClaimsReason,
-                RedirectUser = UrlHelper.ConstructPath(httpConfiguration.CdaServiceUrl, HttpEndpoints.External.ClaimsGathering)
+                RedirectUser = UrlHelper.ConstructPath(_httpConfiguration.CdaServiceUrl, HttpEndpoints.External.ClaimsGathering)
             };
 
             LogError(TokenValidationMessages.AdditionalClaimsMessage);

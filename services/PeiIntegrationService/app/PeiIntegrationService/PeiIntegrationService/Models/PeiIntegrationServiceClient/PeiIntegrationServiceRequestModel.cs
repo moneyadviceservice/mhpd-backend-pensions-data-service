@@ -1,7 +1,7 @@
 ﻿using MhpdCommon.Constants;
 using Microsoft.AspNetCore.Mvc;
 
-namespace PeiIntegrationService.Models.PeiIntegrationService;
+namespace PeiIntegrationService.Models.PeiIntegrationServiceClient;
 
 public class PeiIntegrationServiceRequestModel
 {

@@ -35,7 +35,6 @@ module "pei_integration_service" {
     "PeiRetrievalDuration"                            = "60"
     "ServiceBusConnectionString"                      = "Endpoint=sb://mhpd-sbns-${var.env}.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=${data.azurerm_servicebus_namespace.this.default_primary_key}"
     "ViewDataRetrievalDuration"                       = "5"
-
   }
   tags = {}
 }

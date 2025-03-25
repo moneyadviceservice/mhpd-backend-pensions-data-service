@@ -20,7 +20,7 @@ public class TokenIntegrationServiceClient(ILogger<TokenIntegrationServiceClient
 
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
 
-        request.As_Uri = request.As_Uri;
+        request.AsUri = request.AsUri;
         var payload = JsonSerializer.Serialize(request);
 
         var content = new StringContent(payload, Encoding.UTF8, "application/json");

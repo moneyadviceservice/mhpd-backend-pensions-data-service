@@ -1,5 +1,5 @@
+using MhpdCommon.SharedHttpClient;
 using PensionRequestFunction.HttpClient;
-using PensionRequestFunction.HttpClient.Interfaces;
 
 namespace PensionRequestFunction.Orchestration;
 

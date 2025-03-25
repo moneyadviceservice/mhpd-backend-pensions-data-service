@@ -1,4 +1,5 @@
-﻿using Azure.Messaging.ServiceBus;
+﻿using System.Configuration;
+using Azure.Messaging.ServiceBus;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Repository;
@@ -18,6 +19,8 @@ namespace MhpdCommon.Extensions
 {
     public static class ServiceCollectionExtensions
     {
+        private const string ConnectionStrings = "ConnectionStrings";
+        
         public static IServiceCollection AddMhpdUtilities(
             this IServiceCollection services)
         {
@@ -49,7 +52,7 @@ namespace MhpdCommon.Extensions
 
             services.AddSingleton(provider =>
             {
-                var connString = configuration[DatabaseConstants.ConnectionStringVariable];
+                var connString = configuration.GetSection(ConnectionStrings)[DatabaseConstants.ConnectionStringVariable];
 
                 JsonSerializerOptions jsonSerializerOptions = new()
                 {
@@ -64,9 +67,9 @@ namespace MhpdCommon.Extensions
                 return new CosmosClient(connString, options);
             });
 
-            AddCosmosConfiguration<CosmosBusinessConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.BusinessLayer);
-            AddCosmosConfiguration<CosmosIntegrationConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.IntegrationLayer);
-            AddCosmosConfiguration<CosmosTestHarnessConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.TestHarness);
+            AddConfiguration<CosmosBusinessConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.BusinessLayer);
+            AddConfiguration<CosmosIntegrationConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.IntegrationLayer);
+            AddConfiguration<CosmosTestHarnessConfiguration>(services, configuration, DatabaseConstants.ConfigurationSections.TestHarness);
 
             return services;
         }
@@ -77,15 +80,11 @@ namespace MhpdCommon.Extensions
 
             services.AddSingleton(sp =>
             {
-                var connectionString = configuration[CommonServiceBusConfiguration.ConnectionStringVariable];
+                var connectionString = configuration.GetSection(ConnectionStrings)[CommonServiceBusConfiguration.ConnectionStringVariable];
                 return new ServiceBusClient(connectionString);
             });
 
-            services.AddOptions<CommonServiceBusConfiguration>().Configure(option =>
-            {
-                option.InboundQueue = configuration[CommonServiceBusConfiguration.InboundQueueVariable];
-                option.OutboundQueue = configuration[CommonServiceBusConfiguration.OutboundQueueVariable];
-            }).ValidateOnStart();
+            AddConfiguration<CommonServiceBusConfiguration>(services, configuration, nameof(CommonServiceBusConfiguration));
 
             services.AddScoped<IMessagingService, MessagingService>();
 
@@ -137,7 +136,7 @@ namespace MhpdCommon.Extensions
             return services;
         }
 
-        private static IServiceCollection AddCosmosConfiguration<T>(IServiceCollection services, IConfiguration configuration, string configurationSection) where T : class
+        private static IServiceCollection AddConfiguration<T>(IServiceCollection services, IConfiguration configuration, string configurationSection) where T : class
         {
             var section = configuration.GetSection(configurationSection);
 

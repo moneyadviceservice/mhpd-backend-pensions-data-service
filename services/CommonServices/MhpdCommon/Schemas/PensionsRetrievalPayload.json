@@ -31,21 +31,12 @@
       "examples": [
         "459566f6-5fce-479e-a098-298ca9676a85"
       ]
-    },
-    "accessToken": {
-      "type": "string",
-      "description": "A JWT claim token to access the Pei resource",
-      "pattern": "^([a-zA-Z0-9_=]+)\\.([a-zA-Z0-9_=]+)\\.([a-zA-Z0-9_\\-\\+\\/=]*)",
-      "examples": [
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI"
-      ]
     }
   },
   "required": [
     "peisId",
     "iss",
-    "userSessionId",
-    "accessToken"
+    "userSessionId"
   ],
   "examples": [
     {

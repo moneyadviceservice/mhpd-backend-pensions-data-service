@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -27,15 +28,14 @@ namespace PensionRequestFunctionUnitTests
         public async Task When_Service_Is_Called_It_Should_Return_Response(bool success, HttpStatusCode statusCode)
         {
             // Arrange
-            var response = GetResponse();
-            string assetGuid = Guid.NewGuid().ToString();
-            string viewDataUrl = "https://pdpviewdataservicedemulator.azurewebsites.net/view-data/";
+            var assetGuid = Guid.NewGuid().ToString();
+            const string viewDataUrl = "https://pdpviewdataservicedemulator.azurewebsites.net/view-data/";
             var handler = CreateHttpHandler(success, statusCode);
 
             _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.PdpService))
                 .Returns(new HttpClient(handler.Object)
                 {
-                    BaseAddress = new Uri("http://localhost:1234"!)
+                    BaseAddress = new Uri("http://localhost:1234")
                 });
             var correlationId = Guid.NewGuid().ToString();
 
@@ -44,10 +44,12 @@ namespace PensionRequestFunctionUnitTests
 
             // Assert
             Assert.NotNull(result);
-            if(success)
+            if (success)
+            {
                 Assert.NotNull(result.ViewDataToken);
-            var expectedMessage = success ? ((int)statusCode).ToString() : statusCode.ToString();
-            Assert.Equal(expectedMessage, result.ResponseMessage.ResponseStatusCode);
+            }
+            
+            Assert.Equal(statusCode, result.ResponseMessage.ResponseStatusCode);
         }
 
         private static Mock<HttpMessageHandler> CreateHttpHandler(bool success, HttpStatusCode statusCode)
@@ -70,7 +72,7 @@ namespace PensionRequestFunctionUnitTests
             if (content != null)
                 response.Content = JsonContent.Create(content);
             else
-                response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Basic", "realm=\"example\""));
+                response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Ticket", $"{SecurityConstants.Jwe.AuthorizedPermissionTicket}"));
 
             return response;
         }

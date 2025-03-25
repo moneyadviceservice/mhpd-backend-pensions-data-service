@@ -3,19 +3,15 @@ using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models;
-using PeiIntegrationService.Models.CdaPiesService;
-using PeiIntegrationService.Models.PeiIntegrationService;
+using PeiIntegrationService.Models.CdaPeisServiceClient;
+using PeiIntegrationService.Models.PeiIntegrationServiceClient;
 
 namespace PeiIntegrationService.Controllers;
 
 [Route("/")]
 [ApiController]
-public class PeIController(ICdaPiesServiceClient iCDAPiesService, IIdValidator validator, ILogger<PeIController> logger) : ControllerBase
+public class PeIController(ICdaPiesServiceClient iCdaPiesService, IIdValidator validator, ILogger<PeIController> logger) : ControllerBase
 {
-    private readonly ICdaPiesServiceClient _peisServiceClient = iCDAPiesService;
-    private readonly IIdValidator _iIdValidator = validator;
-    private readonly ILogger<PeIController> _logger = logger;
-
     [HttpGet]
     [Route("peis")]
     public async Task<IActionResult> GetAsync([FromHeader] PeiIntegrationServiceRequestModel requestModel)
@@ -23,9 +19,9 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IIdValidator v
         if (!TryValidateRequestHeaders(requestModel, out var message))
             return BadRequest(message);
 
-        using var scope = _logger.BeginCorrelationScope(requestModel.CorrelationId, Constants.LogSource);
+        using var scope = logger.BeginCorrelationScope(requestModel.CorrelationId, Constants.LogSource);
 
-        _logger.LogRequest(requestModel);
+        logger.LogRequest(requestModel);
 
         var cdaPeisRequest = new CdaPiesServiceRequestModel
         {
@@ -34,11 +30,11 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IIdValidator v
             CorrelationId = requestModel.CorrelationId,
         };
 
-        var peidData =  await _peisServiceClient.GetPiesAsync(cdaPeisRequest);
+        var peisData =  await iCdaPiesService.GetPiesAsync(cdaPeisRequest);
 
-        _logger.LogResponse(peidData);
+        logger.LogResponse(peisData);
 
-        return Ok(peidData);
+        return Ok(peisData);
     }
 
     private bool TryValidateRequestHeaders (PeiIntegrationServiceRequestModel request, out string? message)
@@ -49,13 +45,13 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IIdValidator v
             return false;
         }
 
-        if (!_iIdValidator.IsValidPeisId(request.PeisId))
+        if (!validator.IsValidPeisId(request.PeisId))
         {
             message = Constants.ResponseType.PeisId;
             return false;
         }
 
-        if (!_iIdValidator.IsValidGuid(request.UserSessionId))
+        if (!validator.IsValidGuid(request.UserSessionId))
         {
             message = Constants.ResponseType.UserSessionId;
             return false;
@@ -66,7 +62,7 @@ public class PeIController(ICdaPiesServiceClient iCDAPiesService, IIdValidator v
             request.CorrelationId = Guid.NewGuid().ToString();
         }
 
-        if (!_iIdValidator.IsValidGuid(request.CorrelationId))
+        if (!validator.IsValidGuid(request.CorrelationId))
         {
             message = Constants.ResponseType.CorrelationId;
             return false;

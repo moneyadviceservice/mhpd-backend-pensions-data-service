@@ -24,7 +24,7 @@ public class TokenController(
 {
     [HttpPost]
     [Route("rpts")]
-    public async Task<IActionResult> PostAsync([FromBody] TokenIntegrationRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> PostAsync([FromBody] TokenClientRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
     {            
         if (!TryValidateRequest(validatorPipeline, request, requestHeader, out var message))
         {
@@ -180,7 +180,7 @@ public class TokenController(
         return true;
     }
 
-    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(TokenIntegrationRequestModel requestBody)
+    private static CdaTokenRequestModel CreateCdaTokenServiceRequestModel(TokenClientRequestModel requestBody)
     {
         return new CdaTokenRequestModel
         {
@@ -189,6 +189,7 @@ public class TokenController(
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
             Scope = TokenQueryParams.Owner,
             Ticket = requestBody.Ticket,
+            Pct = requestBody.Pct
         };
     }
     

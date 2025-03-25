@@ -54,6 +54,9 @@
                   },
                   "code_verifier": {
                     "type": "string"
+                  },
+                  "pct": {
+                    "type": "string"
                   }
                 }
               },
@@ -86,6 +89,9 @@
                   "style": "form"
                 },
                 "code_verifier": {
+                  "style": "form"
+                },
+                "pct": {
                   "style": "form"
                 }
               }

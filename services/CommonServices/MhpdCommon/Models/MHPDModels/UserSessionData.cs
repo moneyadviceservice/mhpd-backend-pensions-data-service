@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using MhpdCommon.Constants;
+using MhpdCommon.Constants.HttpClient;
 
 namespace MhpdCommon.Models.MHPDModels;
 
@@ -12,5 +13,11 @@ public class UserSessionData
     public required string UserSessionId { get; set; }
     
     [JsonPropertyName(HeaderConstants.PeisId)]
-    public required string PeisId { get; set; }
+    public string? PeisId { get; set; }
+    
+    // Persisted claims token
+    [JsonPropertyName(QueryParams.Cda.Token.Pct)]
+    public string? Pct { get; set; }
+    
+    public string? AccessToken { get; set; }
 }

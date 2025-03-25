@@ -4,7 +4,7 @@ using PensionsDataService.Models;
 
 namespace PensionsDataService.HttpClients;
 
-public interface ITokenIntegrationServiceClient
+public interface ITokenIntegrationServiceIdTokenClient
 {
     Task<PeiRetrievalDetailsResponseModel> PostAsync(PensionsDataRequestModel request, RequestHeaderModel requestHeader);
 }

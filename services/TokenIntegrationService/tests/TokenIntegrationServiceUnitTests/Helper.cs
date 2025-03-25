@@ -45,7 +45,7 @@ public static class Helper
     }
 
     // Helper method to create and order validators
-    public static List<ITokenRequestValidator<TokenIntegrationRequestModel>> GetOrderedValidatorsForTokenIntegrationRequest()
+    public static List<ITokenRequestValidator<TokenClientRequestModel>> GetOrderedValidatorsForTokenIntegrationRequest()
     {
         // Mock loggers for each validator
         var logger2 = new Mock<ILogger<RqpNotPresentValidator>>();
@@ -56,7 +56,7 @@ public static class Helper
         var logger7 = new Mock<ILogger<AsUriNotAUrlValidator>>();
 
         // Create the validators
-        var validators = new List<ITokenRequestValidator<TokenIntegrationRequestModel>>
+        var validators = new List<ITokenRequestValidator<TokenClientRequestModel>>
         {
             new RqpNotPresentValidator(logger2.Object),
             new RqpNotAJwtValidator(logger3.Object),

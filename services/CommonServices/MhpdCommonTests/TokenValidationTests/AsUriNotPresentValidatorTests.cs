@@ -18,7 +18,7 @@ public class AsUriNotPresentValidatorTests
     [Fact]
     public void Validate_ShouldReturnFailure_WhenRedirectUriIsMissing()
     {
-        var result = _notPresentValidationValidator.Validate(new TokenIntegrationRequestModel { AsUri = string.Empty });
+        var result = _notPresentValidationValidator.Validate(new TokenClientRequestModel { AsUri = string.Empty });
 
         Assert.False(result.IsValid);
         Assert.Equal(TokenValidationMessages.InvalidAsUri, result.ErrorMessage);
@@ -27,7 +27,7 @@ public class AsUriNotPresentValidatorTests
     [Fact]
     public void Validate_ShouldReturnSuccess_WhenRedirectUriIsProvided()
     {
-        var result = _notPresentValidationValidator.Validate(new TokenIntegrationRequestModel { AsUri = "https://www.example.com/api/1" });
+        var result = _notPresentValidationValidator.Validate(new TokenClientRequestModel { AsUri = "https://www.example.com/api/1" });
         Assert.True(result.IsValid);
     }
 }

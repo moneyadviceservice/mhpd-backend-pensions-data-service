@@ -18,7 +18,7 @@ public class AsUriNotAUrlValidatorTests
     [Fact]
     public void Validate_ShouldReturnFailure_WhenRedirectUriIsInvalidUrl()
     {
-        var result = _validator.Validate(new TokenIntegrationRequestModel { AsUri = "htps://ww.example.com/api/1" });
+        var result = _validator.Validate(new TokenClientRequestModel { AsUri = "htps://ww.example.com/api/1" });
 
         Assert.False(result.IsValid);
         Assert.Equal(TokenValidationMessages.InvalidAsUri, result.ErrorMessage);
@@ -27,7 +27,7 @@ public class AsUriNotAUrlValidatorTests
     [Fact]
     public void Validate_ShouldReturnSuccess_WhenRedirectUriIsValidUrl()
     {
-        var result = _validator.Validate(new TokenIntegrationRequestModel { AsUri = Helper.ValidRedirectUri });
+        var result = _validator.Validate(new TokenClientRequestModel { AsUri = Helper.ValidRedirectUri });
         Assert.True(result.IsValid);
     }
 }

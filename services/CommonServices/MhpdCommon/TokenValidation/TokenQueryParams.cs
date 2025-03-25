@@ -10,6 +10,8 @@ public static class TokenQueryParams
     public const string Owner = "owner";
     public const string ValidJwtToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+    public const string ValidPersistedClaimsToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw6c";
     public const string ValidJweToken =
         "eyJ0eXAiOiJKV1QiLCJraWQiOiJ1c2VyLWFjY291bnQtc2lnbmF0dXJlLWtleSIsImVuYyI6IkExMjhDQkMtSFMyNTYiLCJjdHkiOiJKV1QiLCJhbGciOiJSU0EtT0FFUC0yNTYifQ."
         + "e8fhuMztCdiet-Q6uW34w-RmlHXbVxLkDwmoDCvO8Y-Fqh_DIvUltm7lRgzugZevFa8VPPOlKuFRH6iBXwFNvtXlyHdYLg1Z2nT-3YV-ylvXiTRn71SesgV_clxHehQv7083zKavWJGxkV4L02maxJC-h3QYuH3KRouf3qfCHxpaLVNRTWxQZXdSArap9Sd5DGAfXWYEy-UmHvdXZ5XLsY_1VQhx4cqwwJKyJXrLCne76tU92ZT_bcreQp2u1gccjtLWOWVMp05ESM-dFp0i5pp3D1YG4FZjUr8K92fRhl683rf9ugxSIl-WqTZ2LdK6XHVFnUJxSiNJoPHedhKr2A."

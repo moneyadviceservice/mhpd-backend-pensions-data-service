@@ -195,9 +195,11 @@ public class CdaTokenControllerTests
     [InlineData("  ", 400)]
     [InlineData(SecurityConstants.Jwe.ClaimsRequiredPermissionTicket, 400)]
     [InlineData(SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket, 403)]
+    [InlineData(SecurityConstants.Jwe.AuthorizationRequiredPermissionTicket, 200, true)]
     [InlineData("Some.Other.ticket", 400)]
     [InlineData(SecurityConstants.Jwe.AuthorizedPermissionTicket, 200)]
-    public async Task GenerateTokenAsync_ValidRequest_UmaGrantType_ReturnsExpectedResult(string ticket, int expectedCode)
+    public async Task GenerateTokenAsync_ValidRequest_UmaGrantType_ReturnsExpectedResult(string ticket, int expectedCode, 
+        bool isPct = false)
     {
         // Arrange
         var request = new CdaTokenRequestModel
@@ -206,7 +208,8 @@ public class CdaTokenControllerTests
             ClaimToken = TokenQueryParams.ValidJwtToken,
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
             Scope = TokenQueryParams.Owner,
-            Ticket = ticket
+            Ticket = ticket,
+            Pct = isPct ? TokenQueryParams.ValidPersistedClaimsToken: null
         };
         _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 

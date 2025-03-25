@@ -14,16 +14,16 @@ using PensionsDataService.Models;
 
 namespace PensionsDataServiceUnitTests;
 
-public class TokenIntegrationServiceClientTests
+public class TokenIntegrationServiceIdTokenClientTests
 {
-    private readonly TokenIntegrationServiceClient _sut;
+    private readonly TokenIntegrationServiceIdTokenClient _sut;
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<HttpMessageHandler> _handlerMoq = new();
-    private readonly Mock<ILogger<TokenIntegrationServiceClient>> _logger = new();
+    private readonly Mock<ILogger<TokenIntegrationServiceIdTokenClient>> _logger = new();
     private const string TokenIntegrationServicesEndpointUrl = "https://localhost/";
     private const string PeisId = "123e4567-e89b-12d3-a456-42661417400";
 
-    public TokenIntegrationServiceClientTests()
+    public TokenIntegrationServiceIdTokenClientTests()
     {
         Mock<IConfiguration> mockConfiguration = new();
 
@@ -38,7 +38,7 @@ public class TokenIntegrationServiceClientTests
                 BaseAddress = new Uri(TokenIntegrationServicesEndpointUrl)
             });
             
-        _sut = new TokenIntegrationServiceClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object);
+        _sut = new TokenIntegrationServiceIdTokenClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class TokenIntegrationServiceClientTests
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            Task.FromResult(new TokenIntegrationServiceClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object))
+            Task.FromResult(new TokenIntegrationServiceIdTokenClient(_httpClientFactoryMock.Object, mockConfiguration.Object, _logger.Object))
         );
 
         Assert.Equal("TokenIntegrationService endpoint is not configured.", ex.Message);

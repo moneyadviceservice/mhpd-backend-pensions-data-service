@@ -15,12 +15,16 @@ public class ResponseMessage
 
     private string ExtractWwwAuthenticateHeaderValue(string tokenToExtract)
     {
-        if (string.IsNullOrWhiteSpace(WwwAuthenticateResponseHeader))
+        if (string.IsNullOrWhiteSpace(WwwAuthenticateResponseHeader) || 
+            !WwwAuthenticateResponseHeader.Contains(tokenToExtract))
         {
             return string.Empty;
         }
 
-        var token = WwwAuthenticateResponseHeader.Split(tokenToExtract)[1];
-        return token.Split(",")[0].Replace("\"", "");
+        var parts = WwwAuthenticateResponseHeader.Split(tokenToExtract, StringSplitOptions.None);
+        if (parts.Length < 2) return string.Empty;
+
+        var valueParts = parts[1].Split(",");
+        return valueParts.Length > 0 ? valueParts[0].Replace("\"", "") : string.Empty;
     }
 }

@@ -67,9 +67,6 @@
     <None Update="TestData\PensionRetrieval\NullSessionPensionRetrievalMessage.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\PensionRetrieval\InvalidAccessTokenRetrievalMessage.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="TestData\PensionRetrieval\ValidPensionRetrievalMessage.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -6,18 +6,18 @@ namespace MhpdCommonTests.TokenValidationTests;
 
 public class TokenIntegrationRequestValidatorPipelineTests
 {
-    private readonly Mock<ITokenRequestValidator<TokenIntegrationRequestModel>> _validator1Mock;
-    private readonly Mock<ITokenRequestValidator<TokenIntegrationRequestModel>> _validator2Mock;
+    private readonly Mock<ITokenRequestValidator<TokenClientRequestModel>> _validator1Mock;
+    private readonly Mock<ITokenRequestValidator<TokenClientRequestModel>> _validator2Mock;
     private readonly TokenIntegrationRequestValidatorPipeline _sut;
 
     public TokenIntegrationRequestValidatorPipelineTests()
     {
         // Create mocks for validators
-        _validator1Mock = new Mock<ITokenRequestValidator<TokenIntegrationRequestModel>>();
-        _validator2Mock = new Mock<ITokenRequestValidator<TokenIntegrationRequestModel>>();
+        _validator1Mock = new Mock<ITokenRequestValidator<TokenClientRequestModel>>();
+        _validator2Mock = new Mock<ITokenRequestValidator<TokenClientRequestModel>>();
 
         // Create a list of validators in order
-        var validators = new List<ITokenRequestValidator<TokenIntegrationRequestModel>>()
+        var validators = new List<ITokenRequestValidator<TokenClientRequestModel>>()
         {
             _validator1Mock.Object,
             _validator2Mock.Object
@@ -31,10 +31,10 @@ public class TokenIntegrationRequestValidatorPipelineTests
     public void Validate_ThrowsException_WhenNoValidatorsArePresent()
     {
         // Arrange
-        var emptyPipeline = new TokenIntegrationRequestValidatorPipeline(new List<ITokenRequestValidator<TokenIntegrationRequestModel>>());
+        var emptyPipeline = new TokenIntegrationRequestValidatorPipeline(new List<ITokenRequestValidator<TokenClientRequestModel>>());
 
         // Act & Assert
-        var ex = Assert.Throws<InvalidOperationException>(() => emptyPipeline.Validate(new TokenIntegrationRequestModel()));
+        var ex = Assert.Throws<InvalidOperationException>(() => emptyPipeline.Validate(new TokenClientRequestModel()));
         Assert.Equal("No validators found.", ex.Message);
     }
 
@@ -42,7 +42,7 @@ public class TokenIntegrationRequestValidatorPipelineTests
     public void Validate_ReturnsSuccess_WhenAllValidatorsPass()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel();
+        var request = new TokenClientRequestModel();
 
         _validator1Mock.Setup(v => v.Validate(request)).Returns(ValidationResult.Success());
         _validator2Mock.Setup(v => v.Validate(request)).Returns(ValidationResult.Success());
@@ -58,7 +58,7 @@ public class TokenIntegrationRequestValidatorPipelineTests
     public void Validate_ReturnsFailure_WhenAnyValidatorFails()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel();
+        var request = new TokenClientRequestModel();
 
         var failureResult = ValidationResult.Failure("Validation failed");
 
@@ -77,7 +77,7 @@ public class TokenIntegrationRequestValidatorPipelineTests
     public void Validate_ShortCircuits_WhenValidatorFails()
     {
         // Arrange
-        var request = new TokenIntegrationRequestModel();
+        var request = new TokenClientRequestModel();
 
         var failureResult = ValidationResult.Failure("Validation failed");
 

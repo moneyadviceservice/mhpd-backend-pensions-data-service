@@ -38,7 +38,7 @@ public class TokenIntegrationServiceClientUnitTests
         var request = new TokenClientRequestModel
         {
             Rqp = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2dnZWRJbkFzIjoiYWRtaW4iLCJpYXQiOjE0MjI3Nzk2Mzh9.gzSraSYS8EXBxLN_oWnFSRgCzcmJmMjLiuyu5CSpyHI",
-            As_Uri = "http://localhost:YYYY",
+            AsUri = "http://localhost:YYYY",
             Ticket = "askdj902139012ekasdlasdj"
         };
 

@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "view-data-service-emulator" {
   description           = "This API describes service that provides RQP tokens for clients interacting with CDA components."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "2"
+  revision              = "3"
   display_name          = "view-data-service-emulator"
   path                  = "view-data-service-emulator"
   service_url           = "https://pdp-view-data-service-emulator-${var.env}.azurewebsites.net"

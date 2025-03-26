@@ -109,8 +109,6 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         var ticketValue = ExtractWwwAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WwwAuthenticateResponseHeader!, HeaderConstants.AuthenticateTicket);
         var asUriValue = ExtractWwwAuthenticateHeaderValue(pdpServiceResponseModel.ResponseMessage.WwwAuthenticateResponseHeader!, HeaderConstants.AuthenticateUri);
         
-        Console.WriteLine("Retrieving userSessionData {0}", userSessionId);
-        
         // Retrieve PCT and pass it downstream
         var userSessionData = await userSessionDataRepository.GetByIdAsync(userSessionId, userSessionId);
         if (userSessionData == null)
@@ -131,10 +129,10 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
             Rqp = rqp,
             AsUri = asUriValue,
             CorrelationId = correlationId,
-            Pct = userSessionData.Pct
+            Pct = userSessionData.Pct,
+            ClientId = userSessionData.ClientId
         };
 
-        Console.WriteLine("Retrieving RPT {0}", request);
         return await _tokenClient.PostRptAsync(request);
     }
 

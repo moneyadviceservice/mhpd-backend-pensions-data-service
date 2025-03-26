@@ -102,6 +102,30 @@ public class TokenControllerUnitTests
         Assert.True(result.GetType() == typeof(BadRequestObjectResult));
         Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
     }
+    
+    [Fact]
+    public async void WhenControllerIsCalled_WithInvalidClientId_ThenItShouldReturn_BadRequest400Response()
+    {
+        // Arrange           
+        var request = new TokenClientRequestModel
+        {
+            Rqp = RqpValue,
+            Ticket = TicketValue,
+            AsUri = AsUriValue,
+            ClientId = string.Empty
+        };
+
+        var correlationId = Guid.NewGuid().ToString();
+        _mockIdValidator.Setup(v => v.IsValidGuid(correlationId)).Returns(true);
+
+        // Act
+        var result = await _controller.PostAsync(request, new RequestHeaderModel { CorrelationId = correlationId }); 
+        var badResult = (BadRequestObjectResult)result;
+
+        // Assert
+        Assert.True(result.GetType() == typeof(BadRequestObjectResult));
+        Assert.True(badResult.StatusCode == (int)HttpStatusCode.BadRequest);
+    }
         
     [Fact]
     public async void WhenController_RPTS_Endpoint_IsCalled_WithValidRequestBody_ThenItShouldReturn_OKRequest200Response()
@@ -111,7 +135,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
         
         _iCdaToken
@@ -604,7 +629,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         // Simulate a response with an empty IdToken
@@ -630,7 +656,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         // Simulate a response with an invalid IdToken
@@ -660,7 +687,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         var response = new CdaTokenResponseModel
@@ -694,7 +722,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         var response = new CdaTokenResponseModel
@@ -728,7 +757,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         var response = new CdaTokenResponseModel
@@ -757,7 +787,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         var response = new CdaTokenResponseModel
@@ -796,7 +827,8 @@ public class TokenControllerUnitTests
         {
             Rqp = RqpValue,
             Ticket = TicketValue,
-            AsUri = AsUriValue
+            AsUri = AsUriValue,
+            ClientId = TokenQueryParams.ValidClientId
         };
 
         // Simulate a response with an invalid IdToken

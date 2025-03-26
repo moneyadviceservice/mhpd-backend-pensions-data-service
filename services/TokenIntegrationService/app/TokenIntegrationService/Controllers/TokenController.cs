@@ -189,7 +189,8 @@ public class TokenController(
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
             Scope = TokenQueryParams.Owner,
             Ticket = requestBody.Ticket,
-            Pct = requestBody.Pct
+            Pct = requestBody.Pct,
+            ClientId = requestBody.ClientId
         };
     }
     

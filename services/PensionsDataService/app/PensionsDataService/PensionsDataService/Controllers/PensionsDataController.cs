@@ -149,7 +149,8 @@ public class PensionsDataController(
         {
             Id = userSessionId,
             UserSessionId = userSessionId,
-            PeisId = result.PeisId!
+            PeisId = result.PeisId!,
+            ClientId = request.ClientId!,
         }, userSessionId);
         
         logger.LogInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
@@ -287,6 +288,12 @@ public class PensionsDataController(
             return false;
         }
         
+        if (string.IsNullOrWhiteSpace(request.ClientId))
+        {
+            message = TokenValidationMessages.InvalidClientIdFormat;
+            return false;
+        }
+        
         if (!JweValidator.IsJweFormatValid(request.Ticket))
         {
             message = TokenValidationMessages.InvalidJweTicketQueryFormat;
@@ -323,14 +330,15 @@ public class PensionsDataController(
     private static TokenClientRequestModel CreateCdaTokenServiceRptsRequestModel(string ticket, 
         string rqp, 
         string correlationId,
-        ILogger<PensionsDataController> logger, string? asUri)
+        ILogger<PensionsDataController> logger, string? asUri, string clientId)
     {
         var request = new TokenClientRequestModel
         {
             Ticket = ticket,
             Rqp = rqp,
             AsUri = asUri,
-            CorrelationId = correlationId
+            CorrelationId = correlationId,
+            ClientId = clientId
         };
         
         logger.LogRequest(request);
@@ -538,7 +546,7 @@ public class PensionsDataController(
         string userSessionId)
     {
         var tokenResult = await _tokenIntegrationServiceClientRpts.PostRptAsync(
-            CreateCdaTokenServiceRptsRequestModel(request.Ticket!, rqp, requestHeader.CorrelationId!, logger, AsUri));
+            CreateCdaTokenServiceRptsRequestModel(request.Ticket, rqp, requestHeader.CorrelationId!, logger, AsUri, request.ClientId));
 
         if (!IsValidJwt(tokenResult.Pct) || !IsValidJwt(tokenResult.AccessToken))
         {

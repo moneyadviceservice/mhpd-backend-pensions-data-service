@@ -54,6 +54,7 @@ public static class Helper
         var logger5 = new Mock<ILogger<TicketNotAJweTokenIntegrationValidator>>();
         var logger6 = new Mock<ILogger<AsUriNotPresentValidator>>();
         var logger7 = new Mock<ILogger<AsUriNotAUrlValidator>>();
+        var logger8 = new Mock<ILogger<ClientIdNotPresentValidationRpts>>();
 
         // Create the validators
         var validators = new List<ITokenRequestValidator<TokenClientRequestModel>>
@@ -63,7 +64,8 @@ public static class Helper
             new TicketNotPresentTokenIntegrationValidator(logger4.Object),
             new TicketNotAJweTokenIntegrationValidator(logger5.Object),
             new AsUriNotPresentValidator(logger6.Object),
-            new AsUriNotAUrlValidator(logger7.Object)
+            new AsUriNotAUrlValidator(logger7.Object),
+            new ClientIdNotPresentValidationRpts(logger8.Object)
         };
 
         // Return the ordered validators based on the Order property

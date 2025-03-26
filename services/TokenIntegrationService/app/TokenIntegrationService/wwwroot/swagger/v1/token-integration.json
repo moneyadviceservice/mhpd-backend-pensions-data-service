@@ -125,6 +125,10 @@
       "TokenClientRequestModel": {
         "type": "object",
         "properties": {
+          "client_id": {
+            "type": "string",
+            "nullable": true
+          },
           "rqp": {
             "type": "string",
             "nullable": true

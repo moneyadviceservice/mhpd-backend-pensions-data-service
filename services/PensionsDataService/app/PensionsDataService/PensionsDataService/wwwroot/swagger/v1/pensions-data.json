@@ -158,6 +158,10 @@
           "ticket": {
             "type": "string",
             "nullable": true
+          },
+          "clientId": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false

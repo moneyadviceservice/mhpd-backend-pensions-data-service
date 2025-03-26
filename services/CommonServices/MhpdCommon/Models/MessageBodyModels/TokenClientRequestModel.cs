@@ -5,6 +5,9 @@ namespace MhpdCommon.Models.MessageBodyModels;
 
 public class TokenClientRequestModel
 {
+    [JsonPropertyName(QueryParams.Cda.Token.ClientId)]
+    public string ClientId { get; set; } = string.Empty;
+    
     public string Rqp { get; set; } = string.Empty;
 
     [JsonPropertyName(QueryParams.Cda.Token.Pct)]

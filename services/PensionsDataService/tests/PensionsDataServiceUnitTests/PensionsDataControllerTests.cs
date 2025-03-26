@@ -33,6 +33,7 @@ public class PensionsDataControllerTests
     private readonly Mock<Container> _mockUserSessionDataContainer;
 
     private const string ValidPeisId = "0001f518264ba44564b186f42af6659b5822eb6e";
+    private const string ValidClientId = "clientId";
 
     private readonly RequestHeaderModel _validRequestHeader = new()
     {
@@ -790,6 +791,26 @@ public class PensionsDataControllerTests
         // Assert
         Assert.IsType<BadRequestObjectResult>(result);
     }
+    
+    [Fact]
+    public async Task PostPensionsDataRetrievalAsync_ReturnsBadRequest_No_ClientId_Provided_ValidationFails()
+    {
+        // Arrange
+        var request = new PensionsDataRetrievalRequest
+        {
+            Ticket = TokenQueryParams.ValidJwtToken
+        };
+        
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        var requestHeader = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString(), UserSessionId = Guid.NewGuid().ToString(), Iss = "mhpdIss"};
+        
+        // Act
+        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
+        
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
 
     [Fact]
     public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenTokenServiceFails()
@@ -818,7 +839,8 @@ public class PensionsDataControllerTests
         // Arrange
         var request = new PensionsDataRetrievalRequest
         {
-            Ticket = TokenQueryParams.ValidJweToken
+            Ticket = TokenQueryParams.ValidJweToken,
+            ClientId = ValidClientId
         };
         var requestHeader = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString(), UserSessionId = Guid.NewGuid().ToString(), Iss = "mhpd"};
 
@@ -858,64 +880,11 @@ public class PensionsDataControllerTests
         Assert.IsType<AcceptedResult>(result);
     }
     
-    
-    [Fact]
-    public async Task PostPensionsDataRetrievalAsync_ReturnsAccepted_WhenSuccessfulx()
-    {
-        // Arrange
-        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
-        var requestHeader = new RequestHeaderModel 
-        { 
-            CorrelationId = Guid.NewGuid().ToString(), 
-            UserSessionId = Guid.NewGuid().ToString(), 
-            Iss = "mhpd"
-        };
-
-        _mockMapsCdaServiceClient
-            .Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
-            .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
-
-        _mockTokenIntegrationServiceClient
-            .Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
-            .ReturnsAsync(new CdaTokenResponseModel 
-            { 
-                Pct = TokenQueryParams.ValidJwtToken, 
-                AccessToken = TokenQueryParams.ValidJwtToken 
-            });
-
-        var testInstanceData = new UserSessionData
-        {
-            UserSessionId = Guid.NewGuid().ToString(),
-            PeisId = "some-test-peis-id",
-        };
-        
-        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
-        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
-        
-        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
-        
-        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(mockItemResponse.Object);
-
-        _mockUserSessionDataContainer.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(mockItemResponse.Object);
-
-        _mockMessagingService
-            .Setup(x => x.SendMessageAsync(It.IsAny<PensionRetrievalPayload>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
-
-        // Act
-        var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);
-
-        // Assert
-        Assert.IsType<AcceptedResult>(result);
-    }
-    
     [Fact]
     public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenRqpIsInvalid()
     {
         // Arrange
-        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken, ClientId = ValidClientId };
         var requestHeader = new RequestHeaderModel 
         { 
             CorrelationId = Guid.NewGuid().ToString(), 
@@ -941,7 +910,7 @@ public class PensionsDataControllerTests
     public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenAccessTokenIsInvalid()
     {
         // Arrange
-        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken, ClientId = ValidClientId };
         var requestHeader = new RequestHeaderModel 
         { 
             CorrelationId = Guid.NewGuid().ToString(), 
@@ -975,7 +944,7 @@ public class PensionsDataControllerTests
     public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenUserSessionDataIsNull()
     {
         // Arrange
-        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken, ClientId = ValidClientId };
         var requestHeader = new RequestHeaderModel 
         { 
             CorrelationId = Guid.NewGuid().ToString(), 
@@ -1022,7 +991,7 @@ public class PensionsDataControllerTests
     public async Task PostPensionsDataRetrievalAsync_ReturnsInternalServerError_WhenPeisIdIsInvalid()
     {
         // Arrange
-        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken };
+        var request = new PensionsDataRetrievalRequest { Ticket = TokenQueryParams.ValidJweToken, ClientId = ValidClientId };
         var requestHeader = new RequestHeaderModel 
         { 
             CorrelationId = Guid.NewGuid().ToString(), 

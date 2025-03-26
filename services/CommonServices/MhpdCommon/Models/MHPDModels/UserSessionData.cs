@@ -13,7 +13,9 @@ public class UserSessionData
     public required string UserSessionId { get; set; }
     
     [JsonPropertyName(HeaderConstants.PeisId)]
-    public string? PeisId { get; set; }
+    public string PeisId { get; set; } = string.Empty;
+    
+    public string ClientId { get; set; } = string.Empty;
     
     // Persisted claims token
     [JsonPropertyName(QueryParams.Cda.Token.Pct)]

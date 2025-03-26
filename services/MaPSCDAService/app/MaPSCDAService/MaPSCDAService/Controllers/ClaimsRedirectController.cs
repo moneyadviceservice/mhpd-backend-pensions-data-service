@@ -43,6 +43,11 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
         {
             return GetServerErrorResponse(Constants.NoSessionDataFound);
         }
+        
+        if(!validator.IsValidPeisId(sessionData.PeisId))
+        {
+            return GetServerErrorResponse(Constants.MissingOrInvalidRedirectPeisId);
+        }
 
         var peiResponse = await GetPeiDataAsync(request, sessionData);
         if(peiResponse.ResponseMessage!.ResponseStatusCode != System.Net.HttpStatusCode.Unauthorized)
@@ -93,7 +98,7 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
         {
             UserSessionId = request.UserSessionId!,
             Iss = request.Iss!,
-            PeisId = sessionData.PeisId,
+            PeisId = sessionData.PeisId!,
             CorrelationId = request.CorrelationId!
         });
     }
@@ -103,7 +108,7 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
         return await tokenIntegrationServiceClient.PostRptAsync(new TokenClientRequestModel
         {
             Rqp = rqp,
-            As_Uri = peiResponse.ResponseMessage!.AsUri,
+            AsUri = peiResponse.ResponseMessage!.AsUri,
             Ticket = peiResponse.ResponseMessage.Ticket,
             CorrelationId = correlationId!
         });

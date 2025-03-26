@@ -25,7 +25,6 @@ public class CdaPeisServiceClient(IHttpClientFactory httpClientFactory, ILogger<
         var endPoint = string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId));
 
         var response = await client.GetAsync(endPoint);
-        response.EnsureSuccessStatusCode();
 
         var data = CreateResponse(response).Result;
 

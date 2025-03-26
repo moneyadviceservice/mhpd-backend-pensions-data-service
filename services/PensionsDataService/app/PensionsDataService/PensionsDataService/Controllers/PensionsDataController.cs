@@ -522,7 +522,7 @@ public class PensionsDataController(
     
     private async Task<MapsRqpServiceResponseModel?> GetRqpFromMapsCdaService(RequestHeaderModel requestHeader, string userSessionId)
     {
-        var rqpResponse = await _mapsCdaServiceClient.PostRqp(requestHeader);
+        var rqpResponse = await _mapsCdaServiceClient.GetRqp(requestHeader);
         if (string.IsNullOrEmpty(rqpResponse.Rqp) || !JwtValidator.IsJwtFormatValid(rqpResponse.Rqp))
         {
             logger.LogError("Invalid RQP for Id {UserSessionId}", userSessionId);

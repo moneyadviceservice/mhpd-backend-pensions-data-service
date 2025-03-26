@@ -798,7 +798,7 @@ public class PensionsDataControllerTests
         var request = new PensionsDataRetrievalRequest();
         var requestHeader = new RequestHeaderModel { CorrelationId = "123", UserSessionId = "session-123" };
         
-        _mockMapsCdaServiceClient.Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+        _mockMapsCdaServiceClient.Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel());
         
         _mockTokenIntegrationServiceClient.Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
@@ -822,7 +822,7 @@ public class PensionsDataControllerTests
         };
         var requestHeader = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString(), UserSessionId = Guid.NewGuid().ToString(), Iss = "mhpd"};
 
-        _mockMapsCdaServiceClient.Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+        _mockMapsCdaServiceClient.Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
         
         _mockTokenIntegrationServiceClientIdToken.Setup(x => x.PostAsync(It.IsAny<PensionsDataRequestModel>(), It.IsAny<RequestHeaderModel>()))
@@ -872,7 +872,7 @@ public class PensionsDataControllerTests
         };
 
         _mockMapsCdaServiceClient
-            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
 
         _mockTokenIntegrationServiceClient
@@ -926,7 +926,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
         
         _mockMapsCdaServiceClient
-            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = string.Empty });
 
         // Act
@@ -952,7 +952,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
         
         _mockMapsCdaServiceClient
-            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
 
         _mockTokenIntegrationServiceClient
@@ -986,7 +986,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         _mockMapsCdaServiceClient
-            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
 
         _mockTokenIntegrationServiceClient
@@ -1031,7 +1031,7 @@ public class PensionsDataControllerTests
         };
 
         _mockMapsCdaServiceClient
-            .Setup(x => x.PostRqp(It.IsAny<RequestHeaderModel>()))
+            .Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = TokenQueryParams.ValidJwtToken });
 
         _mockTokenIntegrationServiceClient

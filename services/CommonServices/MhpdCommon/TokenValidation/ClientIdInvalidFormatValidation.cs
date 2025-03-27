@@ -7,7 +7,7 @@ namespace MhpdCommon.TokenValidation;
 public class ClientIdInvalidFormatValidation(ILogger<ClientIdInvalidFormatValidation> logger) : ITokenRequestValidator<CdaTokenRequestModel>
 {
     public int Order => 3;
-    public string GrantType => TokenQueryParams.AuthorizationCodeGrantType;
+    public string GrantType => string.Empty;
     
     public ValidationResult Validate(CdaTokenRequestModel request)
     {

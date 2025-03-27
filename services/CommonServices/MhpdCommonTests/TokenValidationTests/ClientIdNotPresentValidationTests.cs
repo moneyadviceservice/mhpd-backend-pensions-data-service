@@ -21,7 +21,7 @@ public class ClientIdNotPresentValidationTests
         var result = _notPresentValidator.Validate(new CdaTokenRequestModel { ClientId = string.Empty });
 
         Assert.False(result.IsValid);
-        Assert.Equal(TokenValidationMessages.InvalidRequest, result.ErrorMessage);
+        Assert.Equal(TokenValidationMessages.ClientIdNotPresent, result.ErrorMessage);
     }
 
     [Fact]

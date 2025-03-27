@@ -17,7 +17,8 @@ public class TokenRequestValidatorPipelineTests
             Scope = TokenQueryParams.Owner,
             ClaimToken = TokenQueryParams.ValidJwtToken,
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
-            Ticket = TokenQueryParams.ValidJweToken
+            Ticket = TokenQueryParams.ValidJweToken,
+            ClientId = TokenQueryParams.ValidClientId,
         };
 
         // Get ordered validators
@@ -84,7 +85,37 @@ public class TokenRequestValidatorPipelineTests
         Assert.False(result.IsValid);
         Assert.Equal(TokenValidationMessages.UnsupportedGrantType, result.ErrorMessage);
     }
-        
+
+    [Theory]
+    [InlineData(TokenQueryParams.UmaGrantType, "")]
+    [InlineData(TokenQueryParams.UmaGrantType, "    ")]
+    [InlineData(TokenQueryParams.AuthorizationCodeGrantType, null)]
+    public void Validate_MissingClientId_AnyGrantType_ReturnsFailure(string grantType, string clientId)
+    {
+        // Arrange
+        var request = new CdaTokenRequestModel
+        {
+            GrantType = grantType,
+            ClientId = clientId, 
+            ClientSecret = TokenQueryParams.ValidClientSecret,
+            Code = TokenQueryParams.ValidCode,
+            CodeVerifier = TokenQueryParams.ValidCodeVerifier,
+            RedirectUrl = Helper.ValidRedirectUri
+        };
+
+        // Get ordered validators
+        var validators = Helper.GetOrderedValidators();
+
+        var pipeline = new TokenRequestValidatorPipeline(validators);
+
+        // Act
+        var result = pipeline.Validate(request);
+
+        // Assert
+        Assert.False(result.IsValid);
+        Assert.Equal(TokenValidationMessages.ClientIdNotPresent, result.ErrorMessage);
+    }
+
     [Fact]
     public void Validate_FirstValidatorFails_ForUmaGrantType_ReturnsFailure()
     {

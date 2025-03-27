@@ -29,7 +29,6 @@ module "pensions_retrieval_function" {
     "PeiIntegrationServiceUrl"                                = "https://maps-api-management-${var.env}.azure-api.net/pei-integration-service/"
     "PeiRetryInterval"                                        = "5"
     "PeiRetryTimeout"                                         = "60"
-    "ServiceBusConnectionstring"                              = data.azurerm_servicebus_namespace.this.default_primary_connection_string
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                         = "true"
     "WEBSITE_RUN_FROM_PACKAGE"                                = "1"
     "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"                  = "1"

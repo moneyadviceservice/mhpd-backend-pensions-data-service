@@ -6,14 +6,14 @@ namespace MhpdCommon.TokenValidation;
 public class ClientIdNotPresentValidation(ILogger<ClientIdNotPresentValidation> logger) : ITokenRequestValidator<CdaTokenRequestModel>
 {
     public int Order => 2;
-    public string GrantType => TokenQueryParams.AuthorizationCodeGrantType;
+    public string GrantType => string.Empty;
     
     public ValidationResult Validate(CdaTokenRequestModel request)
     {
-        if (string.IsNullOrEmpty(request.ClientId))
+        if (string.IsNullOrWhiteSpace(request.ClientId))
         {
             logger.LogError(TokenValidationMessages.ClientIdNotPresent);
-            return ValidationResult.Failure(TokenValidationMessages.InvalidRequest);
+            return ValidationResult.Failure(TokenValidationMessages.ClientIdNotPresent);
         }
 
         return ValidationResult.Success();

@@ -209,7 +209,8 @@ public class CdaTokenControllerTests
             ClaimTokenFormat = TokenQueryParams.PensionDashboardRqp,
             Scope = TokenQueryParams.Owner,
             Ticket = ticket,
-            Pct = isPct ? TokenQueryParams.ValidPersistedClaimsToken: null
+            Pct = isPct ? TokenQueryParams.ValidPersistedClaimsToken: null,
+            ClientId = TokenQueryParams.ValidClientId
         };
         _controller.HttpContext.Request.Headers.Append(HeaderConstants.RequestId, Guid.NewGuid().ToString());
 

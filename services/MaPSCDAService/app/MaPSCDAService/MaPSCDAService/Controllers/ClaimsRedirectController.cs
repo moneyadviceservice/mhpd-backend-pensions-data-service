@@ -55,7 +55,7 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
             return GetServerErrorResponse(Constants.UnableToTriggerRedirect);
         }
 
-        var tokenResponse = await GetAccessToken(peiResponse, rqp, request.CorrelationId!);
+        var tokenResponse = await GetAccessToken(peiResponse, rqp, request.CorrelationId!, sessionData.ClientId);
         if (tokenResponse.StatusCode != System.Net.HttpStatusCode.Forbidden || !ValidateRedirectResponse(tokenResponse.UserRedirectDetails))
         {
             return GetServerErrorResponse(Constants.UnableToTriggerRedirect);
@@ -103,14 +103,15 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
         });
     }
 
-    private async Task<CdaTokenResponseModel> GetAccessToken(CdaPeisServiceResponseModel peiResponse, string rqp, string correlationId)
+    private async Task<CdaTokenResponseModel> GetAccessToken(CdaPeisServiceResponseModel peiResponse, string rqp, string correlationId, string clientId)
     {
         return await tokenIntegrationServiceClient.PostRptAsync(new TokenClientRequestModel
         {
             Rqp = rqp,
             AsUri = peiResponse.ResponseMessage!.AsUri,
             Ticket = peiResponse.ResponseMessage.Ticket,
-            CorrelationId = correlationId!
+            CorrelationId = correlationId,
+            ClientId = clientId
         });
     }
 

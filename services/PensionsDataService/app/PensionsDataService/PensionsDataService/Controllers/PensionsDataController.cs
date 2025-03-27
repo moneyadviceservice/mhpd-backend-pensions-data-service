@@ -561,6 +561,7 @@ public class PensionsDataController(
         var userSessionData = await userSessionDataRepository.GetByIdAsync(userSessionId, userSessionId);
         if (userSessionData == null) return null;
 
+        var clientId = userSessionData.ClientId;
         var peisId = userSessionData.PeisId;
         if (string.IsNullOrEmpty(peisId))
         {
@@ -574,7 +575,8 @@ public class PensionsDataController(
             UserSessionId = userSessionId,
             AccessToken = tokenResult.AccessToken!,
             PeisId = peisId,
-            Pct = tokenResult.Pct
+            Pct = tokenResult.Pct,
+            ClientId = clientId
         }, userSessionId);
 
         return peisId;

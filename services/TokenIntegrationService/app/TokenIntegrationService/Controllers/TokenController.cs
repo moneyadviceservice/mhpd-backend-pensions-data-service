@@ -38,7 +38,7 @@ public class TokenController(
         var cdaTokenRequestModelRequest = CreateCdaTokenServiceRequestModel(request);
         var response = await iCdaServiceClient.PostAsync(cdaTokenRequestModelRequest);
 
-        if (!await ValidateTokenResponseAsync(response))
+        if (!await ValidateTokenResponseAsync(response, false))
         {
             return await GetInternalServerErrorResponse();
         }
@@ -101,7 +101,7 @@ public class TokenController(
         return Ok(response);
     }
 
-    private async Task<bool> ValidateTokenResponseAsync(CdaTokenResponseModel response)
+    private async Task<bool> ValidateTokenResponseAsync(CdaTokenResponseModel response, bool validateToken = true)
     {
         if (response.StatusCode != HttpStatusCode.OK && response.StatusCode != HttpStatusCode.Forbidden)
         {
@@ -121,6 +121,12 @@ public class TokenController(
             {
                 logger.LogError("AccessToken is null in the response");
                 return false;
+            }
+
+            // For AccessToken (RPT), introspection is not required, and it will not contain a kid. It functions as a pass-through token.
+            if (!validateToken)
+            {
+                return true;
             }
 
             try

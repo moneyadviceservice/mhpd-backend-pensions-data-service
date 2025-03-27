@@ -4,6 +4,12 @@ namespace MhpdCommon.Models.MHPDModels;
 
 public class HolderNameViewDataResponse
 {
-    [JsonPropertyName("holder_view_configurations")]
-    public List<HolderNameConfigurationModel> Configurations { get; set; } = [];
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    [JsonPropertyName("holdernameGuid")]
+    public string? HolderNameGuid { get; set; }
+    
+    [JsonPropertyName("holderConfiguration")]
+    public required HolderNameConfigurationModel Configuration { get; set; }
 }

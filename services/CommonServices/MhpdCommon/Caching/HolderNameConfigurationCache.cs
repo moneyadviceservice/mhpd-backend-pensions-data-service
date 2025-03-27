@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 namespace MhpdCommon.Caching;
 
 public class HolderNameConfigurationCache(CosmosClient cosmosClient, IOptions<CosmosIntegrationConfiguration> options) :
-CosmosDbRepository<HolderNameConfigurationModel>(cosmosClient, options.Value!.DatabaseId!, options.Value!.HolderNameCacheContainer!),
-IHolderNameConfigurationCache<HolderNameConfigurationModel>
+CosmosDbRepository<HolderNameViewDataResponse>(cosmosClient, options.Value!.DatabaseId!, options.Value!.HolderNameCacheContainer!),
+IHolderNameConfigurationCache<HolderNameViewDataResponse>
 {
 }

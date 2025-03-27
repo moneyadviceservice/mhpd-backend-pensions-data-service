@@ -14,14 +14,14 @@ public class HolderNameClientTests
 {
     private readonly Mock<IHttpClientFactory> _httpClientFactory;
     private readonly Mock<ILogger<HolderNameClient>> _logger;
-    private readonly Mock<IHolderNameConfigurationCache<HolderNameConfigurationModel>> _cache;
+    private readonly Mock<IHolderNameConfigurationCache<HolderNameViewDataResponse>> _cache;
 
     public HolderNameClientTests()
     {
         _httpClientFactory = new Mock<IHttpClientFactory>();
         _logger = new Mock<ILogger<HolderNameClient>>();
-        _cache = new Mock<IHolderNameConfigurationCache<HolderNameConfigurationModel>>();
-        _cache.Setup(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>())).Verifiable();
+        _cache = new Mock<IHolderNameConfigurationCache<HolderNameViewDataResponse>>();
+        _cache.Setup(mock => mock.InsertItemAsync(It.IsAny<HolderNameViewDataResponse>(), It.IsAny<string>())).Verifiable();
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class HolderNameClientTests
                     BaseAddress = new Uri("http://localhost:1234"!)
                 });
 
-        HolderNameConfigurationModel? model = null;
+        HolderNameViewDataResponse? model = null;
         _cache.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(model);
 
         var client = new HolderNameClient(_httpClientFactory.Object, _cache.Object, _logger.Object);
@@ -47,7 +47,7 @@ public class HolderNameClientTests
         Assert.NotNull(result);
         _httpClientFactory.Verify(x => x.CreateClient(HttpClientNames.CdaService), Times.Once);
 
-        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>()), Times.Once);
+        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameViewDataResponse>(), It.IsAny<string>()), Times.Once);
     }
 
     [Fact]
@@ -61,11 +61,11 @@ public class HolderNameClientTests
                     BaseAddress = new Uri("http://localhost:1234"!)
                 });
 
-        var model = new HolderNameConfigurationModel
+        var model = new HolderNameViewDataResponse
         {
             HolderNameGuid = Guid.NewGuid().ToString(),
             Id = Guid.NewGuid().ToString(),
-            ViewDataUrl = "https://viewdata.pdp.com",
+            Configuration = new HolderNameConfigurationModel { ViewDataUrl = "https://viewdata.pdp.com" },
         };
 
         _cache.Setup(mock => mock.GetByIdStreamAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(model);
@@ -80,7 +80,7 @@ public class HolderNameClientTests
         Assert.NotNull(result);
 
         _httpClientFactory.Verify(x => x.CreateClient(HttpClientNames.CdaService), Times.Never);
-        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>()), Times.Never);
+        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameViewDataResponse>(), It.IsAny<string>()), Times.Never);
     }
 
     [Fact]
@@ -94,11 +94,11 @@ public class HolderNameClientTests
                     BaseAddress = new Uri("http://localhost:1234"!)
                 });
 
-        var model = new HolderNameConfigurationModel
+        var model = new HolderNameViewDataResponse
         {
             HolderNameGuid = Guid.NewGuid().ToString(),
             Id = Guid.NewGuid().ToString(),
-            ViewDataUrl = "https://viewdata.pdp.com",
+            Configuration = new HolderNameConfigurationModel { ViewDataUrl = "https://viewdata.pdp.com" },
         };
 
         _cache.Setup(mock => mock.GetByIdStreamAsync(It.IsAny<string>(), It.IsAny<string>())).Throws<InvalidOperationException>();
@@ -114,30 +114,30 @@ public class HolderNameClientTests
         Assert.NotNull(result);
 
         _httpClientFactory.Verify(x => x.CreateClient(HttpClientNames.CdaService), Times.Once);
-        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameConfigurationModel>(), It.IsAny<string>()), Times.Once);
+        _cache.Verify(mock => mock.InsertItemAsync(It.IsAny<HolderNameViewDataResponse>(), It.IsAny<string>()), Times.Once);
     }
 
     private static Mock<HttpMessageHandler> CreateHttpHandler()
     {
         var httpMessageHandlerMock = new Mock<HttpMessageHandler>();
 
-        var response = new HolderNameConfigurationModel
+        var model = new HolderNameViewDataResponse
         {
             HolderNameGuid = Guid.NewGuid().ToString(),
             Id = Guid.NewGuid().ToString(),
-            ViewDataUrl = "https://viewdata.pdp.com"
+            Configuration = new HolderNameConfigurationModel { ViewDataUrl = "https://viewdata.pdp.com" },
         };
 
         httpMessageHandlerMock
             .Protected()
             .Setup<Task<HttpResponseMessage>>("SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>()).ReturnsAsync(CreateHttpResponse(HttpStatusCode.OK, response));
+                ItExpr.IsAny<CancellationToken>()).ReturnsAsync(CreateHttpResponse(HttpStatusCode.OK, model));
 
         return httpMessageHandlerMock;
     }
 
-    private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, HolderNameConfigurationModel? content = null)
+    private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, HolderNameViewDataResponse? content = null)
     {
         var response = new HttpResponseMessage(statusCode);
         if (content != null)

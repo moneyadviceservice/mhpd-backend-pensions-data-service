@@ -73,7 +73,7 @@ builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provi
 });
 
 // Register HolderNameViewDataRepository
-builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameConfigurationModel>>(provider =>
+builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameViewDataResponse>>(provider =>
 {
     var cosmosClient = provider.GetRequiredService<CosmosClient>();
     var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;

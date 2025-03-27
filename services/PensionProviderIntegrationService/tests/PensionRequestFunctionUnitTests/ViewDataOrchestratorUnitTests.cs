@@ -71,9 +71,9 @@ public class ViewDataOrchestratorUnitTests
         var parser = new Mock<IMessageParser>();
         parser.Setup(mock => mock.ToPensionRequestPayload(It.IsAny<string>())).Returns(new PensionRequestPayload());
 
-        _holderNameClient.Setup(x => x.GetViewDataUrlAsync(holderNameId, It.IsAny<string>())).ReturnsAsync(new HolderNameConfigurationModel
+        _holderNameClient.Setup(x => x.GetViewDataUrlAsync(holderNameId, It.IsAny<string>())).ReturnsAsync(new HolderNameViewDataResponse
         {
-            ViewDataUrl = "https://viewdata.com"
+           Configuration = new HolderNameConfigurationModel {  ViewDataUrl = "https://viewdata.com" }
         });
 
         _tokenUtility.Setup(m => m.RetrieveClaim(It.IsAny<string>(), It.IsAny<string>())).Returns("viewDataClaim");

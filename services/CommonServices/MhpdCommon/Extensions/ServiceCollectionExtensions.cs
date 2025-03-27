@@ -35,7 +35,7 @@ namespace MhpdCommon.Extensions
         public static IServiceCollection AddIntegrationServices(
             this IServiceCollection services)
         {
-            services.AddScoped<IHolderNameConfigurationCache<HolderNameConfigurationModel>, HolderNameConfigurationCache>();
+            services.AddScoped<IHolderNameConfigurationCache<HolderNameViewDataResponse>, HolderNameConfigurationCache>();
             services.AddScoped<IJwkKeyCache<JwkUriResponseModel>, JwkKeyCache>();
             services.AddScoped<IJwtUtility, JwtUtility>();
             services.AddScoped<ISharedHttpClient, SharedHttpClient.SharedHttpClient>();

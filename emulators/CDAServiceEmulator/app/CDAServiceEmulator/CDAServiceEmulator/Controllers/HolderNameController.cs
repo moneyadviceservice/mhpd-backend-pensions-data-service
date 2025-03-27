@@ -10,7 +10,7 @@ namespace CDAServiceEmulator.Controllers;
 
 [Route("/")]
 [ApiController]
-public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataRepository<HolderNameConfigurationModel> viewDataRepository) : ControllerBase
+public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataRepository<HolderNameViewDataResponse> viewDataRepository) : ControllerBase
 {
     [HttpGet]
     [Route("holdername-view-configurations")]

@@ -8,12 +8,12 @@ using System.Net.Http.Json;
 namespace PensionRequestFunction.HttpClient;
 
 public class HolderNameClient(IHttpClientFactory httpClientFactory,
-    IHolderNameConfigurationCache<HolderNameConfigurationModel> cache,
+    IHolderNameConfigurationCache<HolderNameViewDataResponse> cache,
     ILogger<HolderNameClient> logger) : IHolderNameClient
 {
-    public async Task<HolderNameConfigurationModel?> GetViewDataUrlAsync(string holderNameId, string correlationId)
+    public async Task<HolderNameViewDataResponse?> GetViewDataUrlAsync(string holderNameId, string correlationId)
     {
-        HolderNameConfigurationModel? cachedModel = null;
+        HolderNameViewDataResponse? cachedModel = null;
 
         try
         {
@@ -45,6 +45,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
         {
             try
             {
+                model.Id = holderNameId;
                 await cache.InsertItemAsync(model, model.HolderNameGuid!);
             }
             catch (Exception error)
@@ -56,11 +57,11 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
         return model;
     }
 
-    private async Task<HolderNameConfigurationModel?> CreateResponse(HttpResponseMessage? httpResponse)
+    private async Task<HolderNameViewDataResponse?> CreateResponse(HttpResponseMessage? httpResponse)
     {
-        var viewDataResponse = await httpResponse!.Content.ReadFromJsonAsync<HolderNameConfigurationModel>();
+        var viewDataResponse = await httpResponse!.Content.ReadFromJsonAsync<HolderNameViewDataResponse>();
 
-        if (viewDataResponse?.ViewDataUrl == null)
+        if (viewDataResponse?.Configuration.ViewDataUrl == null)
         {
             logger.LogWarning("The holder name endpoint did not respond with exactly one configuration record");
             return null;

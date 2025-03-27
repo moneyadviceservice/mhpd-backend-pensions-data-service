@@ -47,7 +47,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
     {
         var viewData = await _holderNameClient.GetViewDataUrlAsync(holderNameGuid, correlationId);
 
-        return viewData?.ViewDataUrl;
+        return viewData?.Configuration.ViewDataUrl;
     }
 
     private async Task<string> GetViewDataAsync(string correlationId, string viewDataUrl, string pei, string iss, string userSessionId, string? rpt)

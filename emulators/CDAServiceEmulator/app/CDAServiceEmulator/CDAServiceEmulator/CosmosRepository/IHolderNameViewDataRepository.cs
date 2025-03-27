@@ -5,5 +5,5 @@ namespace CDAServiceEmulator.CosmosRepository;
 
 public interface IHolderNameViewDataRepository<T> : ICosmosDbRepository<T> where T : class
 {
-    Task<List<HolderNameConfigurationModel>> GetHolderNameConfigurationsAsync();
+    Task<List<HolderNameViewDataResponse>> GetHolderNameConfigurationsAsync();
 }

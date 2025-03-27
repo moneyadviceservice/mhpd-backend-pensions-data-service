@@ -44,7 +44,7 @@ public class ServiceCollectionExtensionTests
         //Assert
         _serviceCollectionMock.ContainsScopedService<IJwtUtility, JwtUtility>();
         _serviceCollectionMock.ContainsScopedService<ISharedHttpClient, SharedHttpClient>();
-        _serviceCollectionMock.ContainsScopedService<IHolderNameConfigurationCache<HolderNameConfigurationModel>, HolderNameConfigurationCache>();
+        _serviceCollectionMock.ContainsScopedService<IHolderNameConfigurationCache<HolderNameViewDataResponse>, HolderNameConfigurationCache>();
         _serviceCollectionMock.ContainsScopedService<IJwkKeyCache<JwkUriResponseModel>, JwkKeyCache>();
         _serviceCollectionMock.ContainsScopedService<IPeiServiceClient, PeiServiceClient>();
         _serviceCollectionMock.ContainsScopedService<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();

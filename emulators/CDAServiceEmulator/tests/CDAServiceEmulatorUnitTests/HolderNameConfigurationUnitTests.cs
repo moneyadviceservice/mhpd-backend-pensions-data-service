@@ -25,7 +25,7 @@ namespace CDAServiceEmulatorUnitTests
             _idValidator = new Mock<IIdValidator>();
             _idValidator.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
 
-            Mock<IHolderNameViewDataRepository<HolderNameConfigurationModel>> repository = new();
+            Mock<IHolderNameViewDataRepository<HolderNameViewDataResponse>> repository = new();
             repository.Setup(x => x.GetByIdStreamAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((string id, string key) => HolderConfigurationMock.FilterConfigurations(id));
             repository.Setup(x => x.GetHolderNameConfigurationsAsync()).ReturnsAsync(HolderConfigurationMock.GetHolderConfiguration());
 
@@ -49,9 +49,10 @@ namespace CDAServiceEmulatorUnitTests
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = Assert.IsType<HolderNameConfigurationModel>(okResult.Value);
+            var response = Assert.IsType<HolderNameViewDataResponse>(okResult.Value);
+            var viewDataUrl = Assert.IsType<HolderNameConfigurationModel>(response.Configuration);
             Assert.NotNull(response);
-            Assert.Equal("https://exampleprovider2/pensiondataprovider/view-data", response.ViewDataUrl);
+            Assert.Equal("https://exampleprovider2/pensiondataprovider/view-data", viewDataUrl.ViewDataUrl);
         }
 
         [Fact]

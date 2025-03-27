@@ -42,7 +42,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
             return;
         }
 
-        if (string.IsNullOrEmpty(userSessionData.AccessToken) || !JwtValidator.IsJwtFormatValid(userSessionData.AccessToken))
+        if (string.IsNullOrEmpty(userSessionData.AccessToken))
         {
             logger.LogError("Error retrieving Access Token from UserSessionData for Id {UserSessionId}", userSessionId);
             return;

@@ -548,7 +548,7 @@ public class PensionsDataController(
         var tokenResult = await _tokenIntegrationServiceClientRpts.PostRptAsync(
             CreateCdaTokenServiceRptsRequestModel(request.Ticket, rqp, requestHeader.CorrelationId!, logger, AsUri, request.ClientId));
 
-        if (!IsValidJwt(tokenResult.Pct) || !IsValidJwt(tokenResult.AccessToken))
+        if (!IsValidToken(tokenResult.Pct) || !IsValidToken(tokenResult.AccessToken))
         {
             logger.LogError("Invalid token(s) for Id {UserSessionId}", userSessionId);
             return null;
@@ -589,7 +589,7 @@ public class PensionsDataController(
         await _messagingService.SendMessageAsync(message, _serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
     }
 
-    private static bool IsValidJwt(string? token) => !string.IsNullOrEmpty(token) && JwtValidator.IsJwtFormatValid(token);
+    private static bool IsValidToken(string? token) => !string.IsNullOrEmpty(token);
 
     private ObjectResult InternalServerErrorResult() => StatusCode(500, "Internal server error");
 }

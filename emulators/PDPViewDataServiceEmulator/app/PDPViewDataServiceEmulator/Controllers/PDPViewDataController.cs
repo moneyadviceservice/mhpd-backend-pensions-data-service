@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using MhpdCommon.Constants;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
@@ -28,6 +29,8 @@ namespace PDPViewDataServiceEmulator.Controllers
         public async Task<IActionResult> GetAsync([FromRoute] string? assetGuid, [FromQuery] string? scope,
             [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
         {
+            logger.LogRequest($"{Request.Path}{Request.QueryString.Value}");
+
             if (!ValidateAuthHeader())
             {
                 logger.LogError("Unauthorized");

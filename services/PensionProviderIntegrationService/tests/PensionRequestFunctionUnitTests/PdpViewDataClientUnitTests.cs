@@ -29,7 +29,7 @@ namespace PensionRequestFunctionUnitTests
         {
             // Arrange
             var assetGuid = Guid.NewGuid().ToString();
-            const string viewDataUrl = "https://pdpviewdataservicedemulator.azurewebsites.net/view-data/";
+            const string viewDataUrl = "https://pdpviewdataservicedemulator.azurewebsites.net/";
             var handler = CreateHttpHandler(success, statusCode);
 
             _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.PdpService))

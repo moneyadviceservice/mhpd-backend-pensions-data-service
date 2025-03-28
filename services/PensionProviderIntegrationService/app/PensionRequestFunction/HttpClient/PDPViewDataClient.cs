@@ -5,6 +5,7 @@ using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
 
@@ -16,18 +17,17 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
     {
         const string scope = "owner";
         var client = httpClientFactory.CreateClient(HttpClientNames.PdpService);
+        var encodedAssetGuid = HttpUtility.UrlEncode(assetGuid);
+        var providerUrl = UrlHelper.ConstructPath(viewDataUrl, $"{encodedAssetGuid}?scope={scope}");
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
+        client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, providerUrl);
 
-        var endPoint = string.Format(HttpEndpoints.External.PdpViewData, HttpUtility.UrlEncode(assetGuid), scope);
-
-        var providerUrl = new Uri(client.BaseAddress!, endPoint);
-        client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, providerUrl.ToString());
-
-        logger.LogInformation("Get ViewData called for {ViewDataUrl}", providerUrl.ToString());
+        logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl}", providerUrl);
         
+        var endPoint = string.Format(HttpEndpoints.External.PdpViewData, encodedAssetGuid, scope);
         var viewDataResponse = await client.GetAsync(endPoint);
         
         var response = await CreateResponse(viewDataResponse);

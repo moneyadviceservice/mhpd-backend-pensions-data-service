@@ -3,6 +3,7 @@
       "arrangements": [
         {
           "possibleMatch": true,
+          "pensionProviderSchemeName": "MyCompany Direct Contribution Scheme",
           "possibleMatchReference": "asfkhjaskfdd",
           "pensionAdministrator": {
             "name": "My Admin",

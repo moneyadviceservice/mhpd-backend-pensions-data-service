@@ -109,7 +109,7 @@
 										"annualAmount": 20700,
 										"amountType": "INC"
 									},
-									"estimatedDcPot": 300000,
+									"estimatedPot": 300000,
 									"survivorBenefit": false,
 									"safeguardedBenefit": false
 								}
@@ -126,7 +126,7 @@
 										"annualAmount": 16215,
 										"amountType": "INC"
 									},
-									"accruedDcPot": 235000,
+									"accruedPot": 235000,
 									"survivorBenefit": false,
 									"safeguardedBenefit": false
 								}
@@ -285,11 +285,10 @@
 								{
 									"calculationMethod": "BS",
 									"benefitType": "DC",
-									"estimatedDcPot": 900000.01,
+									"estimatedPot": 900000.01,
 									"payableDetails": {
 										"payableDate": "2042-02-23",
 										"annualAmount": 11502,
-										"monthlyAmount": 958.5,
 										"amountType": "INC",
 										"increasing": true
 									}
@@ -297,11 +296,10 @@
 								{
 									"calculationMethod": "BS",
 									"benefitType": "DC",
-									"accruedDcPot": 500000.75,
+									"accruedPot": 500000.75,
 									"payableDetails": {
 										"payableDate": "2042-02-23",
 										"annualAmount": 11502,
-										"monthlyAmount": 958.5,
 										"amountType": "INC",
 										"increasing": true
 									}
@@ -533,10 +531,9 @@
 										"payableDate": "2038-09-18",
 										"amountType": "INC",
 										"annualAmount": 37294,
-										"monthlyAmount": 3108,
 										"increasing": false
 									},
-									"estimatedDcPot": 540500,
+									"estimatedPot": 540500,
 									"survivorBenefit": true,
 									"safeguardedBenefit": true
 								}
@@ -552,10 +549,9 @@
 										"payableDate": "2038-09-18",
 										"amountType": "INC",
 										"annualAmount": 37294,
-										"monthlyAmount": 3108,
 										"increasing": false
 									},
-									"accruedDcPot": 540500,
+									"accruedPot": 540500,
 									"survivorBenefit": true,
 									"safeguardedBenefit": true
 								}
@@ -626,7 +622,7 @@
 								{
 									"benefitType": "DC",
 									"calculationMethod": "SMPI",
-									"estimatedDcPot": 311011,
+									"estimatedPot": 311011,
 									"survivorBenefit": false,
 									"safeguardedBenefit": false,
 									"unavailableReason": "DCHA"
@@ -639,7 +635,7 @@
 								{
 									"benefitType": "DC",
 									"calculationMethod": "SMPI",
-									"accruedDcPot": 311011,
+									"accruedPot": 311011,
 									"survivorBenefit": false,
 									"safeguardedBenefit": false,
 									"unavailableReason": "DCHA"
@@ -717,7 +713,7 @@
 								{
 									"benefitType": "DC",
 									"calculationMethod": "SMPI",
-									"estimatedDcPot": 540500,
+									"estimatedPot": 540500,
 									"survivorBenefit": true,
 									"safeguardedBenefit": true,
 									"unavailableReason": "DCC"
@@ -730,7 +726,7 @@
 								{
 									"benefitType": "DC",
 									"calculationMethod": "SMPI",
-									"accruedDcPot": 540500,
+									"accruedPot": 540500,
 									"survivorBenefit": true,
 									"safeguardedBenefit": true,
 									"unavailableReason": "DCC"

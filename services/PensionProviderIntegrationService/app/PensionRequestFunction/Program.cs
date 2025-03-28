@@ -31,7 +31,6 @@ var host = new HostBuilder()
         services.AddTransient<IHolderNameClient, HolderNameClient>();
         services.AddTransient<IViewDataOrchestrator, ViewDataOrchestrator>();
         services.AddTransient<UserSessionDataRepository>();
-        services.AddTransient<IVewDataToPensionArrangementTransformer, ViewDataToPensionArrangementTransformer>();
         services.AddTransient<ViewDataOrchestratorClients>();
     })
     .Build();

@@ -182,10 +182,8 @@ namespace PensionRequestFunction.Transformer
                         var illustration = component?.DeepClone();
                         if(illustration == null) continue;
 
-                        var illustrationType = GetIllustrationType(illustration!);
-                        illustration![PensionConstants.IllustrationType] = illustrationType;
-                        JsonNodeExtensions.RenameProperty(ref illustration, PensionConstants.AccruedDcPot, PensionConstants.RetirementPot);
-                        JsonNodeExtensions.RenameProperty(ref illustration, PensionConstants.EstimatedDcPot, PensionConstants.RetirementPot);
+                        JsonNodeExtensions.RenameProperty(ref illustration, PensionConstants.AccruedPot, PensionConstants.RetirementPot);
+                        JsonNodeExtensions.RenameProperty(ref illustration, PensionConstants.EstimatedPot, PensionConstants.RetirementPot);
 
                         illustrationComponents.Add(illustration);
 
@@ -203,22 +201,6 @@ namespace PensionRequestFunction.Transformer
 
                 pensionArrangement.Add(PensionConstants.BenefitIllustrations, benefitIllustrations);
             }
-        }
-
-        private static string GetIllustrationType(JsonNode illustration)
-        {
-            if (illustration[PensionConstants.EstimatedDcPot] != null)
-            {
-                return PensionEnums.IllustrationType.ERI.ToString();
-            }
-
-            if (illustration[PensionConstants.AccruedDcPot] != null)
-            {
-                return PensionEnums.IllustrationType.AP.ToString();
-            }
-
-            // Not safe to default to either of them
-            return PensionEnums.IllustrationType.UNDEFINED.ToString();
         }
 
         private static void ProcessPayableDetails(JsonObject payableDetails)

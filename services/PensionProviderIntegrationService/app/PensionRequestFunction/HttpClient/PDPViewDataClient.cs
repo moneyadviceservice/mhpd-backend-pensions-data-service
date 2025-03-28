@@ -27,8 +27,7 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
 
         logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl}", providerUrl);
         
-        var endPoint = string.Format(HttpEndpoints.External.PdpViewData, encodedAssetGuid, scope);
-        var viewDataResponse = await client.GetAsync(endPoint);
+        var viewDataResponse = await client.GetAsync(HttpEndpoints.External.PdpViewData);
         
         var response = await CreateResponse(viewDataResponse);
 

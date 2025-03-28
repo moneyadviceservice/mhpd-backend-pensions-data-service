@@ -49,8 +49,8 @@ public static class PensionConstants
     public const string AdministrativeDetailsNotAvailable = "administrativeDetailsNotAvailable";
     public const string TemporarySystemError = "temporarySystemError";
     public const string ErrorCode = "errorCode";
-    public const string EstimatedDcPot = "estimatedDcPot";
-    public const string AccruedDcPot = "accruedDcPot";
+    public const string EstimatedPot = "estimatedPot";
+    public const string AccruedPot = "accruedPot";
     public const string IllustrationType = "illustrationType";
     public const string IllustrationDate = "illustrationDate";
     public const string RetirementPot = "dcPot";

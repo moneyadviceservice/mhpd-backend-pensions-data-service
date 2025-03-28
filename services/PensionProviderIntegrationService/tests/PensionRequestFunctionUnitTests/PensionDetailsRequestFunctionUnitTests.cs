@@ -23,7 +23,7 @@ namespace PensionRequestFunctionUnitTests
         private readonly Mock<IIdValidator> _idValidatorMock;
         private readonly Mock<IViewDataOrchestrator> _viewDataOrchestratorMock;
         private readonly Mock<IMessagingService> _messagingServiceMock;
-        private readonly Mock<IVewDataToPensionArrangementTransformer> _transformerMock;
+        private readonly Mock<IViewDataTransformer> _transformerMock;
 
         public PensionDetailsRequestFunctionUnitTests()
         {
@@ -50,7 +50,7 @@ namespace PensionRequestFunctionUnitTests
             var config = new CommonServiceBusConfiguration();
             var options = Options.Create(config);
 
-            _transformerMock = new Mock<IVewDataToPensionArrangementTransformer>();
+            _transformerMock = new Mock<IViewDataTransformer>();
             _transformerMock.Setup(m => m.Transform(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(string.Empty);
             _transformerMock.Setup(m => m.Transform(PensionProviderConstants.RetrievalErrorCodes.SystemError, 
                 It.IsAny<string>(), It.IsAny<string>())).Returns(PensionProviderConstants.RetrievalErrorCodes.SystemError);

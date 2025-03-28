@@ -12,6 +12,6 @@ public static class StatusConstants
     public const string FetchingRqp = "Fetching RQP to access view data for request with correlationId {correlationId}";
     public const string NoViewDataUrl = "No view data Url was returned from PDP for this pei: {0}";
     public const string NoPctFound = "No PCT was returned on the user session data for this userSessionId: {0}";
-    public const string MalformedArrangement = "A valid arrangement could not be formed for the pei: {0}";
+    public const string MalformedArrangement = "A valid arrangement could not be formed for the pei: {0} using view data {1}";
     public const string InvalidExternalAssetId = "Invalid externalAssetId. It must be a valid GUID";
 }

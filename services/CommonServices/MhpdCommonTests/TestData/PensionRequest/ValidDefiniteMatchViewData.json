@@ -3,6 +3,7 @@
   "arrangements": [
     {
       "possibleMatch": false,
+      "pensionProviderSchemeName": "MyCompany Direct Contribution Scheme",
       "administrativeDetailsNotAvailable": false,
       "pensionType": "CDC",
       "pensionOrigin": "PM",
@@ -26,7 +27,8 @@
         {
           "illustrationComponents": [
             {
-              "benefitType": "CBS"
+              "benefitType": "CBS",
+              "illustrationType": "ERI"
             }
           ]
         }

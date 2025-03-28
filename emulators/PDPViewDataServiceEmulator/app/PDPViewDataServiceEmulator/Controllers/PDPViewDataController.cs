@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using MhpdCommon.Constants;
-using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Utils;
@@ -12,7 +11,7 @@ using PDPViewDataServiceEmulator.Models;
 
 namespace PDPViewDataServiceEmulator.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/")]
     [ApiController]
     public class PdpViewDataController(ILogger<PdpViewDataController> logger,
         ViewDataRepository viewDataRepository,
@@ -25,7 +24,7 @@ namespace PDPViewDataServiceEmulator.Controllers
         private readonly CommonHttpConfiguration _configuration = options.Value;
 
         [HttpGet]
-        [Route("/view-data/{assetGuid?}")]
+        [Route("/assets/{assetGuid?}")]
         public async Task<IActionResult> GetAsync([FromRoute] string? assetGuid, [FromQuery] string? scope,
             [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
         {

@@ -36,7 +36,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
         var viewDataUrl = await GetViewDataUrlAsync(holderNameGuid, correlationId) ?? 
             throw new InvalidOperationException(string.Format(StatusConstants.NoViewDataUrl, pei));
 
-        logger.LogWarning("Accessing {viewDataUrl} for view data...", viewDataUrl);
+        logger.LogWarning("Accessing {ViewDataUrl} for view data...", viewDataUrl);
 
         var viewDataToken = await GetViewDataAsync(correlationId, viewDataUrl, pei, iss, userSessionId, null);
 
@@ -71,7 +71,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
 
         var responseDocument = JsonDocument.Parse(responseModel!.ViewDataToken!);
 
-        if(!responseDocument.RootElement.TryGetProperty("view_data_token", out JsonElement viewDataClaimValue) ||
+        if(!responseDocument.RootElement.TryGetProperty("view_data_token", out var viewDataClaimValue) ||
             viewDataClaimValue.ValueKind == JsonValueKind.Undefined)
         {
             return string.Empty;

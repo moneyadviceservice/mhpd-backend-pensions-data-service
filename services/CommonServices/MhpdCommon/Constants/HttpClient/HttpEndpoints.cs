@@ -21,7 +21,7 @@ public static class HttpEndpoints
         public const string HolderNameViewConfigurations = "holdername-view-configurations";
         public const string CdaTokenServiceEndpoint = "token";
         public const string CdaPeis = "peis/{0}";
-        public const string PdpViewData = "view-data/{0}?scope={1}";
+        public const string PdpViewData = "{0}?scope={1}";
         public const string JwkUri = "jwk_uri";
         public const string ClaimsGathering = "claims_gathering";
     }

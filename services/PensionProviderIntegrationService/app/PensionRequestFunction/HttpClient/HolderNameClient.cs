@@ -26,7 +26,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
 
         if (cachedModel != null)
         {
-            logger.LogWarning("Cached version of holder name configuration found for {holderNameId}.", holderNameId);
+            logger.LogWarning("Cached version of holder name configuration found for {HolderNameId}", holderNameId);
             return cachedModel;
         }
 
@@ -46,6 +46,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
             try
             {
                 model.Id = holderNameId;
+                model.HolderNameGuid = holderNameId;
                 await cache.InsertItemAsync(model, model.HolderNameGuid!);
             }
             catch (Exception error)
@@ -63,7 +64,7 @@ public class HolderNameClient(IHttpClientFactory httpClientFactory,
 
         if (viewDataResponse?.Configuration.ViewDataUrl == null)
         {
-            logger.LogWarning("The holder name endpoint did not respond with exactly one configuration record");
+            logger.LogWarning("No ViewDataUrl returned on the holder name endpoint response");
             return null;
         }
 

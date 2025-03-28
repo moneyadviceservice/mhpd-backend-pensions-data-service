@@ -19,11 +19,15 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
-        client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, viewDataUrl);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
 
         var endPoint = string.Format(HttpEndpoints.External.PdpViewData, HttpUtility.UrlEncode(assetGuid), scope);
 
+        var providerUrl = new Uri(client.BaseAddress!, endPoint);
+        client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, providerUrl.ToString());
+
+        logger.LogInformation("Get ViewData called for {ViewDataUrl}", providerUrl.ToString());
+        
         var viewDataResponse = await client.GetAsync(endPoint);
         
         var response = await CreateResponse(viewDataResponse);

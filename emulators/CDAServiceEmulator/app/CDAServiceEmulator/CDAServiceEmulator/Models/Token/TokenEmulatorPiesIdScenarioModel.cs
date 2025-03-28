@@ -13,6 +13,6 @@ public class TokenEmulatorPiesIdScenarioModel
     [JsonPropertyName("peisIdStartCode")]
     public string? PeisIdStartCode { get; set; }
 
-    [JsonPropertyName("isDebugScenario")]
-    public bool IsDebugScenario { get; set; }
+    [JsonPropertyName("isHiddenScenario")]
+    public bool IsHiddenScenario { get; set; }
 }

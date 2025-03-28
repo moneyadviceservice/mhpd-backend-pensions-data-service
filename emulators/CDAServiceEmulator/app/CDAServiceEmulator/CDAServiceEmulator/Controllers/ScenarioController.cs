@@ -67,7 +67,7 @@ public class ScenarioController(ILogger<ScenarioController> logger,
     public async Task<IActionResult> GetAllAsync()
     {
         var scenarios = await scenarioModelsRepository.GetAllAsync();
-        var validScenarios = scenarios.Where(scenario => !scenario.IsDebugScenario).ToList();
+        var validScenarios = scenarios.Where(scenario => !scenario.IsHiddenScenario).ToList();
 
         return Ok(validScenarios);
     }

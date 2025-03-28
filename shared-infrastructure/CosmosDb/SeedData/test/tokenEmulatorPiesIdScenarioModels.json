@@ -52,22 +52,26 @@
   {
     "id": "greenUnavailableCodes",
     "code": "greenUnavailableCodes",
-    "peisIdStartCode": "0011"
+    "peisIdStartCode": "0011",
+	"isHiddenScenario": true
   },
   {
     "id": "yellowUnavailableCodes",
     "code": "yellowUnavailableCodes",
-    "peisIdStartCode": "0012"
+    "peisIdStartCode": "0012",
+	"isHiddenScenario": true
   },
   {
     "id": "redUnavailableCodes",
     "code": "redUnavailableCodes",
-    "peisIdStartCode": "0013"
+    "peisIdStartCode": "0013",
+	"isHiddenScenario": true
   },
   {
     "id": "CONTPension",
     "code": "CONTPension",
-    "peisIdStartCode": "0014"
+    "peisIdStartCode": "0014",
+	"isHiddenScenario": true
   },
   {
     "id": "zTestAll",
@@ -82,36 +86,43 @@
   {
     "id": "testScenario93",
     "code": "testScenario93",
-    "peisIdStartCode": "0093"
+    "peisIdStartCode": "9993",
+	"isHiddenScenario": true
   },
   {
     "id": "testScenario94",
     "code": "testScenario94",
-    "peisIdStartCode": "0094"
+    "peisIdStartCode": "9994",
+	"isHiddenScenario": true
   },
   {
     "id": "testScenario95",
     "code": "testScenario95",
-    "peisIdStartCode": "0095"
+    "peisIdStartCode": "9995",
+	"isHiddenScenario": true
   },
   {
     "id": "testScenario96",
     "code": "testScenario96",
-    "peisIdStartCode": "0096"
+    "peisIdStartCode": "9996",
+	"isHiddenScenario": true
   },
   {
     "id": "testScenario97",
     "code": "testScenario97",
-    "peisIdStartCode": "0097"
+    "peisIdStartCode": "9997",
+	"isHiddenScenario": true
   },
   {
     "id": "testScenario98",
     "code": "testScenario98",
-    "peisIdStartCode": "0098"
+    "peisIdStartCode": "9998",
+	"isHiddenScenario": true
   },
   {
     "id": "testScenario99",
     "code": "testScenario99",
-    "peisIdStartCode": "0099"
+    "peisIdStartCode": "9999",
+	"isHiddenScenario": true
   }
 ]

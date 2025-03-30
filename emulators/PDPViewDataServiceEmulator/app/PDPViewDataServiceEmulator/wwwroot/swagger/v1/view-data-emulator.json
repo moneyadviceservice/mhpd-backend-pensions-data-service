@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/assets/{assetGuid}": {
+    "/view-data/{assetGuid}": {
       "get": {
         "tags": [
           "PdpViewData"

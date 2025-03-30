@@ -22,7 +22,13 @@ public class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pdp
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
+
+        if (!string.IsNullOrWhiteSpace(rpt))
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
+            logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl} attaching bearer token RPT", providerUrl);
+        }
+        
         client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, providerUrl);
 
         logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl}", providerUrl);

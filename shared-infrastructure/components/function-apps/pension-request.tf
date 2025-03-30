@@ -28,7 +28,7 @@ module "pension_request_function" {
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING"                    = "InstrumentationKey=${module.pension_request_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.pension_request_function.app_insights_app_id}"
     "CdaServiceUrl"                                            = "https://maps-api-management-${var.env}.azure-api.net/cda-integration-external/"
-    "PdpServiceUrl"                                            = "https://maps-api-management-${var.env}.azure-api.net/view-data-external/"
+    "PdpServiceUrl"                                            = "https://maps-api-management-${var.env}.azure-api.net/view-data-external/view-data/"
     "TokenIntegrationServiceUrl"                               = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
     "MapsCdaServiceUrl"                                        = "https://maps-api-management-${var.env}.azure-api.net/maps-cda-service/"
     "FUNCTIONS_EXTENSION_VERSION"                              = "~4"

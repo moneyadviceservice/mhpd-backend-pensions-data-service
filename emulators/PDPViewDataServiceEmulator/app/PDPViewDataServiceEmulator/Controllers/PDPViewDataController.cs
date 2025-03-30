@@ -25,7 +25,7 @@ namespace PDPViewDataServiceEmulator.Controllers
         private readonly CommonHttpConfiguration _configuration = options.Value;
 
         [HttpGet]
-        [Route("/assets/{assetGuid?}")]
+        [Route("/view-data/{assetGuid?}")]
         public async Task<IActionResult> GetAsync([FromRoute] string? assetGuid, [FromQuery] string? scope,
             [FromHeader(Name = HeaderConstants.RequestId)] string? xRequestId)
         {

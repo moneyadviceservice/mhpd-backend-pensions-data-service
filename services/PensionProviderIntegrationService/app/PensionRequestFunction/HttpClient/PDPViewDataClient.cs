@@ -11,14 +11,14 @@ using PensionRequestFunction.Models.CdaPeisServiceClient;
 
 namespace PensionRequestFunction.HttpClient;
 
-public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<PdpViewDataClient> logger) : IPdpViewDataClient
+public class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<PdpViewDataClient> logger) : IPdpViewDataClient
 {
     public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt, string correlationId)       
     {
         const string scope = "owner";
         var client = httpClientFactory.CreateClient(HttpClientNames.PdpService);
-        var encodedAssetGuid = HttpUtility.UrlEncode(assetGuid);
-        var providerUrl = UrlHelper.ConstructPath(viewDataUrl, $"{encodedAssetGuid}?scope={scope}");
+        var assetPath = string.Format(HttpEndpoints.External.PdpViewData, HttpUtility.UrlEncode(assetGuid), scope);
+        var providerUrl = UrlHelper.ConstructPath(viewDataUrl, assetPath);
 
         client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
         client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
@@ -26,9 +26,9 @@ public  class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pd
         client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, providerUrl);
 
         logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl}", providerUrl);
-        
-        var viewDataResponse = await client.GetAsync(HttpEndpoints.External.PdpViewData);
-        
+
+        var viewDataResponse = await client.GetAsync(assetPath);
+
         var response = await CreateResponse(viewDataResponse);
 
         logger.LogResponse(response);

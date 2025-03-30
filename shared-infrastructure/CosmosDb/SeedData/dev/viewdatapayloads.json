@@ -103,6 +103,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "ERI",
                                     "calculationMethod": "SMPI",
                                     "payableDetails": {
                                         "payableDate": "2038-09-18",
@@ -120,6 +121,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "AP",
                                     "calculationMethod": "SMPI",
                                     "payableDetails": {
                                         "payableDate": "2038-09-18",
@@ -285,6 +287,7 @@
                                 {
                                     "calculationMethod": "BS",
                                     "benefitType": "DC",
+                                    "illustrationType": "ERI",
                                     "estimatedPot": 900000.01,
                                     "payableDetails": {
                                         "payableDate": "2042-02-23",
@@ -296,6 +299,7 @@
                                 {
                                     "calculationMethod": "BS",
                                     "benefitType": "DC",
+                                    "illustrationType": "AP",
                                     "accruedPot": 500000.75,
                                     "payableDetails": {
                                         "payableDate": "2042-02-23",
@@ -526,6 +530,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "ERI",
                                     "calculationMethod": "SMPI",
                                     "payableDetails": {
                                         "payableDate": "2038-09-18",
@@ -544,6 +549,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "AP",
                                     "calculationMethod": "SMPI",
                                     "payableDetails": {
                                         "payableDate": "2038-09-18",
@@ -621,6 +627,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "ERI",
                                     "calculationMethod": "SMPI",
                                     "estimatedPot": 311011,
                                     "survivorBenefit": false,
@@ -634,11 +641,12 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "AP",
                                     "calculationMethod": "SMPI",
                                     "accruedPot": 311011,
                                     "survivorBenefit": false,
                                     "safeguardedBenefit": false,
-                                    "unavailableReason": "DCHA"
+                                    "unavailableReason": "DCC"
                                 }
                             ]
                         }
@@ -703,7 +711,7 @@
                     "employmentMembershipPeriods": [
                         {
                             "employerName": "Borough Finance Centre",
-                            "membershipStartDate": "2011-05-16"
+                            "employmentStartDate": "2011-05-16"
                         }
                     ],
                     "benefitIllustrations": [
@@ -712,6 +720,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "ERI",
                                     "calculationMethod": "SMPI",
                                     "estimatedPot": 540500,
                                     "survivorBenefit": true,
@@ -725,6 +734,7 @@
                             "illustrationComponents": [
                                 {
                                     "benefitType": "DC",
+                                    "illustrationType": "AP",
                                     "calculationMethod": "SMPI",
                                     "accruedPot": 540500,
                                     "survivorBenefit": true,

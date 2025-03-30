@@ -43,8 +43,15 @@ resource "azurerm_api_management_api_policy" "view-data-external" {
 	<!-- Throttle, authorize, validate, cache, or transform the requests -->
 	<inbound>
 		<base />
-        <set-variable name="backendUrl" value="${local.backendUrl}" />
-		<set-backend-service base-url="${local.view-data-backend-service}" />
+        <set-variable name="backendUrl" value="@(context.Request.Headers.GetValueOrDefault("providerUrl"))" />
+        <!-- Extract base URL (protocol + domain) -->
+        <set-variable name="baseUrl" value="@(new System.Uri((string)context.Variables["backendUrl"]).GetLeftPart(System.UriPartial.Authority))" />
+        <!-- Extract path and query separately -->
+        <set-variable name="pathAndQuery" value="@(new System.Uri((string)context.Variables["backendUrl"]).PathAndQuery)" />
+        <!-- Rewrite request to match the exact intended backend path -->
+        <rewrite-uri template="@((string)context.Variables["pathAndQuery"])" />
+        <!-- Set backend service to avoid APIM appending paths -->
+        <set-backend-service base-url="@((string)context.Variables["baseUrl"])" />
         <authentication-certificate certificate-id="${local.certificate-id}" />
 	</inbound>
 	<!-- Control if and how the requests are forwarded to services  -->

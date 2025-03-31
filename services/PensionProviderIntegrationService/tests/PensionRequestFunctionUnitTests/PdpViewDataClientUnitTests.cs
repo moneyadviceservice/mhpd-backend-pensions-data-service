@@ -51,8 +51,39 @@ namespace PensionRequestFunctionUnitTests
             
             Assert.Equal(statusCode, result.ResponseMessage.ResponseStatusCode);
         }
+        
+        [Theory]
+        [InlineData(true, HttpStatusCode.OK)]
+        [InlineData(false, HttpStatusCode.Unauthorized)]
+        [InlineData(false, HttpStatusCode.InternalServerError)]
+        public async Task When_Service_Is_Called_With_Remapped_Header_It_Should_Return_Response(bool success, HttpStatusCode statusCode)
+        {
+            // Arrange
+            var assetGuid = Guid.NewGuid().ToString();
+            const string viewDataUrl = "https://pdpviewdataservicedemulator.azurewebsites.net/";
+            var handler = CreateHttpHandler(success, statusCode, true);
 
-        private static Mock<HttpMessageHandler> CreateHttpHandler(bool success, HttpStatusCode statusCode)
+            _httpClientFactoryMock.Setup(x => x.CreateClient(HttpClientNames.PdpService))
+                .Returns(new HttpClient(handler.Object)
+                {
+                    BaseAddress = new Uri("http://localhost:1234")
+                });
+            var correlationId = Guid.NewGuid().ToString();
+
+            // Act
+            var result = await _sut.GetPdpViewDataAsync(assetGuid, viewDataUrl, string.Empty, correlationId); 
+
+            // Assert
+            Assert.NotNull(result);
+            if (success)
+            {
+                Assert.NotNull(result.ViewDataToken);
+            }
+            
+            Assert.Equal(statusCode, result.ResponseMessage.ResponseStatusCode);
+        }
+
+        private static Mock<HttpMessageHandler> CreateHttpHandler(bool success, HttpStatusCode statusCode, bool useRemappedHeader = false)
         {
             var httpMessageHandlerMock = new Mock<HttpMessageHandler>();
 
@@ -61,18 +92,32 @@ namespace PensionRequestFunctionUnitTests
                 .Setup<Task<HttpResponseMessage>>("SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(CreateHttpResponse(statusCode, success ? GetResponse() : null));
+                .ReturnsAsync(CreateHttpResponse(statusCode, success ? GetResponse() : null, useRemappedHeader));
 
             return httpMessageHandlerMock;
         }
 
-        private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, string? content = null)
+        private static HttpResponseMessage CreateHttpResponse(HttpStatusCode statusCode, string? content = null, bool useRemappedHeader = false)
         {
             var response = new HttpResponseMessage(statusCode);
+
             if (content != null)
+            {
                 response.Content = JsonContent.Create(content);
+            }
             else
-                response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Ticket", $"{SecurityConstants.Jwe.AuthorizedPermissionTicket}"));
+            {
+                var authHeaderValue = $"Ticket {SecurityConstants.Jwe.AuthorizedPermissionTicket}";
+
+                if (useRemappedHeader)
+                {
+                    response.Headers.Add("x-amzn-remapped-www-authenticate", authHeaderValue);
+                }
+                else
+                {
+                    response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Ticket", SecurityConstants.Jwe.AuthorizedPermissionTicket));
+                }
+            }
 
             return response;
         }

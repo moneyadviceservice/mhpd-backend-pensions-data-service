@@ -64,8 +64,17 @@ public class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<Pdp
             ResponseMessage = new ResponseMessage
             {
                 ResponseStatusCode = response.StatusCode,
-                WwwAuthenticateResponseHeader = response.Headers.WwwAuthenticate.ToString()
+                WwwAuthenticateResponseHeader = GetWwwAuthenticateHeader(response)
             }
         };
+    }
+    
+    private static string? GetWwwAuthenticateHeader(HttpResponseMessage response)
+    {
+        // Look for any header containing 'www-authenticate' (case-insensitive)
+        var matchingHeader = response.Headers
+            .FirstOrDefault(h => h.Key.Contains(HeaderConstants.WwwAuthenticate, StringComparison.OrdinalIgnoreCase));
+
+        return matchingHeader.Value != null ? string.Join(" ", matchingHeader.Value) : null;
     }
 }

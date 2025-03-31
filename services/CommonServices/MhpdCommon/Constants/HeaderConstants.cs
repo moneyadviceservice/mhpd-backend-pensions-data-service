@@ -13,4 +13,5 @@ public static class HeaderConstants
     public const string UserSessionId = "userSessionId";
     public const string CorrelationId = "mhpdCorrelationId";
     public const string ProviderUrl = "providerUrl";
+    public const string WwwAuthenticate = "www-authenticate";
 }

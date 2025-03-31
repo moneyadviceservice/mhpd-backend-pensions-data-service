@@ -14,6 +14,7 @@ public class MessageParserTests
     [Theory]
     [InlineData(@"TestData/RetrievedPensions/InvalidPeiPatternPayload.json")]
     [InlineData(@"TestData/RetrievedPensions/InvalidRecordIdPayload.json")]
+    [InlineData(@"TestData/RetrievedPensions/InvalidRetrievedPensionPayload2.json")]
     public void WhenAnInvalidPayloadIsParsed_ItThrowsAnException(string payloadFile)
     {
         var payloadData = File.ReadAllText(payloadFile);
@@ -27,6 +28,7 @@ public class MessageParserTests
     [InlineData(@"TestData/RetrievedPensions/ValidRetrievedPensionPayload.json")]
     [InlineData(@"TestData/RetrievedPensions/EmptyGuidRecordIdPayload.json")]
     [InlineData(@"TestData/RetrievedPensions/FailedRetrieval.json")]
+    [InlineData(@"TestData/RetrievedPensions/ValidRetrievedPensionPayload2.json")]
     public void WhenAValidPayloadIsParsed_ItReturnsARecord(string payloadFile)
     {
         var payloadData = File.ReadAllText(payloadFile);

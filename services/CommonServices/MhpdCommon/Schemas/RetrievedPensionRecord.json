@@ -727,8 +727,7 @@
         }
       },
       "required": [
-        "illustrationType",
-        "benefitType"
+        "illustrationType"
       ]
     },
     "payableDetails": {

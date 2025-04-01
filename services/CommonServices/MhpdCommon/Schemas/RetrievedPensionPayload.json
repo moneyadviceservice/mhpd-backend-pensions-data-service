@@ -740,6 +740,7 @@
           "enum": [
             "BS",
             "CBI",
+            "SM",
             "SMPI"
           ],
           "description": "The method used to calculate the illustration.\n\n- `BS`\tbenefit-specific method based on pension provider/scheme rules\n- `CBI`\tcash balance illustration methodology from ASTM1 for calculating income fund only and/or benefit-specific method based on pension provider/scheme rules for calculating fund value\n- `SMPI`\tstatutory money purchase illustration methodology from ASTM1 \n"
@@ -780,9 +781,9 @@
               "PEO",
               "PNR",
               "PSO",
-              "SPA",
+              "SCP",
               "TVI",
-              "INP"
+              "UNP"
             ]
           }
         }

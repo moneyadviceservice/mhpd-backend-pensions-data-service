@@ -17,35 +17,30 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
     IPensionRecordValidator pensionValidator,
     IPensionRecordRepository pensionRepository)
 {
-    private readonly ILogger<RetrievedPensionsFunction> _logger = logger;
-    private readonly IIdValidator _idValidator = idValidator;
-    private readonly IMessageParser _messageParser = messageParser;
-    private readonly IPensionRecordValidator _pensionValidator = pensionValidator;
-    private readonly IPensionRecordRepository _pensionRepository = pensionRepository;
     private const string InvalidPayloadResponse = "Invalid retrieved pension payload";
 
     [Function(nameof(RetrievedPensionsFunction))]
     public async Task Run(
-        [ServiceBusTrigger("%InboundQueue%", Connection = "ServiceBusConnectionstring")]
+        [ServiceBusTrigger("%CommonServiceBusConfiguration:InboundQueue%", Connection = "ServiceBusConnectionstring")]
         ServiceBusReceivedMessage message,
         ServiceBusMessageActions messageActions)
     {
-        if (!_idValidator.IsValidGuid(message.CorrelationId))
+        if (!idValidator.IsValidGuid(message.CorrelationId))
         {
             var Idresponse = $"Missing or Invalid correlationId: {message.CorrelationId}";
-            _logger.LogCritical(Idresponse);
+            logger.LogCritical(Idresponse);
             await messageActions.DeadLetterMessageAsync(message, deadLetterReason: Idresponse);
             return;
         }
 
-        using var scope = _logger.BeginCorrelationScope(message.CorrelationId, Constants.QueueLogSource);
+        using var scope = logger.BeginCorrelationScope(message.CorrelationId, Constants.QueueLogSource);
         LogRequestMesage(message);
 
         try
         {
             var payload = ExtractAndValidateMessagePayload(message);
 
-            if (await _pensionRepository.SaveRetrievedPensionRecordAsync(message.CorrelationId, payload))
+            if (await pensionRepository.SaveRetrievedPensionRecordAsync(message.CorrelationId, payload))
             {
                 await messageActions.CompleteMessageAsync(message);
             }
@@ -56,7 +51,7 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
         }
         catch (Exception error)
         {
-            _logger.LogCritical(error, error.Message);
+            logger.LogCritical(error, error.Message);
             await messageActions.DeadLetterMessageAsync(message, deadLetterReason: error.Message);
         }
     }
@@ -69,7 +64,7 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
 
         try
         {
-            payload = _messageParser.ToRetrievedPensionPayload(messageBody);
+            payload = messageParser.ToRetrievedPensionPayload(messageBody);
         }
         catch (AggregateException error)
         {
@@ -84,7 +79,7 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
             throw new InvalidDataException(logMessage, error);
         }
 
-        if (!_pensionValidator.ValidateRecord(payload, out var reason))
+        if (!pensionValidator.ValidateRecord(payload, out var reason))
         {
             throw new InvalidDataException($"{InvalidPayloadResponse} - {reason}");
         }
@@ -96,6 +91,6 @@ public class RetrievedPensionsFunction(ILogger<RetrievedPensionsFunction> logger
     {
         var logMessage = $"Message Received - CorrelationId:[{receivedMessage.CorrelationId}], " +
             $"MessageId: [{receivedMessage.MessageId}], ContentType: [{receivedMessage.ContentType}] {Environment.NewLine}";
-        _logger.LogWarning("Message Details : {details} Body: {body}", logMessage, receivedMessage.Body);
+        logger.LogWarning("Message Details : {details} Body: {body}", logMessage, receivedMessage.Body);
     }
 }

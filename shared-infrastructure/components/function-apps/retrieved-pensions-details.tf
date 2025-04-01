@@ -12,18 +12,26 @@ module "retrieved_pensions_details_function" {
   dotnet_stack            = true
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
+  connection_strings = [
+    {
+      name  = "CosmosDBConnectionString"
+      type  = "Custom"
+      value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
+    },
+    {
+      name  = "ServiceBusConnectionString"
+      type  = "Custom"
+      value = data.azurerm_servicebus_namespace.this.default_primary_connection_string
+    }
+  ]
 
   app_settings = {
-    "ContainerId"                            = "${var.product}RetrievedPensionRecords"
-    "ContainerPartitionKey"                  = "/pensionsRetrievalRecordId"
-    "DatabaseId"                             = "${var.product}-business-layer"
-    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"        = "true"
-    "WEBSITE_RUN_FROM_PACKAGE"               = "1"
-    "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED" = "1"
-    "InboundQueue"                           = "retrieved-pension-details"
-    "ServiceBusConnectionstring"             = data.azurerm_servicebus_namespace.this.default_primary_connection_string
-    "CosmosDBConnectionString"               = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"  = "InstrumentationKey=${module.retrieved_pensions_details_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.retrieved_pensions_details_function.app_insights_app_id}"
-    "ViewDataRetrievalDuration"              = "5"
+    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                         = "true"
+    "WEBSITE_RUN_FROM_PACKAGE"                                = "1"
+    "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"                  = "1"
+    "APPLICATIONINSIGHTS_CONNECTION_STRING"                   = "InstrumentationKey=${module.retrieved_pensions_details_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.retrieved_pensions_details_function.app_insights_app_id}"
+    "CosmosBusinessConfiguration__DatabaseId"                 = "mhpd-business-layer"
+    "CosmosBusinessConfiguration__RetrievedPensionsContainer" = "mhpdRetrievedPensionRecords"
+    "CommonServiceBusConfiguration__InboundQueue"             = "retrieved-pension-details"
   }
 }

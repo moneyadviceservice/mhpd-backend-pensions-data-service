@@ -1,23 +1,21 @@
-﻿using MhpdCommon.Models.Configuration;
-using MhpdCommon.Models.MessageBodyModels;
+﻿using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
+using MhpdCommon.Models.Configuration;
 
 namespace RetrievedPensionsRecordFunction.Repository;
 
-public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonCosmosConfiguration> config, ILogger<PensionRecordRepository> logger) 
+public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CosmosBusinessConfiguration> config, ILogger<PensionRecordRepository> logger) 
     : IPensionRecordRepository
 {
-    private readonly CosmosClient _cosmosClient = cosmosClient;
-    private readonly ILogger<PensionRecordRepository> _logger = logger;
-    private readonly CommonCosmosConfiguration _configuration = config.Value;
+    private readonly CosmosBusinessConfiguration _configuration = config.Value;
 
     public async Task<List<RetrievedPensionRecord>> GetRetrievedRecordsAsync(string pensionsRetrievalRecordId)
     {
-        var container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var container = cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.RetrievedPensionsContainer);
         using var iterator = GetRetrievedRecords(container, pensionsRetrievalRecordId);
 
         var response = await iterator.ReadNextAsync();
@@ -39,7 +37,7 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
             RetrievalResult = payload.RetrievalResult
         };
 
-        Container container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        Container container = cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.RetrievedPensionsContainer);
 
         var response = await container.UpsertItemAsync(record, new PartitionKey(record.PensionsRetrievalRecordId), null, default);
 
@@ -51,18 +49,18 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
             logMessage = $"Retrieved pension record for PEI: {payload.Pei} " +
                 $"{(response.StatusCode == HttpStatusCode.Created ? "created" : "updated")}.";
 
-            _logger.LogWarning(logMessage);
+            logger.LogWarning(logMessage);
             return true;
         }
 
         logMessage = $"Unable to save a record for pension with PEI: {payload.Pei}";
-        _logger.LogCritical(logMessage);
+        logger.LogCritical(logMessage);
         return false;
     }
 
     public async Task<int> DeleteRetrievedRecordsAsync(string pensionsRetrievalRecordId)
     {
-        var container = _cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.ContainerId);
+        var container = cosmosClient.GetContainer(_configuration.DatabaseId, _configuration.RetrievedPensionsContainer);
         using var iterator = GetRetrievedRecords(container, pensionsRetrievalRecordId);
 
         var response = await iterator.ReadNextAsync();
@@ -85,9 +83,8 @@ public class PensionRecordRepository(CosmosClient cosmosClient, IOptions<CommonC
 
     private void LogDatabaseInfo()
     {
-        var connDetails = $"Accessing Cosmos DB partition: [{_configuration.ContainerPartitionKey}] on " +
-            $"container: [{_configuration.ContainerId}] in the database [{_configuration.DatabaseId}]";
+        var connDetails = $"Accessing Cosmos DB container: [{_configuration.RetrievedPensionsContainer}] in the database [{_configuration.DatabaseId}]";
 
-        _logger.LogInformation(connDetails);
+        logger.LogInformation(connDetails);
     }
 }

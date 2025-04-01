@@ -18,11 +18,10 @@ public  class PensionRecordRepositoryTests
 
     public PensionRecordRepositoryTests()
     {
-        var configuration = new CommonCosmosConfiguration
+        var configuration = new CosmosBusinessConfiguration
         {
             DatabaseId = "PensionDatabase",
-            ContainerId = "PensionContainer",
-            ContainerPartitionKey = "PensionPartition"
+            RetrievedPensionsContainer = "PensionContainer"
         };
 
         var container = new Mock<Container>();
@@ -35,7 +34,7 @@ public  class PensionRecordRepositoryTests
 
         iterator.Setup(mock => mock.ReadNextAsync(It.IsAny<CancellationToken>())).ReturnsAsync(_readResponse.Object);
 
-        client.Setup(mock => mock.GetContainer(configuration.DatabaseId, configuration.ContainerId))
+        client.Setup(mock => mock.GetContainer(configuration.DatabaseId, configuration.RetrievedPensionsContainer))
             .Returns(container.Object);
 
         container.Setup(mock => mock.UpsertItemAsync(

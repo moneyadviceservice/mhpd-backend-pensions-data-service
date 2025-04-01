@@ -21,6 +21,7 @@ var host = new HostBuilder()
         services.ConfigureFunctionsApplicationInsights();
         services.AddMhpdCosmosDb(hostContext.Configuration);
         services.AddMhpdUtilities();
+        services.AddMhpdServiceBusTools();
         services.AddScoped<IPensionRecordValidator, PensionRecordValidator>();
         services.AddScoped<IPensionRecordRepository, PensionRecordRepository>();
         services.AddSingleton<IOpenApiConfigurationOptions>(_ =>

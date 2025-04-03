@@ -79,9 +79,34 @@
     "peisIdStartCode": "0015"
   },
   {
+    "id": "allNewTestCases",
+    "code": "allNewTestCases",
+    "peisIdStartCode": "0016"
+  },
+  {
+    "id": "emptyFields",
+    "code": "emptyFields",
+    "peisIdStartCode": "0017"
+  },
+  {
+    "id": "estimatedIncomeDB",
+    "code": "estimatedIncomeDB",
+    "peisIdStartCode": "0018"
+  },
+  {
+    "id": "dbInactiveActive",
+    "code": "dbInactiveActive",
+    "peisIdStartCode": "0019"
+  },
+  {
     "id": "testScenario20",
     "code": "testScenario20",
     "peisIdStartCode": "0020"
+  },
+  {
+    "id": "statePensionCaseC",
+    "code": "statePensionCaseC",
+    "peisIdStartCode": "0021"
   },
   {
     "id": "testScenario93",

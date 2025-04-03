@@ -1943,8 +1943,6 @@
                                 {
                                     "illustrationType": "ERI",
                                     "unavailableReason": "DBC",
-                                    "benefitType": "",
-                                    "calculationMethod": "",
                                     "payableDetails": {
                                         "amountType": "INC",
                                         "annualAmount": 4940,

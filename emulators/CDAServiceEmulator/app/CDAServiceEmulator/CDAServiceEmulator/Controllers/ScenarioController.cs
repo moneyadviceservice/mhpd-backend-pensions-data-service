@@ -2,6 +2,7 @@
 using CDAServiceEmulator.Models.Peis;
 using CDAServiceEmulator.Models.Token;
 using CDAServiceEmulator.Models.ViewData;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
@@ -14,10 +15,10 @@ namespace CDAServiceEmulator.Controllers;
 [Route("/")]
 [ApiController]
 [ExcludeFromCodeCoverage]
-public class ScenarioController(ILogger<ScenarioController> logger, 
-    TokenEmulatorPiesIdScenarioModelsRepository scenarioModelsRepository,
-    CdaPeisEmulatorScenarioModelRepository peiModelRepository,
-    ViewDataRepository viewDataRepository,
+public class ScenarioController(ILogger<ScenarioController> logger,
+    ICosmosDbRepository<TokenEmulatorPiesIdScenarioModel> scenarioModelsRepository,
+    ICdaPeisEmulatorScenarioModelRepository peiModelRepository,
+    ICosmosDbRepository<ViewDataPayloadModel> viewDataRepository,
     IViewDataTransformer dataTransformer,
     IMessageParser messageParser,
     IIdValidator idValidator) : ControllerBase
@@ -114,7 +115,7 @@ public class ScenarioController(ILogger<ScenarioController> logger,
         }
 
         var assetId = Guid.NewGuid().ToString();
-        var currentMaxCode = await peiModelRepository.GetMaxPartitionKeyAsync();
+        var currentMaxCode = await peiModelRepository.GetMaxScenarioCodeAsync();
         var startCode = $"{currentMaxCode + 1:D4}";
         var pei = $"{HolderNameConfigurationId}:{assetId}";
 

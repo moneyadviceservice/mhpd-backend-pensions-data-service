@@ -1,81 +1,72 @@
-using System.Net;
 using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models.Peis;
+using MhpdCommon.Models.Configuration;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 using Moq;
-using Newtonsoft.Json.Linq;
+using System.Dynamic;
 
 namespace CDAServiceEmulatorUnitTests.CosmosRepositoryTests;
 
 public class CdaPeisEmulatorScenarioModelRepositoryTests
 {
-    private readonly Mock<Container> _mockContainer;
-    private readonly CdaPeisEmulatorScenarioModelRepository _repository;
-
-    public CdaPeisEmulatorScenarioModelRepositoryTests()
+    [Fact]
+    public async Task GetMaxPartitionKeyAsync_Returns_MaxPartitionKey()
     {
-        Mock<CosmosClient> mockCosmosClient = new();
-        _mockContainer = new Mock<Container>();
-        Mock<Database> mockDatabase = new();
+        // Arrange
+        var mockCosmosClient = new Mock<CosmosClient>();
+        var mockDatabase = new Mock<Database>();
+        var mockContainer = new Mock<Container>();
 
-        // Set up the mocks
         mockCosmosClient
             .Setup(c => c.GetDatabase(It.IsAny<string>()))
             .Returns(mockDatabase.Object); // Mock the Database
 
         mockDatabase
             .Setup(d => d.GetContainer(It.IsAny<string>()))
-            .Returns(_mockContainer.Object); // Mock the Container
+            .Returns(mockContainer.Object); // Mock the Container
 
-        // Instantiate the repository with the mocked CosmosClient, Database, and Container
-        _repository = new CdaPeisEmulatorScenarioModelRepository(mockCosmosClient.Object, "TestDatabase", "TestContainer");
-    }
+        mockCosmosClient.Setup(mock => mock.GetContainer(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(mockContainer.Object);
 
-    [Fact]
-    public async Task GetByIdAsync_ReturnsModel_WhenModelExists()
-    {
-        // Arrange
-        var testModel = new CdaPeisEmulatorScenarioModel
+        // Setup the mockFeedResponse to return a fake item with MaxStartCode
+        const int maxCode = 1234;
+        dynamic result = new ExpandoObject();
+        result.MaxStartCode = maxCode;
+        var results = new List<dynamic> { result };
+
+        var mockFeedIterator = new Mock<FeedIterator<dynamic>>();
+        var mockFeedResponse = new Mock<FeedResponse<dynamic>>();
+
+        mockFeedResponse.Setup(r => r.GetEnumerator())
+            .Returns(results.GetEnumerator());
+
+        // Setup the feed iterator
+        mockFeedIterator.SetupSequence(i => i.HasMoreResults)
+            .Returns(true)
+            .Returns(false);
+
+        mockFeedIterator.Setup(i => i.ReadNextAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(mockFeedResponse.Object);
+
+        // Setup the container to return the feed iterator
+        mockContainer.Setup(c => c.GetItemQueryIterator<dynamic>(
+                It.IsAny<QueryDefinition>(),
+                It.IsAny<string>(),
+                It.IsAny<QueryRequestOptions>()))
+            .Returns(mockFeedIterator.Object);
+
+        var configuration = Options.Create(new CosmosTestHarnessConfiguration
         {
-            Id = "1",
-            PeisIdStartCode = "PEIS123",
-            DataPoints = new List<DataPoint>
-            {
-                new() { AvailableAt = 0, ResponsePayload = new ResponsePayload() },
-                new() { AvailableAt = 3, ResponsePayload = new ResponsePayload() }
-            }
-            
-        };
+            DatabaseName = "TestDatabase",
+            CdaPeisEmulatorScenarioModelContainerName = "TestContainer"
+        });
 
-        var response = new Mock<ItemResponse<CdaPeisEmulatorScenarioModel>>();
-        response.Setup(r => r.Resource).Returns(testModel);
-
-        _mockContainer
-            .Setup(c => c.ReadItemAsync<CdaPeisEmulatorScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
+        var repository = new CdaPeisEmulatorScenarioModelRepository(mockCosmosClient.Object, configuration);
 
         // Act
-        var result = await _repository.GetByIdAsync("1", "partition1");
+        var code = await repository.GetMaxScenarioCodeAsync();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal("1", result?.Id);
-        Assert.Equal("PEIS123", result?.PeisIdStartCode);
-        Assert.Equal(2, result?.DataPoints?.Count);
-    }
-
-    [Fact]
-    public async Task GetByIdAsync_ReturnsNull_WhenModelDoesNotExist()
-    {
-        // Arrange
-        _mockContainer
-            .Setup(c => c.ReadItemAsync<CdaPeisEmulatorScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, "", 0)); // Mock a not found exception
-
-        // Act
-        var result = await _repository.GetByIdAsync("1", "partition1");
-
-        // Assert
-        Assert.Null(result);
+        Assert.Equal(maxCode, code);
     }
 }

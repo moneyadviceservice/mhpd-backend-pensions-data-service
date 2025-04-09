@@ -1,9 +1,9 @@
 ﻿using CDAServiceEmulator.Controllers;
-using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
 using CDAServiceEmulatorUnitTests.Mock;
 using MhpdCommon.Constants;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,9 +25,9 @@ namespace CDAServiceEmulatorUnitTests
             _idValidator = new Mock<IIdValidator>();
             _idValidator.Setup(x => x.IsValidGuid(It.IsAny<string>())).Returns(true);
 
-            Mock<IHolderNameViewDataRepository<HolderNameViewDataResponse>> repository = new();
+            Mock<ICosmosDbRepository<HolderNameViewDataResponse>> repository = new();
             repository.Setup(x => x.GetByIdStreamAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync((string id, string key) => HolderConfigurationMock.FilterConfigurations(id));
-            repository.Setup(x => x.GetHolderNameConfigurationsAsync()).ReturnsAsync(HolderConfigurationMock.GetHolderConfiguration());
+            repository.Setup(x => x.GetAllAsync()).ReturnsAsync(HolderConfigurationMock.GetHolderConfiguration());
 
             _controller = new HolderNameController(_idValidator.Object, repository.Object)
             {

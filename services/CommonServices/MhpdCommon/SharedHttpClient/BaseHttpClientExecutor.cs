@@ -17,15 +17,7 @@ public abstract class BaseHttpClientExecutor(
     {
         try
         {
-            var httpClient = httpClientFactory.CreateClient(httpClientName);
-            logger.LogWarning("Sending request for operation: {OperationDescription}", operationDescription);
-
-            var request = createRequestFunc(httpClient);
-            
-            // Apply optional header modifications
-            configureRequest?.Invoke(request);
-
-            var response = await httpClient.SendAsync(request);
+            var response = await ExecuteAsync(httpClientName, operationDescription, createRequestFunc, configureRequest);
             response.EnsureSuccessStatusCode();
             
             var result = await response.Content.ReadFromJsonAsync<TResponse>();
@@ -42,6 +34,40 @@ public abstract class BaseHttpClientExecutor(
         {
             logger.LogError(ex, "Invalid operation during {OperationDescription}: {Message}", operationDescription, ex.Message);
             throw new InvalidOperationException($"An invalid operation occurred during {operationDescription}", ex);
+        }
+        catch (ServiceCommunicationException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An unexpected error occurred during {OperationDescription}", operationDescription);
+            throw new ServiceCommunicationException($"An unexpected error occurred during {operationDescription}.", ex);
+        }
+    }
+
+    protected async Task<HttpResponseMessage> ExecuteAsync(
+        string httpClientName,
+        string operationDescription,
+        Func<HttpClient, HttpRequestMessage> createRequestFunc,
+        Action<HttpRequestMessage>? configureRequest = null)
+    {
+        try
+        {
+            var httpClient = httpClientFactory.CreateClient(httpClientName);
+            logger.LogWarning("Sending request for operation: {OperationDescription}", operationDescription);
+
+            var request = createRequestFunc(httpClient);
+
+            // Apply optional header modifications
+            configureRequest?.Invoke(request);
+
+            return await httpClient.SendAsync(request);
+        }
+        catch (HttpRequestException ex)
+        {
+            logger.LogError(ex, "An HTTP request error occurred during {OperationDescription}", operationDescription);
+            throw new ServiceCommunicationException($"Error during {operationDescription}", ex);
         }
         catch (Exception ex)
         {

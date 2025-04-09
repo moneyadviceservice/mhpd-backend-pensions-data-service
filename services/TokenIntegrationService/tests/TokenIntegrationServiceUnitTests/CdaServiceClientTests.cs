@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.TokenValidation;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using TokenIntegrationService.HttpClients;
+using TokenIntegrationService.Models;
 
 namespace TokenIntegrationServiceUnitTests;
 
@@ -116,7 +118,7 @@ public class CdaServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new HttpRequestException("Network error"));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
             await _sut.PostAsync(request)
         );
 
@@ -141,7 +143,7 @@ public class CdaServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
             await _sut.PostAsync(request)
         );
 
@@ -161,7 +163,7 @@ public class CdaServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ThrowsAsync(new Exception("Unexpected error"));
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
             await _sut.PostAsync(request)
         );
 
@@ -255,7 +257,7 @@ public class CdaServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+        var ex = await Assert.ThrowsAsync<ServiceCommunicationException>(async () =>
             await _sut.PostAsync(request)
         );
 
@@ -263,8 +265,9 @@ public class CdaServiceClientTests
     }
     
     [Fact]
-    public async Task PostRpt_Claims_Gathering_Should_Throw_InvalidOperationException_When_Result_Is_Null()
+    public async Task PostRpt_Claims_Gathering_Should_Return_ErrorCode_When_Request_Fails()
     {
+        // Arrange
         var request = new TokenClientRequestModel();
 
         var response = new HttpResponseMessage
@@ -280,11 +283,9 @@ public class CdaServiceClientTests
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(response);
 
-        var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await _sut.PostAsync(request)
-        );
+        // Act
+        var result = await _sut.PostAsync(request);
 
-        Assert.IsType<InvalidOperationException>(ex);
-        Assert.Equal("Unable to get token or redirect details", ex.Message);
+        Assert.Equal(response.StatusCode, result.StatusCode);
     }
 }

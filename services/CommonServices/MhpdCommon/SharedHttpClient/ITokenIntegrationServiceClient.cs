@@ -4,5 +4,7 @@ namespace MhpdCommon.SharedHttpClient;
 
 public interface ITokenIntegrationServiceClient
 {
-    public Task<CdaTokenResponseModel> PostRptAsync(TokenClientRequestModel request);
+    public Task<CdaTokenResponseModel> PostAccessTokenAsync(TokenClientRequestModel request, string? correlationId = null);
+
+    public Task<CdaTokenResponseModel> PostIdTokenAsync(PensionsDataRequestModel request, string? correlationId = null);
 }

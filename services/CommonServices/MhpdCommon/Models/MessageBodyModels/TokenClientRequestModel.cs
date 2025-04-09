@@ -17,5 +17,4 @@ public class TokenClientRequestModel
 
     [JsonPropertyName(QueryParams.Cda.Token.AsUri)]
     public string? AsUri{ get; set; }
-    public string CorrelationId { get; set; } = string.Empty;
 }

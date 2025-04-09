@@ -1,8 +1,8 @@
-﻿using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models;
+﻿using CDAServiceEmulator.Models;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +10,7 @@ namespace CDAServiceEmulator.Controllers;
 
 [Route("/")]
 [ApiController]
-public class HolderNameController(IIdValidator idValidator, IHolderNameViewDataRepository<HolderNameViewDataResponse> viewDataRepository) : ControllerBase
+public class HolderNameController(IIdValidator idValidator, ICosmosDbRepository<HolderNameViewDataResponse> viewDataRepository) : ControllerBase
 {
     [HttpGet]
     [Route("holdername-view-configurations")]

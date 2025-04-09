@@ -1,9 +1,10 @@
-using System.Net;
+﻿using System.Net;
 using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models.Peis;
+using MhpdCommon.Models.Configuration;
 using Microsoft.Azure.Cosmos;
+using Microsoft.Extensions.Options;
 using Moq;
-using Newtonsoft.Json.Linq;
 
 namespace CDAServiceEmulatorUnitTests.CosmosRepositoryTests;
 
@@ -27,8 +28,14 @@ public class CdaPeisEmulatorTestInstanceDataRepositoryTests
             .Setup(d => d.GetContainer(It.IsAny<string>()))
             .Returns(_mockContainer.Object); // Mock the Container
 
+        var configuration = Options.Create(new CosmosTestHarnessConfiguration
+        {
+            DatabaseName = "TestDatabase",
+            CdaPeisEmulatorTestInstanceDataContainerName = "TestContainer"
+        });
+
         // Instantiate the repository with the mocked CosmosClient, Database, and Container
-        _repository = new CdaPeisEmulatorTestInstanceDataRepository(mockCosmosClient.Object, "TestDatabase", "TestContainer");
+        _repository = new CdaPeisEmulatorTestInstanceDataRepository(mockCosmosClient.Object, configuration);
     }
 
     [Fact]
@@ -36,7 +43,7 @@ public class CdaPeisEmulatorTestInstanceDataRepositoryTests
     {
         // Arrange
         var currentTimeInUtc = DateTimeOffset.UtcNow;
-        
+
         var testModel = new CdaPeisEmulatorTestInstanceDataModel
         {
             Id = "1",

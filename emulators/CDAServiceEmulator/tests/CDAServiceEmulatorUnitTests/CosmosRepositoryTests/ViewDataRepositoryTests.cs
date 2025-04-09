@@ -1,19 +1,19 @@
-﻿using System.Net;
-using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models.Token;
+﻿using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models.ViewData;
 using MhpdCommon.Models.Configuration;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Options;
 using Moq;
+using System.Net;
 
 namespace CDAServiceEmulatorUnitTests.CosmosRepositoryTests;
 
-public class TokenEmulatorPiesIdScenarioModelsRepositoryTests
+public class ViewDataRepositoryTests
 {
     private readonly Mock<Container> _mockContainer;
-    private readonly TokenEmulatorPiesIdScenarioModelsRepository _repository;
+    private readonly ViewDataRepository _repository;
 
-    public TokenEmulatorPiesIdScenarioModelsRepositoryTests()
+    public ViewDataRepositoryTests()
     {
         Mock<CosmosClient> mockCosmosClient = new();
         _mockContainer = new Mock<Container>();
@@ -31,29 +31,28 @@ public class TokenEmulatorPiesIdScenarioModelsRepositoryTests
         var configuration = Options.Create(new CosmosTestHarnessConfiguration
         {
             DatabaseName = "TestDatabase",
-            CdaPeisEmulatorTestInstanceDataContainerName = "TestContainer"
+            ViewDataModelContainerName = "TestContainer"
         });
 
         // Instantiate the repository with the mocked CosmosClient, Database, and Container
-        _repository = new TokenEmulatorPiesIdScenarioModelsRepository(mockCosmosClient.Object, configuration);
+        _repository = new ViewDataRepository(mockCosmosClient.Object, configuration);
     }
 
     [Fact]
     public async Task GetByIdAsync_ReturnsModel_WhenModelExists()
     {
         // Arrange
-        var testModel = new TokenEmulatorPiesIdScenarioModel
+        var testModel = new ViewDataPayloadModel
         {
-            Id = "1",
-            Code = "1",
-            PeisIdStartCode = "PEIS123"
+            Id = "100",
+            AssetGuid = "100"
         };
 
-        var response = new Mock<ItemResponse<TokenEmulatorPiesIdScenarioModel>>();
+        var response = new Mock<ItemResponse<ViewDataPayloadModel>>();
         response.Setup(r => r.Resource).Returns(testModel);
 
         _mockContainer
-            .Setup(c => c.ReadItemAsync<TokenEmulatorPiesIdScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .Setup(c => c.ReadItemAsync<ViewDataPayloadModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
             .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
 
         // Act
@@ -61,9 +60,8 @@ public class TokenEmulatorPiesIdScenarioModelsRepositoryTests
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal("1", result?.Id);
-        Assert.Equal("1", result?.Code);
-        Assert.Equal("PEIS123", result?.PeisIdStartCode);
+        Assert.Equal("100", result?.Id);
+        Assert.Equal("100", result?.AssetGuid);
     }
 
     [Fact]
@@ -71,7 +69,7 @@ public class TokenEmulatorPiesIdScenarioModelsRepositoryTests
     {
         // Arrange
         _mockContainer
-            .Setup(c => c.ReadItemAsync<TokenEmulatorPiesIdScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .Setup(c => c.ReadItemAsync<ViewDataPayloadModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
             .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, "", 0)); // Mock a not found exception
 
         // Act

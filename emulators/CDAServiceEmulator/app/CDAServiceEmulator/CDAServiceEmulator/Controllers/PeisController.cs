@@ -2,6 +2,7 @@
 using CDAServiceEmulator.Models.Peis;
 using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -13,8 +14,8 @@ namespace CDAServiceEmulator.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 public class PeisController(
-    CdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
-    CdaPeisEmulatorTestInstanceDataRepository cdaPeisEmulatorTestInstanceDataRepository,
+    ICdaPeisEmulatorScenarioModelRepository cdaPeisEmulatorScenarioModelRepository,
+    ICosmosDbRepository<CdaPeisEmulatorTestInstanceDataModel> cdaPeisEmulatorTestInstanceDataRepository,
     IIdValidator idValidator, IOptions<CommonHttpConfiguration> options)
     : ControllerBase
 {

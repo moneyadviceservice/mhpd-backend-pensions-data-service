@@ -3,32 +3,59 @@ using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
 using Microsoft.Extensions.Logging;
-using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
 namespace MhpdCommon.SharedHttpClient;
 
 public class TokenIntegrationServiceClient(ILogger<TokenIntegrationServiceClient> logger, IHttpClientFactory httpClientFactory)
-    : ITokenIntegrationServiceClient
+    : BaseHttpClientExecutor(httpClientFactory, logger), ITokenIntegrationServiceClient
 {
-    public async Task<CdaTokenResponseModel> PostRptAsync(TokenClientRequestModel request)
+    public async Task<CdaTokenResponseModel> PostAccessTokenAsync(TokenClientRequestModel request, string? correlationId = null)
     {
         logger.LogRequest(request);
 
-        var client = httpClientFactory.CreateClient(HttpClientNames.TokenIntegrationService);
+        var response = await ExecuteAsync<CdaTokenResponseModel>(HttpClientNames.TokenIntegrationService,
+            _ =>
+            {
+                var payload = JsonSerializer.Serialize(request);
+                return new HttpRequestMessage(HttpMethod.Post, HttpEndpoints.Internal.Rpts)
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
+                };
+            },
+            HttpClientOperationName.TokenServiceAccessToken,
+        message => message.Headers.Add(HeaderConstants.CorrelationId, GetCorrelationId(correlationId)));
 
-        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
+        return response;
+    }
 
-        request.AsUri = request.AsUri;
-        var payload = JsonSerializer.Serialize(request);
+    public async Task<CdaTokenResponseModel> PostIdTokenAsync(PensionsDataRequestModel request, string? correlationId = null)
+    {
+        logger.LogRequest(request);
 
-        var content = new StringContent(payload, Encoding.UTF8, "application/json");
-        var response = await client.PostAsync(HttpEndpoints.Internal.Rpts, content);
-        response.EnsureSuccessStatusCode();
+        var response = await ExecuteAsync<CdaTokenResponseModel>(HttpClientNames.TokenIntegrationService,
+            _ =>
+            {
+                var payload = JsonSerializer.Serialize(request);
+                return new HttpRequestMessage(HttpMethod.Post, HttpEndpoints.Internal.PeiRetrievalDetails)
+                {
+                    Content = new StringContent(payload, Encoding.UTF8, "application/json")
+                };
+            },
+            HttpClientOperationName.TokenServiceAccessToken,
+        message => message.Headers.Add(HeaderConstants.CorrelationId, GetCorrelationId(correlationId)));
 
-        var result = response.Content.ReadFromJsonAsync<CdaTokenResponseModel>().Result;
-        logger.LogResponse(result);
-        return result!;
+        return response;
+    }
+
+    private static string GetCorrelationId(string? correlationId)
+    {
+        if (string.IsNullOrWhiteSpace(correlationId))
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        return correlationId;
     }
 }

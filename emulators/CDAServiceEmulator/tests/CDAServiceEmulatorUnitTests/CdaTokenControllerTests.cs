@@ -1,10 +1,10 @@
 using CDAServiceEmulator.Controllers;
-using CDAServiceEmulator.CosmosRepository;
 using CDAServiceEmulator.Models;
 using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
@@ -20,7 +20,7 @@ namespace CDAServiceEmulatorUnitTests;
 public class CdaTokenControllerTests
 {    private readonly Mock<IIdValidator> _mockIdValidator;
      private readonly CdaTokenController _controller;
-     private readonly Mock<Container> _mockScenarioModelContainer;
+     private readonly Mock<ICosmosDbRepository<TokenEmulatorPiesIdScenarioModel>> _mockScenarioModelRepository = new();
      private readonly string _xRequestId = Guid.NewGuid().ToString();
 
     public CdaTokenControllerTests()
@@ -35,24 +35,9 @@ public class CdaTokenControllerTests
         _mockIdValidator = new Mock<IIdValidator>();
 
         Mock<CosmosClient> mockCosmosClient = new();
-        _mockScenarioModelContainer = new();
-        Mock<Database> mockDatabase = new();
-
-        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseName))
-            .Returns(mockDatabase.Object);
-
-        mockDatabase.Setup(mock => mock.GetContainer(configuration.TokenEmulatorPiesIdScenarioModelsContainerName))
-            .Returns(_mockScenarioModelContainer.Object);
 
         Mock<IOptions<CosmosTestHarnessConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
-
-        // Instantiate the TokenEmulatorPiesIdScenarioModelsRepository with the mocked CosmosClient and configuration
-        var mockScenarioModelRepository = new Mock<TokenEmulatorPiesIdScenarioModelsRepository>(
-            mockCosmosClient.Object,
-            configuration.DatabaseName,
-            configuration.TokenEmulatorPiesIdScenarioModelsContainerName
-        );
 
         // Get ordered validators
         var validators = Helper.GetOrderedValidators();
@@ -84,8 +69,8 @@ public class CdaTokenControllerTests
         mockHttpOptions.Setup(x => x.Value).Returns(httpConfig);
 
         // Create the controller with real TokenRequestValidatorPipeline instance
-        _controller = new CdaTokenController(mockLogger.Object, _mockIdValidator.Object, mockValidatorPipeline.Object, 
-            mockScenarioModelRepository.Object, utils, mockHttpOptions.Object);
+        _controller = new CdaTokenController(mockLogger.Object, _mockIdValidator.Object, mockValidatorPipeline.Object,
+            _mockScenarioModelRepository.Object, utils, mockHttpOptions.Object);
 
         // Mock HttpContext
         var httpContext = new DefaultHttpContext();
@@ -176,12 +161,9 @@ public class CdaTokenControllerTests
 
         TokenEmulatorPiesIdScenarioModel? model = null;
 
-        var response = new Mock<ItemResponse<TokenEmulatorPiesIdScenarioModel>>();
-        response.Setup(r => r.Resource).Returns(model!);
-
-        _mockScenarioModelContainer
-            .Setup(c => c.ReadItemAsync<TokenEmulatorPiesIdScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(response.Object);
+        _mockScenarioModelRepository
+            .Setup(c => c.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(model);
 
         // Act
         var result = await _controller.GenerateTokenAsync(request, _xRequestId);
@@ -276,12 +258,9 @@ public class CdaTokenControllerTests
             PeisIdStartCode = startCode
         };
 
-        var response = new Mock<ItemResponse<TokenEmulatorPiesIdScenarioModel>>();
-        response.Setup(r => r.Resource).Returns(testModel);
-        
-        _mockScenarioModelContainer
-            .Setup(c => c.ReadItemAsync<TokenEmulatorPiesIdScenarioModel>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
+        _mockScenarioModelRepository
+            .Setup(c => c.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(testModel);
 
         // Act
         var result = await _controller.GenerateTokenAsync(request, _xRequestId);

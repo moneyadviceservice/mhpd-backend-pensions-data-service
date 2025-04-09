@@ -1,11 +1,12 @@
-using System.Diagnostics.CodeAnalysis;
+using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Repository;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Options;
-using PDPViewDataServiceEmulator.Configuration;
 using PDPViewDataServiceEmulator.CosmosRepository;
+using PDPViewDataServiceEmulator.Mocks;
+using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,12 +24,12 @@ builder.Services.AddMhpdCosmosDb();
 
 builder.Services.AddSingleton<CosmosClient>(_ =>
 {
-    var connString = builder.Configuration.GetConnectionString("cosmosDBConnectionString");
+    var connString = builder.Configuration.GetConnectionString(DatabaseConstants.ConnectionStringVariable);
     if (string.IsNullOrEmpty(connString))
     {
-        throw new InvalidOperationException("The CosmosDB connection string ('cosmosDBConnectionString') is missing from the configuration.");
+        throw new InvalidOperationException($"The CosmosDB connection string ('{DatabaseConstants.ConnectionStringVariable}') is missing from the configuration.");
     }
-    
+
     var options = new CosmosClientOptions
     {
         SerializerOptions = new CosmosSerializationOptions { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase },
@@ -36,14 +37,7 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
     return new CosmosClient(connString, options);
 });
 
-// Register ViewdatapayloadsContainerName
-builder.Services.AddSingleton<ViewDataRepository>(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
-    
-    return new ViewDataRepository(cosmosClient, config.DatabaseName, config.ViewDataModelContainerName);
-});
+builder.Services.AddSingleton<ICosmosDbRepository<ViewDataPayload>, ViewDataRepository>();
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 

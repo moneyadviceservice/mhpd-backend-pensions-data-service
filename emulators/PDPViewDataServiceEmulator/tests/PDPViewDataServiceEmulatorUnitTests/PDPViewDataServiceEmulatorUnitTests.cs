@@ -1,20 +1,19 @@
-using System.Net;
 using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using PDPViewDataServiceEmulator.Configuration;
 using PDPViewDataServiceEmulator.Controllers;
-using PDPViewDataServiceEmulator.CosmosRepository;
 using PDPViewDataServiceEmulator.Mocks;
 using PDPViewDataServiceEmulator.Models;
 using PDPViewDataServiceEmulatorUnitTests.Mock.ViewDataPayload;
+using System.Net;
 
 namespace PDPViewDataServiceEmulatorUnitTests;
 
@@ -33,7 +32,7 @@ public class PdpViewDataServiceEmulatorUnitTests
     private readonly PdpViewDataController _controller;
     private readonly Mock<ITokenUtility> _tokenUtilityMock = new();
     private readonly Mock<IdValidator> _idValidator = new();
-    private readonly Mock<Container> _mockViewDataPayloadContainer = new();
+    private readonly Mock<ICosmosDbRepository<ViewDataPayload>> _mockViewDataPayloadRepository = new();
     
     public PdpViewDataServiceEmulatorUnitTests()
     {
@@ -49,15 +48,6 @@ public class PdpViewDataServiceEmulatorUnitTests
         };
          
         Mock<ILogger<PdpViewDataController>> mockLogger = new();
-         
-        Mock<CosmosClient> mockCosmosClient = new();
-        Mock<Database> mockDatabase = new();
-         
-        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseName))
-            .Returns(mockDatabase.Object);
- 
-        mockDatabase.Setup(mock => mock.GetContainer(configuration.ViewdatapayloadsContainerName))
-            .Returns(_mockViewDataPayloadContainer.Object);
                  
         Mock<IOptions<MhpdCosmosConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
@@ -65,23 +55,14 @@ public class PdpViewDataServiceEmulatorUnitTests
         Mock<IOptions<CommonHttpConfiguration>> mockHttpConfigOptions = new();
         mockHttpConfigOptions.Setup(x => x.Value).Returns(_httpConfiguration);
 
-        // Instantiate the ViewdatapayloadsContainerName with the mocked CosmosClient and configuration
-        Mock<ViewDataRepository> mockViewDataRepository = new(
-            mockCosmosClient.Object, 
-            configuration.DatabaseName, 
-            configuration.ViewdatapayloadsContainerName
-        );
-        
         var jsonData = DataProvider.GetPayload<ViewDataPayload>("view_data_sample_1.json");
-        var response = new Mock<ItemResponse<ViewDataPayload>>();
-        response.Setup(r => r.Resource).Returns(jsonData!);
         
-        _mockViewDataPayloadContainer
-            .Setup(c => c.ReadItemAsync<ViewDataPayload>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
+        _mockViewDataPayloadRepository
+            .Setup(c => c.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(jsonData);
         
         _httpContext = new DefaultHttpContext();
-        _controller = new PdpViewDataController(mockLogger.Object, mockViewDataRepository.Object, _idValidator.Object, 
+        _controller = new PdpViewDataController(mockLogger.Object, _mockViewDataPayloadRepository.Object, _idValidator.Object, 
             _tokenUtilityMock.Object, mockHttpConfigOptions.Object)
         {
             ControllerContext = new ControllerContext
@@ -202,13 +183,10 @@ public class PdpViewDataServiceEmulatorUnitTests
         _httpContext.Request.Headers["X-Request-ID"] = "35cfcfb0-d98d-451f-83f1-e59933078555";
         
         ViewDataPayload? testModel = null;
-
-        var response = new Mock<ItemResponse<ViewDataPayload>>();
-        response.Setup(r => r.Resource).Returns(testModel!);
         
-        _mockViewDataPayloadContainer
-            .Setup(c => c.ReadItemAsync<ViewDataPayload>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
+        _mockViewDataPayloadRepository
+            .Setup(c => c.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(testModel); // Mock the ReadItemAsync method
 
         // Act           
         var result = await _controller.GetAsync(InValidAssetGuid, Scope, XRequestId);
@@ -222,7 +200,6 @@ public class PdpViewDataServiceEmulatorUnitTests
     [Fact]
     public async void WhenControllerIsCalled_InValidScope_WithAuthorizationHeader_ValidAsset_Guid_ThenItShouldReturn_BadRequest400Response()
     {
-
         // Arrange
         AddAuthorisationHeader();
 
@@ -260,13 +237,10 @@ public class PdpViewDataServiceEmulatorUnitTests
         _httpContext.Request.Headers["X-Request-ID"] = "35cfcfb0-d98d-451f-83f1-e59933078555";
 
         ViewDataPayload? testModel = null;
-
-        var response = new Mock<ItemResponse<ViewDataPayload>>();
-        response.Setup(r => r.Resource).Returns(testModel!);
         
-        _mockViewDataPayloadContainer
-            .Setup(c => c.ReadItemAsync<ViewDataPayload>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(response.Object); // Mock the ReadItemAsync method
+        _mockViewDataPayloadRepository
+            .Setup(c => c.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(testModel);
         
         // Act           
         var result = await _controller.GetAsync(InValidAssetGuid,Scope, XRequestId);
@@ -281,6 +255,7 @@ public class PdpViewDataServiceEmulatorUnitTests
     {
         _httpContext.Request.Headers[HeaderNames.Authorization] = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
     }
+
     private void AddAuthorisationHeaderNoToken()
     {
         _httpContext.Request.Headers[HeaderNames.Authorization] = "Bearer ";

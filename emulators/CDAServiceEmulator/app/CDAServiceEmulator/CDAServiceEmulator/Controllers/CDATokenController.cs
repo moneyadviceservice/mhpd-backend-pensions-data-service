@@ -1,11 +1,12 @@
-﻿using CDAServiceEmulator.CosmosRepository;
-using CDAServiceEmulator.Models;
+﻿using CDAServiceEmulator.Models;
+using CDAServiceEmulator.Models.Token;
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.MHPDModels.JwkUri;
+using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -22,8 +23,8 @@ namespace CDAServiceEmulator.Controllers;
 public class CdaTokenController(
     ILogger<CdaTokenController> logger,
     IIdValidator idValidator,
-    TokenRequestValidatorPipeline tokenRequestValidators, 
-    TokenEmulatorPiesIdScenarioModelsRepository tokenEmulatorPiesIdScenarioModelRepository,
+    TokenRequestValidatorPipeline tokenRequestValidators,
+    ICosmosDbRepository<TokenEmulatorPiesIdScenarioModel> tokenEmulatorPiesIdScenarioModelRepository,
     ITokenUtility tokenUtility,
     IOptions<CommonHttpConfiguration> options)
     : ControllerBase

@@ -1,15 +1,16 @@
 using CDAServiceEmulator.Models.Peis;
+using MhpdCommon.Models.Configuration;
 using MhpdCommon.Repository;
 using Microsoft.Azure.Cosmos;
-using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Options;
 
 namespace CDAServiceEmulator.CosmosRepository;
 
-[ExcludeFromCodeCoverage]
-public class CdaPeisEmulatorScenarioModelRepository(CosmosClient cosmosClient, string databaseName, string containerName)
-    : CosmosDbRepository<CdaPeisEmulatorScenarioModel>(cosmosClient, databaseName, containerName)
+public class CdaPeisEmulatorScenarioModelRepository(CosmosClient cosmosClient, IOptions<CosmosTestHarnessConfiguration> configuration)
+    : CosmosDbRepository<CdaPeisEmulatorScenarioModel>(cosmosClient, configuration.Value.DatabaseName, configuration.Value.CdaPeisEmulatorScenarioModelContainerName), 
+    ICdaPeisEmulatorScenarioModelRepository
 {
-    public async Task<int> GetMaxPartitionKeyAsync()
+    public async Task<int> GetMaxScenarioCodeAsync()
     {
         var query = new QueryDefinition("SELECT MAX(c.peisIdStartCode) AS MaxStartCode FROM c");
 

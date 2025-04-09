@@ -1,12 +1,16 @@
 using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models.Peis;
+using CDAServiceEmulator.Models.Token;
+using CDAServiceEmulator.Models.ViewData;
+using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,14 +34,14 @@ builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<CosmosClient>(_ =>
+builder.Services.AddSingleton(_ =>
 {
-    var connString = builder.Configuration.GetConnectionString("cosmosDBConnectionString");
+    var connString = builder.Configuration.GetConnectionString(DatabaseConstants.ConnectionStringVariable);
     if (string.IsNullOrEmpty(connString))
     {
-        throw new ArgumentNullException(nameof(connString), "CosmosDBConnectionString is missing from the configuration.");
+        throw new ArgumentNullException(nameof(connString), $"{DatabaseConstants.ConnectionStringVariable} is missing from the configuration.");
     }
-    
+
     var options = new CosmosClientOptions
     {
         SerializerOptions = new CosmosSerializationOptions { PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase },
@@ -45,49 +49,11 @@ builder.Services.AddSingleton<CosmosClient>(_ =>
     return new CosmosClient(connString, options);
 });
 
-// Register CdaPeisEmulatorScenarioModelRepository
-builder.Services.AddSingleton<CdaPeisEmulatorScenarioModelRepository>(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
-    
-    return new CdaPeisEmulatorScenarioModelRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorScenarioModelContainerName);
-});
-
-// Register CdaPeisEmulatorTestInstanceDataRepository
-builder.Services.AddSingleton<CdaPeisEmulatorTestInstanceDataRepository>(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
-    
-    return new CdaPeisEmulatorTestInstanceDataRepository(cosmosClient, config.DatabaseName, config.CdaPeisEmulatorTestInstanceDataContainerName);
-});
-
-// Register TokenEmulatorPiesIdScenarioModelsRepository
-builder.Services.AddSingleton<TokenEmulatorPiesIdScenarioModelsRepository>(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
-    
-    return new TokenEmulatorPiesIdScenarioModelsRepository(cosmosClient, config.DatabaseName, config.TokenEmulatorPiesIdScenarioModelsContainerName);
-});
-
-// Register HolderNameViewDataRepository
-builder.Services.AddSingleton<IHolderNameViewDataRepository<HolderNameViewDataResponse>>(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
-
-    return new HolderNameViewDataRepository(cosmosClient, config.DatabaseName, config.HolderNameConfigurationModelsContainerName);
-});
-
-builder.Services.AddSingleton(provider =>
-{
-    var cosmosClient = provider.GetRequiredService<CosmosClient>();
-    var config = provider.GetRequiredService<IOptions<CosmosTestHarnessConfiguration>>().Value;
-
-    return new ViewDataRepository(cosmosClient, config.DatabaseName, config.ViewDataModelContainerName);
-});
+builder.Services.AddSingleton<ICdaPeisEmulatorScenarioModelRepository, CdaPeisEmulatorScenarioModelRepository>();
+builder.Services.AddSingleton<ICosmosDbRepository<CdaPeisEmulatorTestInstanceDataModel>, CdaPeisEmulatorTestInstanceDataRepository>();
+builder.Services.AddSingleton<ICosmosDbRepository<TokenEmulatorPiesIdScenarioModel>, TokenEmulatorPiesIdScenarioModelsRepository>();
+builder.Services.AddSingleton<ICosmosDbRepository<HolderNameViewDataResponse>, HolderNameViewDataRepository>();
+builder.Services.AddSingleton<ICosmosDbRepository<ViewDataPayloadModel>, ViewDataRepository>();
 
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, GrantTypeNotPresentValidator>();
 builder.Services.AddScoped<ITokenRequestValidator<CdaTokenRequestModel>, UnsupportedGrantTypeValidation>();

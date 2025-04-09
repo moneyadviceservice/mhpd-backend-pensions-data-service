@@ -3,11 +3,12 @@ using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using PDPViewDataServiceEmulator.CosmosRepository;
+using PDPViewDataServiceEmulator.Mocks;
 using PDPViewDataServiceEmulator.Models;
 
 namespace PDPViewDataServiceEmulator.Controllers
@@ -15,7 +16,7 @@ namespace PDPViewDataServiceEmulator.Controllers
     [Route("/")]
     [ApiController]
     public class PdpViewDataController(ILogger<PdpViewDataController> logger,
-        ViewDataRepository viewDataRepository,
+        ICosmosDbRepository<ViewDataPayload> viewDataRepository,
         IIdValidator validator,
         ITokenUtility tokenUtility,
         IOptions<CommonHttpConfiguration> options) : ControllerBase

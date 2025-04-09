@@ -1,33 +1,45 @@
 ﻿using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
+using MhpdCommon.CustomExceptions;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.SharedHttpClient;
 using MhpdCommon.Utils;
 using System.Net;
+using System.Text.Json;
+using TokenIntegrationService.Models;
 
 namespace TokenIntegrationService.HttpClients;
 
-public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaServiceClient> logger) : ICdaServiceClient
+public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaServiceClient> logger) 
+    : BaseHttpClientExecutor(httpClientFactory, logger), ICdaServiceClient
 {
     public async Task<CdaTokenResponseModel> PostAsync<TRequest>(TRequest request)
     {
-        var httpClient = httpClientFactory.CreateClient(HttpClientNames.CdaService);
         var requestId = Guid.NewGuid().ToString();
         logger.LogWarning("Sending request to token endpoint with request Id: {RequestId}", requestId);
-
-        httpClient.DefaultRequestHeaders.Add(HeaderConstants.RequestId, requestId);
-
-        var payload = request switch
-        {
-            TokenClientRequestModel tokenRequest => UrlHelper.ConstructFormEncodedPayload(tokenRequest),
-            CdaTokenRequestModel cdaTokenRequest => UrlHelper.ConstructFormEncodedPayload(cdaTokenRequest),
-            _ => throw new InvalidOperationException("Unsupported request type.")
-        };
 
         CdaTokenResponseModel? result = null;
 
         try
         {
-            var response = await httpClient.PostAsync(HttpEndpoints.External.CdaTokenServiceEndpoint, payload);
+            var response = await ExecuteAsync(
+            HttpClientNames.CdaService,
+            HttpClientOperationName.CdaServiceTokenPost,
+            httpClient =>
+            {
+                var payload = request switch
+                {
+                    TokenClientRequestModel tokenRequest => UrlHelper.ConstructFormEncodedPayload(tokenRequest),
+                    CdaTokenRequestModel cdaTokenRequest => UrlHelper.ConstructFormEncodedPayload(cdaTokenRequest),
+                    _ => throw new InvalidOperationException("Unsupported request type.")
+                };
+
+                return new HttpRequestMessage(HttpMethod.Post, HttpEndpoints.External.CdaTokenServiceEndpoint)
+                {
+                    Content = payload,
+                };
+            },
+            message => message.Headers.Add(HeaderConstants.RequestId, requestId));
 
             if (response.IsSuccessStatusCode)
             {
@@ -45,15 +57,17 @@ public class CdaServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaS
                     UserRedirectDetails = redirect
                 };
             }
+            else
+            {
+                result = new CdaTokenResponseModel
+                {
+                    StatusCode = response.StatusCode
+                };
+            }
         }
-        catch(Exception error)
+        catch(JsonException error)
         {
-            throw new InvalidOperationException("Unable to read from Cda Token response", error);
-        }
-
-        if(result == null)
-        {
-            throw new InvalidOperationException("Unable to get token or redirect details");
+            throw new ServiceCommunicationException(Constants.TokenSerialisationError, error);
         }
 
         return result;

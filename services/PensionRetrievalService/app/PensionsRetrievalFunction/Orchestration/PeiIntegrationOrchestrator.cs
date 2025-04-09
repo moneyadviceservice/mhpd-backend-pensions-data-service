@@ -18,7 +18,7 @@ public class PeiIntegrationOrchestrator(IOptions<CommonServiceBusConfiguration> 
     IPeiServiceClient client, 
     IPensionRetrievalRepository repository,
     ILogger<PeiIntegrationOrchestrator> logger,
-    UserSessionDataRepository userSessionDataRepository) : IPeiIntegrationOrchestrator
+    ICosmosDbRepository<UserSessionData> userSessionDataRepository) : IPeiIntegrationOrchestrator
 {
     private readonly CommonServiceBusConfiguration _serviceBusConfiguration = sbOptions.Value;
     private readonly PeiOrchestrationSettings _settings = peiOptions.Value;

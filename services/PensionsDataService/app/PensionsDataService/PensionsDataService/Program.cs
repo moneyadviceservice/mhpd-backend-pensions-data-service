@@ -1,24 +1,18 @@
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
-using MhpdCommon.Utils;
 using Microsoft.AspNetCore.HttpLogging;
 using PensionsDataService.HttpClients;
 using System.Diagnostics.CodeAnalysis;
-using MhpdCommon.Models.Configuration;
-using MhpdCommon.Repository;
-using MhpdCommon.SharedHttpClient;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddScoped<IIdValidator, IdValidator>();
 builder.Services.AddScoped<PensionServiceClients>();
-builder.Services.AddScoped<ITokenIntegrationServiceIdTokenClient, TokenIntegrationServiceIdTokenClient>();
-builder.Services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
 builder.Services.AddScoped<IRetrievalRecordServiceClient, RetrievalRecordServiceClient>();
 builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsRecordClient>();
-builder.Services.AddScoped<IMapsCdaServiceClient, MapsCdaServiceClient>();
 
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
@@ -34,13 +28,13 @@ builder.Services.AddScoped<PensionsDataRequestValidatorPipeline>();
 builder.Services.AddMhpdServiceBusTools();
 builder.Services.AddMhpdHttpClients();
 builder.Services.AddCommonConfigurations();
+builder.Services.AddIntegrationServices();
+builder.Services.AddMhpdUtilities();
+builder.Services.AddMhpdCosmosDb(builder.Configuration);
+
 builder.Services.AddApplicationInsightsTelemetry();
 
-builder.Services.AddMhpdCosmosDb(builder.Configuration);
-builder.Services.Configure<CosmosBusinessConfiguration>(builder.Configuration.GetSection("CosmosBusinessConfiguration"));
-
-// Register UserSessionDataRepo
-builder.Services.AddScoped<UserSessionDataRepository>();
+builder.Services.AddScoped<ICosmosDbRepository<UserSessionData>, UserSessionDataRepository>();
 
 builder.Services.AddControllers();
 

@@ -23,11 +23,11 @@ public class PeiServiceClient(IHttpClientFactory httpClientFactory, ILogger<PeiS
             HttpClientOperationName.PeiServicePeisGet,
         message =>
         {
-            message.Headers.Add(HeaderConstants.Iss, request.CorrelationId);
-            message.Headers.Add(HeaderConstants.PeisId, request.CorrelationId);
-            message.Headers.Add(HeaderConstants.UserSessionId, request.CorrelationId);
+            message.Headers.Add(HeaderConstants.Iss, request.Iss);
+            message.Headers.Add(HeaderConstants.PeisId, request.PeisId);
+            message.Headers.Add(HeaderConstants.UserSessionId, request.UserSessionId);
             message.Headers.Add(HeaderConstants.CorrelationId, request.CorrelationId);
-            message.Headers.Add(HeaderConstants.Rpt, request.CorrelationId);
+            message.Headers.Add(HeaderConstants.Rpt, request.Rpt);
         });
 
         return peiResponse!;

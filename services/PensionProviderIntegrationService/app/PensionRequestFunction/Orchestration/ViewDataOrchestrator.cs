@@ -11,6 +11,7 @@ using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Repository;
 using MhpdCommon.SharedHttpClient;
 using PensionRequestFunction.HttpClient;
+using MhpdCommon.Models.MHPDModels;
 
 namespace PensionRequestFunction.Orchestration;
 
@@ -19,7 +20,7 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
     ITokenUtility tokenUtility,
     IJwtUtility jwtUtility,
     ViewDataOrchestratorClients orchestratorClients,
-    UserSessionDataRepository userSessionDataRepository) : IViewDataOrchestrator
+    ICosmosDbRepository<UserSessionData> userSessionDataRepository) : IViewDataOrchestrator
 {
     private readonly IHolderNameClient _holderNameClient = orchestratorClients.HolderNameClient;
     private readonly IPdpViewDataClient _viewDataClient = orchestratorClients.ViewDataClient;
@@ -128,12 +129,11 @@ public class ViewDataOrchestrator(ILogger<ViewDataOrchestrator> logger,
             Ticket = ticketValue,
             Rqp = rqp,
             AsUri = asUriValue,
-            CorrelationId = correlationId,
             Pct = userSessionData.Pct,
             ClientId = userSessionData.ClientId
         };
 
-        return await _tokenClient.PostRptAsync(request);
+        return await _tokenClient.PostAccessTokenAsync(request, correlationId);
     }
 
     private static string ExtractWwwAuthenticateHeaderValue(string wwwAuthenticateHeader, string tokenToExtract)

@@ -24,11 +24,10 @@ public class PensionsDataController(
     PensionsDataRequestValidatorPipeline requestValidators,
     PensionServiceClients serviceClients,
     IOptions<PeiOrchestrationSettings> peiRetrievalOptions,
-    UserSessionDataRepository userSessionDataRepository)
+    ICosmosDbRepository<UserSessionData> userSessionDataRepository)
     : ControllerBase
 {
-    private readonly ITokenIntegrationServiceIdTokenClient _tokenIntegrationServiceIdTokenClient = serviceClients.TokenIntegrationServiceIdTokenClient;
-    private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClientRpts = serviceClients.TokenIntegrationServiceClientRpts;
+    private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClientRpts = serviceClients.TokenIntegrationServiceClient;
     private readonly IMapsCdaServiceClient _mapsCdaServiceClient = serviceClients.MapsCdaServiceClient;
     private readonly IRetrievalRecordServiceClient _retrievalRecordServiceClient = serviceClients.RetrievalRecordServiceClient;
     private readonly IRetrievedPensionsRecordClient _retrievedPensionsRecordClient = serviceClients.RetrievedPensionsRecordClient;
@@ -132,8 +131,8 @@ public class PensionsDataController(
         logger.LogRequest(request);
 
         // Get pei from the token integration service
-        var result = await _tokenIntegrationServiceIdTokenClient
-            .PostAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader);
+        var result = await _tokenIntegrationServiceClientRpts
+            .PostIdTokenAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader.CorrelationId);
         
         logger.LogResponse(result);
 
@@ -328,8 +327,7 @@ public class PensionsDataController(
     }
 
     private static TokenClientRequestModel CreateCdaTokenServiceRptsRequestModel(string ticket, 
-        string rqp, 
-        string correlationId,
+        string rqp,
         ILogger<PensionsDataController> logger, string? asUri, string clientId)
     {
         var request = new TokenClientRequestModel
@@ -337,7 +335,6 @@ public class PensionsDataController(
             Ticket = ticket,
             Rqp = rqp,
             AsUri = asUri,
-            CorrelationId = correlationId,
             ClientId = clientId
         };
         
@@ -545,8 +542,8 @@ public class PensionsDataController(
         RequestHeaderModel requestHeader,
         string userSessionId)
     {
-        var tokenResult = await _tokenIntegrationServiceClientRpts.PostRptAsync(
-            CreateCdaTokenServiceRptsRequestModel(request.Ticket, rqp, requestHeader.CorrelationId!, logger, AsUri, request.ClientId));
+        var tokenResult = await _tokenIntegrationServiceClientRpts.PostAccessTokenAsync(
+            CreateCdaTokenServiceRptsRequestModel(request.Ticket, rqp, logger, AsUri, request.ClientId), requestHeader.CorrelationId);
 
         if (!IsValidToken(tokenResult.Pct) || !IsValidToken(tokenResult.AccessToken))
         {

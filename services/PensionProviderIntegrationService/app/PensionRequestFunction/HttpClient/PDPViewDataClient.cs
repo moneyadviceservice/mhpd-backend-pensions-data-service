@@ -5,35 +5,38 @@ using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.SharedHttpClient;
 using MhpdCommon.Utils;
 using Microsoft.Extensions.Logging;
 using PensionRequestFunction.Models.CdaPeisServiceClient;
 
 namespace PensionRequestFunction.HttpClient;
 
-public class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<PdpViewDataClient> logger) : IPdpViewDataClient
+public class PdpViewDataClient(IHttpClientFactory httpClientFactory, ILogger<PdpViewDataClient> logger) 
+    : BaseHttpClientExecutor(httpClientFactory, logger), IPdpViewDataClient
 {
     public async Task<PdpServiceResponseModel> GetPdpViewDataAsync(string assetGuid, string viewDataUrl, string? rpt, string correlationId)       
     {
         const string scope = "owner";
-        var client = httpClientFactory.CreateClient(HttpClientNames.PdpService);
         var assetPath = string.Format(HttpEndpoints.External.PdpViewData, HttpUtility.UrlEncode(assetGuid), scope);
         var providerUrl = UrlHelper.ConstructPath(viewDataUrl, assetPath);
 
-        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
-
-        if (!string.IsNullOrWhiteSpace(rpt))
-        {
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
-            logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl} attaching bearer token RPT", providerUrl);
-        }
-        
-        client.DefaultRequestHeaders.Add(HeaderConstants.ProviderUrl, providerUrl);
-
         logger.LogInformation("Get ViewData called for providerUrl {ProviderUrl}", providerUrl);
 
-        var viewDataResponse = await client.GetAsync(assetPath);
+        var viewDataResponse = await ExecuteAsync(HttpClientNames.PdpService,
+            HttpClientOperationName.PdpViewDataGet,
+            _ => new HttpRequestMessage(HttpMethod.Get, assetPath),
+            message =>
+            {
+                message.Headers.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+                message.Headers.Add(HeaderConstants.CorrelationId, correlationId);
+                message.Headers.Add(HeaderConstants.ProviderUrl, providerUrl);
+
+                if (!string.IsNullOrWhiteSpace(rpt))
+                {
+                    message.Headers.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, rpt);
+                }
+            });
 
         var response = await CreateResponse(viewDataResponse);
 

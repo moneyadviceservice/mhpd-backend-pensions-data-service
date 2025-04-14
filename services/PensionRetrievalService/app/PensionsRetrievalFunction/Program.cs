@@ -1,4 +1,5 @@
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Repository;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
@@ -29,7 +30,7 @@ var host = new HostBuilder()
         services.AddScoped<IPensionRetrievalRepository, PensionRetrievalRepository>();
         services.AddTransient<IPeiIntegrationOrchestrator, PeiIntegrationOrchestrator>();
         
-        services.AddTransient<UserSessionDataRepository>();
+        services.AddTransient<ICosmosDbRepository<UserSessionData>, UserSessionDataRepository>();
 
         services.AddSingleton<IOpenApiConfigurationOptions>(_ =>
         {

@@ -13,6 +13,7 @@ using Moq;
 using MhpdCommon.Models.MHPDModels.JwkUri;
 using MhpdCommon.SharedHttpClient;
 using MhpdCommon.Constants;
+using MhpdCommon.Models.MHPDModels;
 
 namespace TokenIntegrationServiceUnitTests;
 

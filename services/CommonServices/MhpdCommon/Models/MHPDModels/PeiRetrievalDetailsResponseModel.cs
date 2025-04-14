@@ -1,4 +1,4 @@
-namespace PensionsDataService.Models;
+﻿namespace MhpdCommon.Models.MHPDModels;
 
 public class PeiRetrievalDetailsResponseModel
 {

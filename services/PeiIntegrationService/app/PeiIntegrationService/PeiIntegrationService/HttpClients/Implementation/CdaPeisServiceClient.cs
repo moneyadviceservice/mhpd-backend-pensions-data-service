@@ -4,27 +4,30 @@ using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.SharedHttpClient;
 using PeiIntegrationService.HttpClients.Interfaces;
 using PeiIntegrationService.Models.CdaPeisServiceClient;
 using PeiIntegrationService.Models.CdaPiesService;
 
 namespace PeiIntegrationService.HttpClients.Implementation;
 
-public class CdaPeisServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaPeisServiceClient> logger) : ICdaPiesServiceClient
+public class CdaPeisServiceClient(IHttpClientFactory httpClientFactory, ILogger<CdaPeisServiceClient> logger) 
+    : BaseHttpClientExecutor(httpClientFactory, logger), ICdaPiesServiceClient
 {
     public async Task<CdaPeisServiceResponseModel?> GetPiesAsync(CdaPiesServiceRequestModel request)
     {
         logger.LogRequest(request);
 
-        var client = httpClientFactory.CreateClient(HttpClientNames.CdaService);
-
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, request.Rpt);
-        client.DefaultRequestHeaders.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
-        client.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, request.CorrelationId);
-
-        var endPoint = string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId));
-
-        var response = await client.GetAsync(endPoint);
+        var response = await ExecuteAsync(
+            HttpClientNames.CdaService,
+            HttpClientOperationName.PeiServicePeisGet,
+            httpClient => new HttpRequestMessage(HttpMethod.Get, string.Format(HttpEndpoints.External.CdaPeis, HttpUtility.UrlEncode(request.PeisId))),
+            message =>
+            {
+                message.Headers.Authorization = new AuthenticationHeaderValue(HeaderConstants.AuthenticateType, request.Rpt);
+                message.Headers.Add(HeaderConstants.RequestId, Guid.NewGuid().ToString());
+                message.Headers.Add(HeaderConstants.CorrelationId, request.CorrelationId);
+            });
 
         var data = CreateResponse(response).Result;
 

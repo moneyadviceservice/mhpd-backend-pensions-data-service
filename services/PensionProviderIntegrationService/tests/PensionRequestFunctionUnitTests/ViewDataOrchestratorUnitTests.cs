@@ -8,7 +8,6 @@ using MhpdCommon.Repository;
 using MhpdCommon.SharedHttpClient;
 using MhpdCommon.TokenValidation;
 using MhpdCommon.Utils;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -32,8 +31,7 @@ public class ViewDataOrchestratorUnitTests
     private readonly Mock<ViewDataOrchestratorClients> _mockServiceClients;
     private readonly Mock<IIdValidator> _validator = new();
     private readonly Mock<ILogger<ViewDataOrchestrator>> _logger = new();
-    private readonly Mock<Container> _mockUserSessionDataContainer;
-    private readonly Mock<UserSessionDataRepository> _mockUserSessionDataRepository;
+    private readonly Mock<ICosmosDbRepository<UserSessionData>> _mockUserSessionDataRepository = new();
 
     public ViewDataOrchestratorUnitTests()
     {
@@ -60,7 +58,7 @@ public class ViewDataOrchestratorUnitTests
         _mockMapsRqpService.Setup(x => x.GetRqp(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(new MapsRqpServiceResponseModel { Rqp = rqp });
 
-        _mockTokenIntegrationService.Setup(x => x.PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+        _mockTokenIntegrationService.Setup(x => x.PostAccessTokenAsync(It.IsAny<TokenClientRequestModel>(), It.IsAny<string>()))
             .ReturnsAsync(new CdaTokenResponseModel {  AccessToken = rpt });
 
         var holderNameId = Guid.NewGuid().ToString();
@@ -88,10 +86,6 @@ public class ViewDataOrchestratorUnitTests
             _mockMapsRqpService.Object
         );
         
-        Mock<CosmosClient> mockCosmosClient = new();
-        _mockUserSessionDataContainer = new Mock<Container>();
-        Mock<Database> mockDatabase = new();
-        
         var configuration = new CosmosBusinessConfiguration
         {
             DatabaseId = "TestDatabase",
@@ -101,27 +95,14 @@ public class ViewDataOrchestratorUnitTests
         Mock<IOptions<CosmosBusinessConfiguration>> mockCosmosConfigOptions = new();
         mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
 
-        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseId))
-            .Returns(mockDatabase.Object);
-
-        mockDatabase.Setup(mock => mock.GetContainer(configuration.UserSessionDataContainer))
-            .Returns(_mockUserSessionDataContainer.Object);
-
-        // Instantiate the _mockUserSessionDataRepository with the mocked CosmosClient and configuration
-        _mockUserSessionDataRepository =
-            new Mock<UserSessionDataRepository>(mockCosmosClient.Object, mockCosmosConfigOptions.Object);
-        
         var testInstanceData = new UserSessionData
         {
             UserSessionId = Guid.NewGuid().ToString(),
             Pct = TokenQueryParams.ValidPersistedClaimsToken
         };
-        
-        var mockItemResponse = new Mock<ItemResponse<UserSessionData>>();
-        mockItemResponse.Setup(x => x.Resource).Returns(testInstanceData);
-        
-        _mockUserSessionDataContainer.Setup(x => x.ReadItemAsync<UserSessionData>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
-            .ReturnsAsync(mockItemResponse.Object);
+
+        _mockUserSessionDataRepository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(testInstanceData);
         
         _orchestrator = new ViewDataOrchestrator(
             _logger.Object, 

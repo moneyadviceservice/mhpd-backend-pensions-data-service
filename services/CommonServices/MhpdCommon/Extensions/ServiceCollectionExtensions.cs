@@ -40,6 +40,7 @@ namespace MhpdCommon.Extensions
             services.AddScoped<ISharedHttpClient, SharedHttpClient.SharedHttpClient>();
             services.AddScoped<IPeiServiceClient, PeiServiceClient>();
             services.AddScoped<ITokenIntegrationServiceClient, TokenIntegrationServiceClient>();
+            services.AddScoped<IMapsCdaServiceClient, MapsCdaServiceClient>();
 
             return services;
         }

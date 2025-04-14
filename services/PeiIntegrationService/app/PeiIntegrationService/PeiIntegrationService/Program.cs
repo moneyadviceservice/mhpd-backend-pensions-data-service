@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using Microsoft.AspNetCore.HttpLogging;
 using PeiIntegrationService.HttpClients.Implementation;
@@ -25,10 +26,10 @@ builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddHttpLogging(logging =>
 {
     logging.LoggingFields = HttpLoggingFields.All;
-    logging.RequestHeaders.Add("cdaUserGuid");
-    logging.RequestHeaders.Add("iss");
-    logging.RequestHeaders.Add("userSessionId");
-    logging.ResponseHeaders.Add("rpt");
+    logging.RequestHeaders.Add(HeaderConstants.PeisId);
+    logging.RequestHeaders.Add(HeaderConstants.Iss);
+    logging.RequestHeaders.Add(HeaderConstants.UserSessionId);
+    logging.ResponseHeaders.Add(HeaderConstants.Rpt);
     logging.MediaTypeOptions.AddText("application/json");
     logging.RequestBodyLogLimit = 4096;
     logging.ResponseBodyLogLimit = 4096;

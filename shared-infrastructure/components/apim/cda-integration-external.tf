@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "cda-integration-external" {
   description           = "This API describes service that provides RQP tokens for clients interacting with CDA components."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "1"
+  revision              = "3"
   display_name          = "cda-integration-external"
   path                  = "cda-integration-external"
   service_url           = "https://maps-api-management-${var.env}.azure-api.net/cda-emulator"

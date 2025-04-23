@@ -6,10 +6,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Microsoft.Azure.Functions.Worker.Extensions.OpenApi.Extensions;
 using RetrievedPensionsRecordFunction.Repository;
 using RetrievedPensionsRecordFunction.Utils;
 
 var host = new HostBuilder()
+    .ConfigureOpenApi()
     .ConfigureFunctionsWebApplication()
     .ConfigureAppConfiguration((context, config) =>
     {

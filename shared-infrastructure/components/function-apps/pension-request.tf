@@ -1,9 +1,10 @@
 module "pension_request_function" {
   source = "github.com/moneyadviceservice/terraform-module-function-app.git?ref=vnet_integration"
 
-  os_type                 = "Windows"
-  product                 = var.product
-  create_service_plan     = true
+  os_type = "Windows"
+  product = var.product
+  # create_service_plan     = local.# create_service_plan
+  # service_plan_id         = module.retrieved_pensions_details_function.asp_id
   resource_group_name     = data.azurerm_resource_group.mhpd.name
   name                    = "pension-request"
   location                = var.location

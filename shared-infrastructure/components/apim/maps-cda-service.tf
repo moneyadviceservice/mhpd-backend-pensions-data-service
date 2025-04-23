@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "maps-cda-service" {
   description           = "This API describes service that provides RQP tokens for clients interacting with CDA components."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "1"
+  revision              = "2"
   display_name          = "maps-cda-service"
   path                  = "maps-cda-service"
   service_url           = "https://cda-service-${var.env}.azurewebsites.net"

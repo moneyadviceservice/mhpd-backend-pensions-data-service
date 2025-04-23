@@ -7,6 +7,11 @@ using Microsoft.Extensions.Logging;
 using PensionsRetrievalFunction.Models;
 using PensionsRetrievalFunction.Orchestration;
 using System.Text;
+using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
+using Microsoft.OpenApi.Models;
+using System.Net;
+using System.Diagnostics.CodeAnalysis;
 
 namespace PensionsRetrievalFunction;
 
@@ -77,5 +82,21 @@ public class RetrievalFunction(ILogger<RetrievalFunction> logger,
         var logMessage = $"Message Received - CorrelationId:[{receivedMessage.CorrelationId}], " +
             $"MessageId: [{receivedMessage.MessageId}], ContentType: [{receivedMessage.ContentType}] {Environment.NewLine}";
         logger.LogWarning("Message Details : {details} Body: {body}", logMessage, receivedMessage.Body);
+    }
+}
+
+[ExcludeFromCodeCoverage]
+public static class RetrievalFunctionOpenApiSpec
+{
+    private const string Tag = "items";
+
+    [Function("GetItem")]
+    [OpenApiOperation(operationId: "GetItem", tags: [Tag])]
+    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string))]
+    public static HttpResponseData Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequestData req)
+    {
+        var response = req.CreateResponse(HttpStatusCode.OK);
+        response.WriteString("Hello, OpenAPI!");
+        return response;
     }
 }

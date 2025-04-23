@@ -15,3 +15,7 @@ variable "ftps_state" {
 variable "cda_base_url" {
   default = "https://bp-ftr.dev.pensionsdashboards.org.uk"
 }
+
+variable "os_type" {
+  default = "Linux"
+}

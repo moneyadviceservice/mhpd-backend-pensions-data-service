@@ -38,7 +38,7 @@
   </ItemGroup>
   
   <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
-      <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/cda-integration-external.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+      <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/cda-emulator.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
   </Target>
 
 </Project>

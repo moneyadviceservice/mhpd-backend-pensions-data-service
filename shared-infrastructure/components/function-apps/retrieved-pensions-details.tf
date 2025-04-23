@@ -1,9 +1,10 @@
 module "retrieved_pensions_details_function" {
   source = "github.com/moneyadviceservice/terraform-module-function-app.git?ref=vnet_integration"
 
-  os_type                 = "Windows"
-  product                 = var.product
-  create_service_plan     = true
+  os_type = "Windows"
+  product = var.product
+  # create_service_plan     = true
+  # asp_name                = "${var.product}-functions-asp-${var.env}"
   resource_group_name     = data.azurerm_resource_group.mhpd.name
   name                    = "retrieved-pensions"
   location                = var.location

@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "pension-retrieval-service" {
   description           = "This service allows a client to retrieve pensions retrieval records for a pension owner session."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "1"
+  revision              = "2"
   display_name          = "pension-retrieval-service"
   path                  = "pension-retrieval-service"
   service_url           = "https://func-pensions-retrieval-${var.env}.azurewebsites.net"

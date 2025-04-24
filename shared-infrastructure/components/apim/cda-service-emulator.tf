@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "cda-emulator" {
   description           = "Wrapper of the CDA emulator services enforcing mTLS"
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "1"
+  revision              = "2"
   display_name          = "cda-emulator"
   path                  = "cda-emulator"
   service_url           = "https://cda-service-emulator-${var.env}.azurewebsites.net"

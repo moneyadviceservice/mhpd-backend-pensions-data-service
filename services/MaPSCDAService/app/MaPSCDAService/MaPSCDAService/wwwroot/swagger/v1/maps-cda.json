@@ -27,7 +27,7 @@
       }
     },
     "/rqp": {
-      "post": {
+      "get": {
         "tags": [
           "MapsCdaService"
         ],
@@ -40,46 +40,7 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedirectRequestPayload"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedirectRequestPayload"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedirectRequestPayload"
-              }
-            }
-          }
-        },
         "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/RedirectRequestPayload"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RedirectRequestPayload"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/RedirectRequestPayload"
-                }
-              }
-            }
-          },
           "400": {
             "description": "Bad Request",
             "content": {

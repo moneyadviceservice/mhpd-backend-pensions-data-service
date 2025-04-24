@@ -10,14 +10,6 @@ using Microsoft.AspNetCore.HttpLogging;
 
 var builder = WebApplication.CreateBuilder(args);
 
-if (!builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddAzureKeyVault(
-        new Uri(builder.Configuration.GetSection("KeyVaultConfiguration")["KeyVaultURL"]!),
-        new DefaultAzureCredential()
-    );
-}
-
 builder.Services.AddOptions<UriSettings>()
     .Bind(builder.Configuration.GetSection("UriSettings"))
     .ValidateDataAnnotations()

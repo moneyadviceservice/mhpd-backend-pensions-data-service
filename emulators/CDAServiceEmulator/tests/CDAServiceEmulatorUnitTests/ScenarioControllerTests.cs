@@ -1,21 +1,28 @@
 ﻿using CDAServiceEmulator.Controllers;
 using CDAServiceEmulator.CosmosRepository;
+using CDAServiceEmulator.Models.Peis;
+using CDAServiceEmulator.Models.Token;
+using CDAServiceEmulator.Models.ViewData;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
+using MhpdCommon.Repository;
 using MhpdCommon.Utils;
-using Microsoft.Azure.Cosmos;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace CDAServiceEmulatorUnitTests;
 
 public class ScenarioControllerTests
 {
+    private const int MaxScenarioCode = 100;
     private readonly ScenarioController _controller;
     private readonly Mock<IIdValidator> _validator = new();
-    private readonly Mock<Container> _scenarioModelContainer = new();
-    private readonly Mock<Container> _peisModelContainer = new();
-    private readonly Mock<Container> _viewModelContainer = new();
+    private readonly Mock<ICosmosDbRepository<TokenEmulatorPiesIdScenarioModel>> _scenarioModelRepository = new();
+    private readonly Mock<ICdaPeisEmulatorScenarioModelRepository> _peisModelRepository = new();
+    private readonly Mock<ICosmosDbRepository<ViewDataPayloadModel>> _viewModelRepository = new();
     private readonly Mock<IMessageParser> _messageParser = new();
     private readonly Mock<IViewDataTransformer> _transformer = new();
 
@@ -31,56 +38,38 @@ public class ScenarioControllerTests
             ViewDataModelContainerName = "viewdatapayloads"
         };
 
-        Mock<CosmosClient> mockCosmosClient = new();
-        Mock<Database> database = new();
+        _scenarioModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(TokenEmulatorPiesIdScenarioModel());
 
-        mockCosmosClient.Setup(mock => mock.GetDatabase(configuration.DatabaseName))
-            .Returns(database.Object);
+        _scenarioModelRepository.Setup(mock => mock.InsertItemAsync(It.IsAny<TokenEmulatorPiesIdScenarioModel>(), It.IsAny<string>()))
+            .Verifiable();
 
-        database.Setup(mock => mock.GetContainer(configuration.TokenEmulatorPiesIdScenarioModelsContainerName))
-            .Returns(_scenarioModelContainer.Object);
+        _scenarioModelRepository.Setup(mock => mock.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(true);
 
-        database.Setup(mock => mock.GetContainer(configuration.CdaPeisEmulatorScenarioModelContainerName))
-            .Returns(_peisModelContainer.Object);
+        _scenarioModelRepository.Setup(mock => mock.GetAllAsync())
+            .ReturnsAsync([new TokenEmulatorPiesIdScenarioModel { IsHiddenScenario = true }, new()]);
 
-        database.Setup(mock => mock.GetContainer(configuration.ViewDataModelContainerName))
-            .Returns(_viewModelContainer.Object);
+        _peisModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(CdaPeisEmulatorScenarioModel());
 
-        var feedResponse = new Mock<FeedResponse<dynamic>>();
-        dynamic responseObject = new { MaxStartCode = 10 };
-        feedResponse.Setup(x => x.FirstOrDefault())
-            .Returns(responseObject);
+        _peisModelRepository.Setup(mock => mock.InsertItemAsync(It.IsAny<CdaPeisEmulatorScenarioModel>(), It.IsAny<string>()))
+            .Verifiable();
 
-        var feedIterator = new Mock<FeedIterator<dynamic>>();
-        feedIterator.SetupSequence(x => x.HasMoreResults)
-            .Returns(true)
-            .Returns(false);
-        feedIterator.Setup(x => x.ReadNextAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(feedResponse.Object);
+        _peisModelRepository.Setup(mock => mock.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(true);
 
-        _peisModelContainer.Setup(x => x.GetItemQueryIterator<dynamic>(
-                It.IsAny<QueryDefinition>(),
-                It.IsAny<string>(),
-                It.IsAny<QueryRequestOptions>()))
-            .Returns(feedIterator.Object);
+        _peisModelRepository.Setup(mock => mock.GetMaxScenarioCodeAsync())
+            .ReturnsAsync(MaxScenarioCode);
 
-        var peisModelRepository = new Mock<CdaPeisEmulatorScenarioModelRepository>(
-            mockCosmosClient.Object,
-            configuration.DatabaseName,
-            configuration.CdaPeisEmulatorScenarioModelContainerName
-        );
+        _viewModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(ViewDataPayloadModel());
 
-        var scenarioModelRepository = new Mock<TokenEmulatorPiesIdScenarioModelsRepository>(
-            mockCosmosClient.Object,
-            configuration.DatabaseName,
-            configuration.TokenEmulatorPiesIdScenarioModelsContainerName
-        );
+        _viewModelRepository.Setup(mock => mock.InsertItemAsync(It.IsAny<ViewDataPayloadModel>(), It.IsAny<string>()))
+            .Verifiable();
 
-        var viewdataModelRepository = new Mock<ViewDataRepository>(
-            mockCosmosClient.Object,
-            configuration.DatabaseName,
-            configuration.ViewDataModelContainerName
-        );
+        _viewModelRepository.Setup(mock => mock.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync(true);
 
         var holderNameId = Guid.NewGuid().ToString();
         var assetId = Guid.NewGuid().ToString();
@@ -88,20 +77,256 @@ public class ScenarioControllerTests
 
         _messageParser.Setup(mock => mock.ToViewDataPayload(It.IsAny<string>())).Returns(new ViewDataPayload());
 
-        _transformer.Setup(mock => mock.Transform(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(It.IsAny<string>());
+        _transformer.Setup(mock => mock.Transform(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>())).Returns(GetTransformedPension());
 
-        _controller = new ScenarioController(logger.Object, scenarioModelRepository.Object, peisModelRepository.Object, 
-            viewdataModelRepository.Object, _transformer.Object, _messageParser.Object, _validator.Object);
+        _controller = new ScenarioController(logger.Object, _scenarioModelRepository.Object, _peisModelRepository.Object,
+            _viewModelRepository.Object, _transformer.Object, _messageParser.Object, _validator.Object);
     }
 
-    private static string GetValidViewDataPayload()
+    [Fact]
+    public async Task GetScenarioById_ValidScenario_ReturnsOk()
     {
-        return "{\"arrangements\":[{\"pensionProviderSchemeName\":\"Your Pension DC Master Trust\",\"possibleMatchReference\":\"D1006548723\",\"pensionType\":\"DC\",\"pensionOrigin\":\"WM\",\"pensionStatus\":\"A\",\"pensionStartDate\":\"1998-05-16\",\"retirementDate\":\"2038-09-18\",\"dateOfBirth\":\"1973-09-18\",\"possibleMatch\":false,\"pensionAdministrator\":{\"name\":\"Your Pension\",\"contactMethods\":[{\"preferred\":false,\"contactMethodDetails\":{\"email\":\"mastertrust@yourpension.com\"}},{\"preferred\":true,\"contactMethodDetails\":{\"url\":\"https://www.yourpension.co.uk\"}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 80080087355\",\"usage\":[\"M\"]}},{\"preferred\":false,\"contactMethodDetails\":{\"postalName\":\"Your Pension\",\"line1\":\"92 Victoria Lane\",\"line2\":\"Frampton Cotterell\",\"line3\":\"Bristol\",\"line4\":\"South Glocustershire\",\"postcode\":\"BS36 9DD\",\"countryCode\":\"GB\"}}]},\"employmentMembershipPeriods\":[{\"employerName\":\"Sweets R Us\",\"employerStatus\":\"C\",\"membershipStartDate\":\"1998-05-16\"}],\"benefitIllustrations\":[{\"illustrationComponents\":[{\"benefitType\":\"DC\",\"calculationMethod\":\"SMPI\",\"payableDetails\":{\"payableDate\":\"2038-09-18\",\"increasing\":false,\"monthlyAmount\":1725,\"annualAmount\":20700,\"amountType\":\"INC\"},\"estimatedDcPot\":300000,\"survivorBenefit\":false,\"safeguardedBenefit\":false},{\"amountType\":\"INC\",\"benefitType\":\"DC\",\"calculationMethod\":\"SMPI\",\"payableDetails\":{\"payableDate\":\"2038-09-18\",\"increasing\":false,\"monthlyAmount\":1351,\"annualAmount\":16215,\"amountType\":\"INC\"},\"accruedDcPot\":235000,\"survivorBenefit\":false,\"safeguardedBenefit\":false}],\"illustrationDate\":\"2023-05-16\"}]}]}";
+        // Act
+        var result = await _controller.GetAsync("scenarioCode");
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult);
     }
 
-    private static string GetInvalidViewDataPayload()
+    [Fact]
+    public async Task GetScenarioById_MissingScenario_ReturnsNotFound()
     {
-        return "{\"arrangements\":[{\"pensionProviderSchemeName\":\"ABC\",\"possibleMatchReference\":\"D9999\",\"pensionType\":\"SP\",\"pensionOrigin\":\"PC\",\"pensionStatus\":\"PC\",\"pensionStartDate\":\"2024-05-05\",\"retirementDate\":\"2042-05-05\",\"dateOfBirth\":\"2000-05-05\",\"possibleMatch\":true,\"pensionAdministrator\":{\"name\":\"ABC Your Pension\",\"contactMethods\":[{\"preferred\":false,\"contactMethodDetails\":{\"email\":\"abcmastertrust@yourpension.com\"}},{\"preferred\":true,\"contactMethodDetails\":{\"url\":\"https://www.abcyourpension.co.uk\"}},{\"preferred\":false,\"contactMethodDetails\":{\"number\":\"+44 9999999999\",\"usage\":[\"A\"]}},{\"preferred\":false,\"contactMethodDetails\":{\"postalName\":\"ABCYour Pension\",\"line1\":\"92 Victoria Lane\",\"line2\":\"Frampton Cotterell\",\"line3\":\"Bristol\",\"line4\":\"South Glocustershire\",\"postcode\":\"BS36 9DD\",\"countryCode\":\"GB\"}}]},\"employmentMembershipPeriods\":[{\"employerName\":\"ABCSweets R Us\",\"employerStatus\":\"H\",\"employmentStartDate\":\"1998-05-16\"}],\"benefitIllustrations\":[{\"illustrationComponents\":[{\"benefitType\":\"MHPD\",\"calculationMethod\":\"SMPI\",\"payableDetails\":{\"payableDate\":\"2038-09-18\",\"annualAmount\":20700,\"amountType\":\"INC\"},\"estimatedDcPot\":300000,\"survivorBenefit\":false,\"safeguardedBenefit\":false},{\"benefitType\":\"DC\",\"calculationMethod\":\"SMPI\",\"payableDetails\":{\"payableDate\":\"2038-09-18\",\"annualAmount\":16215,\"amountType\":\"INC\"},\"accruedDcPot\":235000,\"survivorBenefit\":false,\"safeguardedBenefit\":false}],\"illustrationDate\":\"2030-05-05\"}]}]}";
+        // Arrange
+        _scenarioModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((TokenEmulatorPiesIdScenarioModel?)null);
 
+        // Act
+        var result = await _controller.GetAsync("invalidScenarioCode");
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task GetScenarioById_MissingPeis_ReturnsNotFound()
+    {
+        // Arrange
+        _peisModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((CdaPeisEmulatorScenarioModel?)null);
+
+        // Act
+        var result = await _controller.GetAsync("invalidScenarioCode");
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task GetAllScenarios_ReturnsSingle()
+    {
+        // Act
+        var result = await _controller.GetAllAsync();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult);
+        Assert.NotNull(okResult.Value);
+        Assert.Single((List<TokenEmulatorPiesIdScenarioModel>)okResult.Value);
+    }
+
+    [Fact]
+    public async Task GetAllScenarios_ReturnsMultiple()
+    {
+        // Arrange
+        _scenarioModelRepository.Setup(mock => mock.GetAllAsync())
+            .ReturnsAsync([new(), new()]);
+
+        // Act
+        var result = await _controller.GetAllAsync();
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult);
+        Assert.NotNull(okResult.Value);
+        Assert.Equal(2, ((List<TokenEmulatorPiesIdScenarioModel>)okResult.Value).Count);
+    }
+
+    [Fact]
+    public async Task PostScenario_InvalidScenario_ReturnsBadRequest()
+    {
+        // Arrange
+        var payload = JsonDocument.Parse(GetSingleArrangementsPayload()).RootElement;
+
+        // Act
+        var result = await _controller.PostAsync(payload, string.Empty);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task PostScenario_ExistingScenario_ReturnsBadRequest()
+    {
+        // Arrange
+        var payload = JsonDocument.Parse(GetSingleArrangementsPayload()).RootElement;
+
+        // Act
+        var result = await _controller.PostAsync(payload, "ScenarioCode");
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public async Task PostScenario_InvalidPayload_ReturnsBadRequest()
+    {
+        // Arrange
+        _scenarioModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((TokenEmulatorPiesIdScenarioModel?)null);
+
+        var error = new InvalidOperationException("Invalid payload");
+        _messageParser.Setup(mock => mock.ToViewDataPayload(It.IsAny<string>())).Throws(new AggregateException(error));
+
+        var payload = JsonDocument.Parse(GetSingleArrangementsPayload()).RootElement;
+
+        // Act
+        var result = await _controller.PostAsync(payload, "ScenarioCode");
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PostScenario_ValidScenario_ReturnsOk(bool useMultipleArrangementPayload)
+    {
+        // Arrange
+        _scenarioModelRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync((TokenEmulatorPiesIdScenarioModel?)null);
+
+        var assetCount = useMultipleArrangementPayload ? 3 : 1;
+        var asset = useMultipleArrangementPayload ? GetMultileArrangementsPayload() : GetSingleArrangementsPayload();
+        var payload = JsonDocument.Parse(asset).RootElement;
+
+        var scenarioCode = "ScenarioCode";
+
+        var startCode = $"{MaxScenarioCode + 1:D4}";
+
+        // Act
+        var result = await _controller.PostAsync(payload, scenarioCode);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        Assert.NotNull(okResult);
+        _scenarioModelRepository.Verify(mock => mock.InsertItemAsync(It.IsAny<TokenEmulatorPiesIdScenarioModel>(), scenarioCode), Times.Once);
+        _peisModelRepository.Verify(mock => mock.InsertItemAsync(It.IsAny<CdaPeisEmulatorScenarioModel>(), startCode), Times.Once);
+        _viewModelRepository.Verify(mock => mock.InsertItemAsync(It.IsAny<ViewDataPayloadModel>(), It.IsAny<string>()), Times.Exactly(assetCount));
+    }
+
+    [Fact]
+    public void ValidateScenario_InvalidPayload_ReturnsBadRequest()
+    {
+        // Arrange
+        var error = new InvalidOperationException("Invalid payload");
+        _messageParser.Setup(mock => mock.ToViewDataPayload(It.IsAny<string>())).Throws(new AggregateException(error));
+
+        var payload = JsonDocument.Parse(GetSingleArrangementsPayload()).RootElement;
+
+        // Act
+        var result = _controller.Validate(payload);
+
+        // Assert
+        Assert.IsType<BadRequestObjectResult>(result);
+    }
+
+    [Fact]
+    public void ValidateScenario_ValidPayload_ReturnsBadRequest()
+    {
+        // Arrange
+        var payload = JsonDocument.Parse(GetSingleArrangementsPayload()).RootElement;
+
+        // Act
+        var result = _controller.Validate(payload);
+
+        // Assert
+        Assert.IsType<OkResult>(result);
+    }
+
+    [Fact]
+    public async Task DeleteScenario_ReturnsOk()
+    {
+        // Arrange
+        var scenarios = new List<string> { "First", "Second", "Third", "Fourth"};
+
+        // Act
+        var result = await _controller.DeleteAsync(scenarios);
+
+        // Assert
+        _scenarioModelRepository.Verify(mock => mock.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(scenarios.Count));
+        _peisModelRepository.Verify(mock => mock.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(scenarios.Count));
+        _viewModelRepository.Verify(mock => mock.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Exactly(scenarios.Count));
+    }
+
+    private static string GetSingleArrangementsPayload()
+    {
+        return "{\"arrangements\":[{\"possibleMatch\":false,\"pensionProviderSchemeName\":\"State Pension\",\"pensionType\":\"SP\"}]}";
+    }
+
+    private static string GetMultileArrangementsPayload()
+    {
+        return "{\"arrangements\":[{\"possibleMatch\":false,\"pensionProviderSchemeName\":\"State Pension\",\"pensionType\":\"SP\"},{\"possibleMatch\":false,\"pensionProviderSchemeName\":\"DC Scheme\",\"pensionType\":\"DC\"},{\"possibleMatch\":false,\"pensionProviderSchemeName\":\"DB Scheme\",\"pensionType\":\"DB\"}]}";
+
+    }
+
+    private static string GetTransformedPension()
+    {
+        return "{\"retrievalResult\":[{\"externalAssetId\":\"14343\",\"matchType\":\"DEFN\",\"schemeName\":\"MyCompany Direct Contribution Scheme\"}]}";
+    }
+
+    private static TokenEmulatorPiesIdScenarioModel TokenEmulatorPiesIdScenarioModel()
+    {
+        return new TokenEmulatorPiesIdScenarioModel
+        {
+            Code = "ScenarioCode",
+            PeisIdStartCode = "PeisScenarioCode",
+            IsHiddenScenario = false
+        };
+    }
+
+    private static CdaPeisEmulatorScenarioModel CdaPeisEmulatorScenarioModel()
+    {
+        return new CdaPeisEmulatorScenarioModel
+        {
+            Id = "PeisScenarioCode",
+            PeisIdStartCode = "ScenarioCode",
+            DataPoints =
+            [
+                new() {
+                    AvailableAt = 0,
+                    ResponsePayload = new ResponsePayload
+                    {
+                        PeiList =
+                        [
+                            new() {
+                                Pei = "Pei",
+                                Description = "Description",
+                            }
+                        ],
+                    }
+                }
+            ],
+        };
+    }
+
+    private static ViewDataPayloadModel ViewDataPayloadModel()
+    {
+        return new ViewDataPayloadModel
+        {
+            Id = "PeisScenarioCode",
+            AssetGuid = "ScenarioCode",
+            ViewData = JObject.Parse(GetSingleArrangementsPayload()),
+        };
     }
 }

@@ -125,6 +125,52 @@ public class CosmosDbRepositoryTests
         var exception = await Assert.ThrowsAsync<Exception>(() => _repository.InsertItemAsync(item, partitionKey));
         Assert.Equal("Failed to upsert item.", exception.Message);
     }
+
+    [Fact]
+    public async Task DeleteByIdAsync_ReturnsTrue_WhenEntityExists()
+    {
+        // Arrange
+        var testEntity = new TestEntity { Id = "1", PartitionKey = "partition1" };
+        var response = new Mock<ItemResponse<TestEntity>>();
+        response.Setup(r => r.Resource).Returns(testEntity);
+
+        _mockContainer
+            .Setup(c => c.DeleteItemAsync<TestEntity>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ReturnsAsync(response.Object);
+
+        // Act
+        var result = await _repository.DeleteByIdAsync("1", "partition1");
+
+        // Assert
+        Assert.True(result);
+    }
+
+    [Fact]
+    public async Task DeleteByIdAsync_ReturnsFalse_WhenEntityDoesNotExist()
+    {
+        // Arrange
+        _mockContainer
+            .Setup(c => c.DeleteItemAsync<TestEntity>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ThrowsAsync(new CosmosException("Not Found", HttpStatusCode.NotFound, 0, "", 0));
+
+        // Act
+        var result = await _repository.DeleteByIdAsync("1", "partition1");
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task DeleteByIdAsync_ThrowsException_WhenCosmosThrows()
+    {
+        // Arrange
+        _mockContainer
+            .Setup(c => c.DeleteItemAsync<TestEntity>(It.IsAny<string>(), It.IsAny<PartitionKey>(), null, default))
+            .ThrowsAsync(new CosmosException("Bad Request", HttpStatusCode.BadRequest, 0, "", 0));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<CosmosException>(async () => await _repository.DeleteByIdAsync("1", "partition1"));
+    }
 }
 
 public class TestEntity

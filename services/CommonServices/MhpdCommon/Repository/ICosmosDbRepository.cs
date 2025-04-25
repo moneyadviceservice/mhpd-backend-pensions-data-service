@@ -9,6 +9,8 @@ public interface ICosmosDbRepository<T> where T : class
     Task InsertItemAsync(T item, string partitionKey);
 
     Task<IEnumerable<T>> GetAllAsync();
+
+    Task<bool> DeleteByIdAsync(string id, string partitionKey);
 }
 
 

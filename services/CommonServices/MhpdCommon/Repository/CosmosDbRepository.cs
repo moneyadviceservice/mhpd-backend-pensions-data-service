@@ -74,4 +74,18 @@ public class CosmosDbRepository<T> : ICosmosDbRepository<T> where T : class
             throw new Exception("Failed to upsert item.", ex);
         }
     }
+
+    public async Task<bool> DeleteByIdAsync(string id, string partitionKey)
+    {
+        try
+        {
+            await _container.DeleteItemAsync<T>(id, new PartitionKey(partitionKey));
+
+            return true;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+    }
 }

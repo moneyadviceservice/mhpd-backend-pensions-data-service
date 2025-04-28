@@ -15,7 +15,7 @@ resource "azurerm_api_management_api" "token-integration-service" {
   }
   import {
     content_format = "openapi+json-link"
-    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/add_api_docs/specs/token-integration.json"
+    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/main/specs/token-integration.json"
   }
 }
 

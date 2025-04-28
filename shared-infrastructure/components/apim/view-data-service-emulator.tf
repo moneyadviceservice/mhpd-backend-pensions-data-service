@@ -15,7 +15,7 @@ resource "azurerm_api_management_api" "view-data-service-emulator" {
   }
   import {
     content_format = "openapi+json-link"
-    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/add_api_docs/specs/view-data-emulator.json"
+    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/main/specs/view-data-emulator.json"
   }
 }
 

@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "maps-cda-service" {
   description           = "This API describes service that provides RQP tokens for clients interacting with CDA components."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "3"
+  revision              = "1"
   display_name          = "maps-cda-service"
   path                  = "maps-cda-service"
   service_url           = "https://cda-service-${var.env}.azurewebsites.net"
@@ -15,7 +15,7 @@ resource "azurerm_api_management_api" "maps-cda-service" {
   }
   import {
     content_format = "openapi+json-link"
-    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/add_api_docs/specs/maps-cda.json"
+    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/main/specs/maps-cda.json"
   }
 }
 

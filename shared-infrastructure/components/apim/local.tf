@@ -1,7 +1,7 @@
 locals {
   pdp-backend-service       = "https://pdp-view-data-service-emulator-${var.env}.azurewebsites.net"
   pei-backend-service       = "https://pei-integration-service-${var.env}.azurewebsites.net"
-  cda-backend-service       = var.env == "staging" || var.env == "prod" ? "https://bp-ftr.dev.pensionsdashboards.org.uk" : "https://maps-api-management-${var.env}.azure-api.net/cda-emulator"
+  cda-backend-service       = var.env == "staging" || var.env == "prod" ? "https://bp-ftr.dev.pensionsdashboards.org.uk/ig" : var.env == "test" ? "https://sys.pensionsdashboards.org.uk/ig" : "https://maps-api-management-${var.env}.azure-api.net/cda-emulator"
   view-data-backend-service = "@((string)context.Variables[\"backendUrl\"])"
   certificate-id            = "PdpMtls"
   backendUrl                = "@(context.Request.Headers.GetValueOrDefault(\"providerUrl\"))"

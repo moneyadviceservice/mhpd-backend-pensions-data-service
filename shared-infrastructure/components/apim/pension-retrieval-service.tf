@@ -15,7 +15,7 @@ resource "azurerm_api_management_api" "pension-retrieval-service" {
   }
   import {
     content_format = "openapi+json-link"
-    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/add_api_docs/specs/pension-retrieval.json"
+    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/main/specs/pension-retrieval.json"
   }
 }
 

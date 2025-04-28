@@ -21,6 +21,6 @@
     </ItemGroup>
     
     <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
-        <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/pensions-data.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+        <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/pension-data.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
     </Target>
 </Project>

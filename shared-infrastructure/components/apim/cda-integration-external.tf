@@ -15,7 +15,7 @@ resource "azurerm_api_management_api" "cda-integration-external" {
   }
   import {
     content_format = "openapi+json-link"
-    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/add_api_docs/specs/cda-integration-external.json"
+    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/main/specs/cda-integration-external.json"
   }
 }
 

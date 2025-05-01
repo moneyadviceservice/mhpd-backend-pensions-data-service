@@ -23,7 +23,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public IActionResult PostRqp([FromHeader] RequestHeaderModel headerModel)
     {
-        if (!TryValidateRqpRequest(headerModel, out var message))
+        if (!TryValidateRequest(headerModel, out var message))
         {
             logger.LogWarning("Invalid request: {Message}", message);
             return BadRequest(message);
@@ -42,18 +42,18 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     [HttpPost]
     [ProducesResponseType(typeof(RedirectRequestPayload), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
-    public IActionResult RedirectDetails([FromBody] RedirectRequestPayload request, [FromHeader] RequestHeaderModel headerModel)
+    public IActionResult RedirectDetails([FromHeader] RequestHeaderModel headerModel)
     {
-        if (!TryValidateRedirectRequest(request, headerModel, out var message, true))
+        if (!TryValidateRequest(headerModel, out var message))
         {
             logger.LogWarning("Invalid request: {Message}", message);
             return BadRequest(message);
         }
 
         using var scope = logger.BeginCorrelationScope(headerModel.CorrelationId!, $"{ Constants.LogSource} Redirect");
-        logger.LogRequest(request);
+        logger.LogRequest(headerModel);
         
-        var response = CreateRedirectResponse(request);
+        var response = CreateRedirectResponse(headerModel);
         logger.LogResponse(response);
 
         return Ok(response);
@@ -94,21 +94,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
         return true;
     }
 
-    private bool TryValidateRedirectRequest(RedirectRequestPayload request, RequestHeaderModel headerModel,
-        out string? message, bool redirectPurposeCheck = false)
-    {
-        if (redirectPurposeCheck && string.IsNullOrWhiteSpace(request.RedirectPurpose))
-        {
-            message = Constants.MissingOrInvalidRedirectPurpose;
-            return false;
-        }
-    
-        var isValid = TryValidateRequestBase(request.Iss, request.UserSessionId, headerModel.CorrelationId, out var updatedCorrelationId, out message);
-        headerModel.CorrelationId = updatedCorrelationId;
-        return isValid;
-    }
-
-    private bool TryValidateRqpRequest(RequestHeaderModel request, out string? message)
+    private bool TryValidateRequest(RequestHeaderModel request, out string? message)
     {
         var isValid = TryValidateRequestBase(request.Iss, request.UserSessionId, request.CorrelationId, out var updatedCorrelationId, out message);
         request.CorrelationId = updatedCorrelationId;
@@ -124,9 +110,10 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
         });
     }
     
-    private RedirectResponseModel CreateRedirectResponse(RedirectRequestPayload request)
+    private RedirectResponseModel CreateRedirectResponse(RequestHeaderModel request)
     {            
-        var pkce = pkceGenerator.GeneratePkce();
+        var (codeVerifier, codeChallenge) = pkceGenerator.GeneratePkce();
+
         return new RedirectResponseModel
         {
             RedirectTargetUrl = uriSettings.Value.RedirectTargetUrl,
@@ -136,8 +123,8 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
             Prompt = Constants.Prompt,
             Service = Constants.Service,
             CodeChallengeMethod = Constants.CodeChallengeMethod,
-            CodeChallenge = pkce.codeChallenge,
-            CodeVerifier = pkce.codeVerifier,
+            CodeChallenge = codeChallenge,
+            CodeVerifier = codeVerifier,
             RequestId = Guid.NewGuid().ToString()
         };
     }

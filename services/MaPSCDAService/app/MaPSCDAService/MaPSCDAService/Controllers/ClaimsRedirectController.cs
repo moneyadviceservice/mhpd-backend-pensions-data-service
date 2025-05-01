@@ -105,14 +105,13 @@ public class ClaimsRedirectController(ILogger<ClaimsRedirectController> logger,
 
     private async Task<CdaTokenResponseModel> GetAccessToken(CdaPeisServiceResponseModel peiResponse, string rqp, string correlationId, string clientId)
     {
-        return await tokenIntegrationServiceClient.PostRptAsync(new TokenClientRequestModel
+        return await tokenIntegrationServiceClient.PostAccessTokenAsync(new TokenClientRequestModel
         {
             Rqp = rqp,
             AsUri = peiResponse.ResponseMessage!.AsUri,
             Ticket = peiResponse.ResponseMessage.Ticket,
-            CorrelationId = correlationId,
             ClientId = clientId
-        });
+        }, correlationId);
     }
 
     private bool TryValidateRequestHeader(RequestHeaderModel requestHeader, out string? message)

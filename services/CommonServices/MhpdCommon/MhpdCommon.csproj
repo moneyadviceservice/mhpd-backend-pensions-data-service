@@ -40,6 +40,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json.Schema" Version="4.0.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.1.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.1.1" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.1.0" />
   </ItemGroup>
 

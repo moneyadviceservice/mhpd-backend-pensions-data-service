@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "PensionsDataService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
     "version": "1.0"
@@ -127,57 +127,81 @@
   "components": {
     "schemas": {
       "PensionsDataRequestModel": {
+        "required": [
+          "authorisationCode",
+          "clientId",
+          "clientSecret",
+          "codeVerifier",
+          "redirectUrl"
+        ],
         "type": "object",
         "properties": {
           "clientId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "clientSecret": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "authorisationCode": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "redirectUrl": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^https?:\\/\\/([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(\\/[^\\s]*)?$",
+            "type": "string"
           },
           "codeVerifier": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 128,
+            "minLength": 43,
+            "pattern": "^[a-zA-Z0-9\\-._~]{43,128}$",
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "PensionsDataRetrievalRequest": {
+        "required": [
+          "clientId",
+          "ticket"
+        ],
         "type": "object",
         "properties": {
           "ticket": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^https?:\\/\\/([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(\\/[^\\s]*)?$",
+            "type": "string"
           },
           "clientId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "RequestHeaderModel": {
+        "required": [
+          "iss",
+          "userSessionId"
+        ],
         "type": "object",
         "properties": {
           "userSessionId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
+            "type": "string"
           },
           "iss": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
           },
           "correlationId": {
+            "maxLength": 36,
+            "minLength": 0,
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
             "type": "string",
             "nullable": true
           }

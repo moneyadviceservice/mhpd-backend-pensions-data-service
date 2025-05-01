@@ -76,22 +76,6 @@ public class MapsCdaServiceControllerTests
         Assert.Equal(Constants.MissingOrInvalidIss, badRequestResult.Value);
     }
     
-    [Fact]
-    public void PostRedirectDetails_InvalidRequest_MissingRedirectPurpose_ReturnsBadRequest()
-    {
-        // Arrange
-        var request = new RedirectRequestPayload { Iss = "", UserSessionId = Guid.NewGuid().ToString() };
-        var header = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString() };
-        
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.RedirectPurpose)).Returns(true);
-
-        // Act
-        var result = _controller.RedirectDetails(request, header);
-
-        // Assert
-        var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
-        Assert.Equal(Constants.MissingOrInvalidRedirectPurpose, badRequestResult.Value);
-    }
 
     [Fact]
     public void PostRqp_InvalidRequest_InvalidUserSessionId_ReturnsBadRequest()
@@ -128,17 +112,15 @@ public class MapsCdaServiceControllerTests
     public void RedirectDetails_ValidRequest_ReturnsOkResponse()
     {
         // Arrange
-        var request = new RedirectRequestPayload { Iss = "issuer", UserSessionId = Guid.NewGuid().ToString(), RedirectPurpose = "FIND"};
-        var header = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString() };
+        var header = new RequestHeaderModel { CorrelationId = Guid.NewGuid().ToString(), Iss = "issuer", UserSessionId = Guid.NewGuid().ToString() };
 
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.RedirectPurpose)).Returns(true);
-        _mockIdValidator.Setup(v => v.IsValidGuid(request.UserSessionId)).Returns(true);
+        _mockIdValidator.Setup(v => v.IsValidGuid(header.UserSessionId)).Returns(true);
         _mockIdValidator.Setup(v => v.IsValidGuid(header.CorrelationId)).Returns(true);
         _mockTokenUtility.Setup(t => t.GenerateJwt(It.IsAny<CustomClaimDataModel>())).Returns("mocked_token");
         _mockPkceGenerator.Setup(p => p.GeneratePkce()).Returns((codeVerifier: "mocked_verifier", codeChallenge: "mocked_challenge"));
 
         // Act
-        var result = _controller.RedirectDetails(request, header);
+        var result = _controller.RedirectDetails(header);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);

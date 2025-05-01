@@ -30,7 +30,7 @@ public class ClaimsRedirectUnitTests
         _validator.Setup(mock => mock.IsValidPeisId(It.IsAny<string>())).Returns(true);
         _tokenUtility.Setup(mock => mock.GenerateJwt(It.IsAny<CustomClaimDataModel>())).Returns("rqp");
         _peiClient.Setup(mock => mock.GetPeiDataAsync(It.IsAny<PeiRequestModel>())).ReturnsAsync(GetPeiResponse());
-        _tokenClient.Setup(mock => mock.PostRptAsync(It.IsAny<TokenClientRequestModel>())).ReturnsAsync(GetTokenResponse());
+        _tokenClient.Setup(mock => mock.PostAccessTokenAsync(It.IsAny<TokenClientRequestModel>(), It.IsAny<string>())).ReturnsAsync(GetTokenResponse());
         _sessionRepository.Setup(mock => mock.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(GetSessionData());
 
         _controller = new ClaimsRedirectController(logger.Object, _validator.Object, _tokenUtility.Object, _peiClient.Object, _tokenClient.Object, _sessionRepository.Object);
@@ -136,7 +136,7 @@ public class ClaimsRedirectUnitTests
         // Arrange
         var request = GetRequest();
 
-        _tokenClient.Setup(mock => mock.PostRptAsync(It.IsAny<TokenClientRequestModel>())).ReturnsAsync(GetTokenResponse(true));
+        _tokenClient.Setup(mock => mock.PostAccessTokenAsync(It.IsAny<TokenClientRequestModel>(), It.IsAny<string>())).ReturnsAsync(GetTokenResponse(true));
 
         // Act
         var response = await _controller.GetRedirectAsync(request);
@@ -166,7 +166,7 @@ public class ClaimsRedirectUnitTests
         var request = GetRequest();
         
         _tokenClient.Setup(mock => mock
-            .PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+            .PostAccessTokenAsync(It.IsAny<TokenClientRequestModel>(), It.IsAny<string>()))
             .ReturnsAsync(GetTokenResponse(false, false));
 
         // Act
@@ -184,7 +184,7 @@ public class ClaimsRedirectUnitTests
         var request = GetRequest();
         
         _tokenClient.Setup(mock => mock
-                .PostRptAsync(It.IsAny<TokenClientRequestModel>()))
+                .PostAccessTokenAsync(It.IsAny<TokenClientRequestModel>(), It.IsAny<string>()))
             .ReturnsAsync(GetTokenResponse(false, true, false));
 
         // Act

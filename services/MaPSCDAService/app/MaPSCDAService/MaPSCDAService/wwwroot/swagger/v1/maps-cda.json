@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "MaPSCDAService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
     "version": "1.0"
@@ -78,25 +78,6 @@
             }
           }
         ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedirectRequestPayload"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedirectRequestPayload"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/RedirectRequestPayload"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "OK",
@@ -145,35 +126,55 @@
   "components": {
     "schemas": {
       "RedirectRequestPayload": {
+        "required": [
+          "iss",
+          "redirectPurpose",
+          "userSessionId"
+        ],
         "type": "object",
         "properties": {
           "redirectPurpose": {
+            "minLength": 1,
+            "enum": [
+              "FIND"
+            ],
             "type": "string",
-            "nullable": true
+            "description": " (Constant value: FIND)"
           },
           "iss": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
           },
           "userSessionId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
+            "type": "string"
           }
         },
         "additionalProperties": false
       },
       "RequestHeaderModel": {
+        "required": [
+          "iss",
+          "userSessionId"
+        ],
         "type": "object",
         "properties": {
           "userSessionId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
+            "type": "string"
           },
           "iss": {
-            "type": "string",
-            "nullable": true
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
           },
           "correlationId": {
+            "maxLength": 36,
+            "minLength": 0,
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
             "type": "string",
             "nullable": true
           }

@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
-using Azure.Identity;
 using MaPSCDAService.Configuration;
 using MaPSCDAService.Utils;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.OpenApi;
 using MhpdCommon.Repository;
 using Microsoft.AspNetCore.HttpLogging;
 
@@ -33,7 +33,7 @@ builder.Services.AddHttpLogging(logging =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c => c.SchemaFilter<ConstSchemaFilter>());
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<ICosmosDbRepository<UserSessionData>, UserSessionDataRepository>();
@@ -43,7 +43,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwagger(c => c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
     app.UseSwaggerUI();
 }
 

@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "pension-data-service" {
   description           = "This API describes service that provides RQP tokens for clients interacting with CDA components."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "4"
+  revision              = "5"
   display_name          = "pension-data-service"
   path                  = "pension-data-service"
   service_url           = "https://pension-data-service-${var.env}.azurewebsites.net"

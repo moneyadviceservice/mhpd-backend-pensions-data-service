@@ -41,6 +41,26 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/RqpResponseModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RqpResponseModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RqpResponseModel"
+                }
+              }
+            }
+          },
           "400": {
             "description": "Bad Request",
             "content": {
@@ -84,17 +104,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "$ref": "#/components/schemas/RedirectRequestPayload"
+                  "$ref": "#/components/schemas/RedirectResponseModel"
                 }
               },
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RedirectRequestPayload"
+                  "$ref": "#/components/schemas/RedirectResponseModel"
                 }
               },
               "text/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RedirectRequestPayload"
+                  "$ref": "#/components/schemas/RedirectResponseModel"
                 }
               }
             }
@@ -125,31 +145,67 @@
   },
   "components": {
     "schemas": {
-      "RedirectRequestPayload": {
-        "required": [
-          "iss",
-          "redirectPurpose",
-          "userSessionId"
-        ],
+      "RedirectResponseModel": {
         "type": "object",
         "properties": {
-          "redirectPurpose": {
+          "redirectTargetUrl": {
+            "pattern": "^https?:\\/\\/([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(\\/[^\\s]*)?$",
+            "type": "string",
+            "nullable": true
+          },
+          "rqp": {
+            "pattern": "^[A-Za-z0-9\\-_]+(\\.[A-Za-z0-9\\-_]+){2}$",
+            "type": "string",
+            "nullable": true
+          },
+          "scope": {
             "minLength": 1,
+            "type": "string",
+            "nullable": true
+          },
+          "responseType": {
             "enum": [
-              "FIND"
+              "code"
             ],
             "type": "string",
-            "description": " (Constant value: FIND)"
+            "description": " (Constant value: code)",
+            "nullable": true
           },
-          "iss": {
-            "maxLength": 200,
-            "minLength": 1,
-            "type": "string"
+          "prompt": {
+            "enum": [
+              "login"
+            ],
+            "type": "string",
+            "description": " (Constant value: login)",
+            "nullable": true
           },
-          "userSessionId": {
+          "service": {
             "minLength": 1,
+            "type": "string",
+            "nullable": true
+          },
+          "codeChallengeMethod": {
+            "enum": [
+              "S256"
+            ],
+            "type": "string",
+            "description": " (Constant value: S256)",
+            "nullable": true
+          },
+          "codeChallenge": {
+            "minLength": 1,
+            "type": "string",
+            "nullable": true
+          },
+          "codeVerifier": {
+            "minLength": 1,
+            "type": "string",
+            "nullable": true
+          },
+          "requestId": {
             "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
-            "type": "string"
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -175,6 +231,17 @@
             "maxLength": 36,
             "minLength": 0,
             "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "RqpResponseModel": {
+        "type": "object",
+        "properties": {
+          "rqp": {
+            "pattern": "^[A-Za-z0-9\\-_]+(\\.[A-Za-z0-9\\-_]+){2}$",
             "type": "string",
             "nullable": true
           }

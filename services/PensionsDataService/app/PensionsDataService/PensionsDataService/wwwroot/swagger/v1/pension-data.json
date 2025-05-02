@@ -12,10 +12,17 @@
         ],
         "parameters": [
           {
-            "name": "requestHeader",
+            "name": "userSessionId",
             "in": "header",
             "schema": {
-              "$ref": "#/components/schemas/RequestHeaderModel"
+              "type": "string"
+            }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "schema": {
+              "type": "string"
             }
           }
         ],
@@ -171,7 +178,7 @@
         "properties": {
           "ticket": {
             "minLength": 1,
-            "pattern": "^https?:\\/\\/([a-zA-Z0-9\\-]+\\.)+[a-zA-Z]{2,}(:\\d{1,5})?(\\/[^\\s]*)?$",
+            "pattern": "^[A-Za-z0-9\\-_]+(\\.[A-Za-z0-9\\-_]+){4}$",
             "type": "string"
           },
           "clientId": {

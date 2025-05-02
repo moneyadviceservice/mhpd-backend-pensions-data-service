@@ -6,7 +6,7 @@ namespace PensionsDataService.Models;
 public class PensionsDataRetrievalRequest
 {
     [Required]
-    [RegularExpression(ApiConstants.UrlPattern)]
+    [RegularExpression(ApiConstants.JwePattern)]
     public string Ticket { get; set; } = string.Empty;
 
     [Required]

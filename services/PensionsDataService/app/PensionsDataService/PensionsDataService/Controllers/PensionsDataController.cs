@@ -48,8 +48,15 @@ public class PensionsDataController(
     
     [HttpGet]
     [Route("pensions-data")]
-    public async Task<IActionResult> GetPensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> GetPensionsDataAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId, 
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
+        var requestHeader = new RequestHeaderModel
+        {
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        };
+
         if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
         {
             logger.LogError(ErrorMessage, validationMessage);

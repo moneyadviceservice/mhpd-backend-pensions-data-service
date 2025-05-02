@@ -20,6 +20,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
     IIdValidator idValidator) : ControllerBase
 {
     [HttpGet("rqp")]
+    [ProducesResponseType(typeof(RqpResponseModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public IActionResult PostRqp([FromHeader] RequestHeaderModel headerModel)
     {
@@ -40,7 +41,7 @@ public class MapsCdaServiceController(IOptions<UriSettings> uriSettings,
 
     [Route("redirect-details")]
     [HttpPost]
-    [ProducesResponseType(typeof(RedirectRequestPayload), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(RedirectResponseModel), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
     public IActionResult RedirectDetails([FromHeader] RequestHeaderModel headerModel)
     {

@@ -8,4 +8,11 @@ public class ApiConstants
     public const string JwePattern = @"^[A-Za-z0-9\-_]+(\.[A-Za-z0-9\-_]+){4}$";
     public const string JwtPattern = @"^[A-Za-z0-9\-_]+(\.[A-Za-z0-9\-_]+){2}$";
     public const string RedirectPurpose = "FIND";
+    public const string Scope = "openid pdp";
+    public const string ResponseType = "code";
+    public const string Prompt = "login";
+    public const string Service = "PDPPensionFinder";
+    public const string CodeChallengeMethod = "S256";
+    public const string Kid = "Kid";
+    public const string Audience = "Audience";
 }

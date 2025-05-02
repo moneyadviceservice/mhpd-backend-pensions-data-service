@@ -333,7 +333,7 @@ public class PensionsDataControllerTests
         var requestHeader = new RequestHeaderModel { UserSessionId = null };  // Invalid UserSessionId
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -349,7 +349,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(false);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
@@ -370,7 +370,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         Assert.IsType<JsonResult>(result);
@@ -391,7 +391,7 @@ public class PensionsDataControllerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<HttpRequestException>(async () => 
-            await _controller.GetPensionsDataAsync(requestHeader));
+            await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId));
     }
 
     [Fact]
@@ -409,7 +409,7 @@ public class PensionsDataControllerTests
 
         // Act & Assert
         await Assert.ThrowsAsync<Exception>(async () =>
-            await _controller.GetPensionsDataAsync(requestHeader));
+            await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId));
     }
     
     [Fact]
@@ -439,7 +439,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -481,7 +481,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -516,7 +516,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<JsonResult>(result);
@@ -559,7 +559,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -602,7 +602,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -646,7 +646,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -718,7 +718,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionsDataAsync(requestHeader);
+        var result = await _controller.GetPensionsDataAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);

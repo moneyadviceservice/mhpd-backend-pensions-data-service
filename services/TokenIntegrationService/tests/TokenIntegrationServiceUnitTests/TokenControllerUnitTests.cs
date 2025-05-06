@@ -96,7 +96,7 @@ public class TokenControllerUnitTests
         _mockIdValidator.Setup(v => v.IsValidGuid(correlationId)).Returns(false);
 
         // Act
-        var result = await _controller.PostAsync(request, new RequestHeaderModel { CorrelationId = correlationId }); 
+        var result = await _controller.PostAsync(request, correlationId); 
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -120,7 +120,7 @@ public class TokenControllerUnitTests
         _mockIdValidator.Setup(v => v.IsValidGuid(correlationId)).Returns(true);
 
         // Act
-        var result = await _controller.PostAsync(request, new RequestHeaderModel { CorrelationId = correlationId }); 
+        var result = await _controller.PostAsync(request, correlationId); 
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -145,7 +145,7 @@ public class TokenControllerUnitTests
             .Returns(Task.FromResult(new CdaTokenResponseModel { AccessToken = RqpValue, StatusCode = HttpStatusCode.OK }));
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel); 
+        var result = await _controller.PostAsync(request, ValidXRequestId); 
         var okResult = (OkObjectResult)result;
         var data = (CdaTokenResponseModel)okResult.Value!;
 
@@ -178,7 +178,7 @@ public class TokenControllerUnitTests
             .Returns(new Dictionary<string, string> {{ "peis_id", PeisId }});
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel); 
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId); 
         var okResult = (OkObjectResult)result;
         var data = (PeiRetrievalDetailsResponseModel)okResult.Value!;
 
@@ -202,7 +202,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -222,7 +222,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -242,7 +242,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -261,7 +261,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -280,7 +280,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         BadRequestObjectResult badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -299,7 +299,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -314,7 +314,7 @@ public class TokenControllerUnitTests
         var request = new TokenClientRequestModel { };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -334,7 +334,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -354,7 +354,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -376,7 +376,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -398,7 +398,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -418,7 +418,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -438,7 +438,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -460,7 +460,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -482,7 +482,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -504,7 +504,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -526,7 +526,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -548,7 +548,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var badResult = (BadRequestObjectResult)result;
 
         // Assert
@@ -581,7 +581,7 @@ public class TokenControllerUnitTests
             .Returns(new Dictionary<string, string>());
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var internalErrorResult = (ObjectResult)result;
 
         // Assert
@@ -613,7 +613,7 @@ public class TokenControllerUnitTests
             .Throws(new Exception("id_token signature invalid"));
 
         // Act
-        var result = await _controller.PostPeiRetrievalDetailsAsync(request, _requestHeaderModel);
+        var result = await _controller.PostPeiRetrievalDetailsAsync(request, ValidXRequestId);
         var internalErrorResult = (ObjectResult)result;
 
         // Assert
@@ -640,7 +640,7 @@ public class TokenControllerUnitTests
             .ReturnsAsync(new CdaTokenResponseModel { AccessToken = string.Empty, StatusCode = HttpStatusCode.OK });
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var internalErrorResult = (ObjectResult)result;
 
         // Assert
@@ -671,7 +671,7 @@ public class TokenControllerUnitTests
             .Throws(new Exception("AccessToken signature invalid"));
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var internalErrorResult = (ObjectResult)result;
 
         // Assert
@@ -707,7 +707,7 @@ public class TokenControllerUnitTests
             .Returns(Task.FromResult(response));
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var errorResult = (ObjectResult)result;
 
         // Assert
@@ -742,7 +742,7 @@ public class TokenControllerUnitTests
             .Returns(Task.FromResult(response));
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var errorResult = (ObjectResult)result;
 
         // Assert
@@ -772,7 +772,7 @@ public class TokenControllerUnitTests
             .Returns(Task.FromResult(response));
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var errorResult = (ObjectResult)result;
 
         // Assert
@@ -807,7 +807,7 @@ public class TokenControllerUnitTests
             .Returns(Task.FromResult(response));
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var okResult = (OkObjectResult)result;
         var data = (CdaTokenResponseModel)okResult.Value!;
 
@@ -851,7 +851,7 @@ public class TokenControllerUnitTests
         };
 
         // Act
-        var result = await _controller.PostAsync(request, _requestHeaderModel);
+        var result = await _controller.PostAsync(request, ValidXRequestId);
         var internalErrorResult = (ObjectResult)result;
 
         // Assert

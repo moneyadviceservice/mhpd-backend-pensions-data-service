@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.1",
+  "openapi": "3.0.4",
   "info": {
     "title": "PeiIntegrationService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
     "version": "1.0"
@@ -30,25 +30,34 @@
   "components": {
     "schemas": {
       "PeiIntegrationServiceRequestModel": {
+        "required": [
+          "iss",
+          "peisId",
+          "rpt",
+          "userSessionId"
+        ],
         "type": "object",
         "properties": {
           "rpt": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9\\-_]+(\\.[A-Za-z0-9\\-_]+){2}$",
+            "type": "string"
           },
           "iss": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "userSessionId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
+            "type": "string"
           },
           "peisId": {
-            "type": "string",
-            "nullable": true
+            "minLength": 1,
+            "type": "string"
           },
           "correlationId": {
+            "pattern": "^[0-9a-fA-F]{8}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{4}\\-[0-9a-fA-F]{12}$",
             "type": "string",
             "nullable": true
           }

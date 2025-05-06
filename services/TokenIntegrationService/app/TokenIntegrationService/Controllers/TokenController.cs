@@ -1,4 +1,5 @@
-﻿using MhpdCommon.Extensions;
+﻿using MhpdCommon.Constants;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
@@ -25,8 +26,15 @@ public class TokenController(
 {
     [HttpPost]
     [Route("rpts")]
-    public async Task<IActionResult> PostAsync([FromBody] TokenClientRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
-    {            
+    [ProducesResponseType(typeof(CdaTokenResponseModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> PostAsync([FromBody] TokenClientRequestModel request, [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var requestHeader = new RequestHeaderModel
+        {
+            CorrelationId = correlationId
+        };
+
         if (!TryValidateRequest(validatorPipeline, request, requestHeader, out var message))
         {
             logger.LogError("Error: {ErrorMessage}", message);
@@ -50,8 +58,14 @@ public class TokenController(
 
     [HttpPost]
     [Route("pei-retrieval-details")]
-    public async Task<IActionResult> PostPeiRetrievalDetailsAsync([FromQuery] PensionsDataRequestModel request, [FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> PostPeiRetrievalDetailsAsync([FromQuery] PensionsDataRequestModel request, 
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
+        var requestHeader = new RequestHeaderModel
+        {
+            CorrelationId = correlationId
+        };
+
         if (!TryValidateRequest(cdaRequestValidatorPipeline, request, requestHeader, out var message))
         {
             logger.LogError("Error: {ErrorMessage}", message);

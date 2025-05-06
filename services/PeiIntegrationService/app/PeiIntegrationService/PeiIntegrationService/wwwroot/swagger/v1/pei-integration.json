@@ -33,15 +33,14 @@
         "required": [
           "iss",
           "peisId",
-          "rpt",
           "userSessionId"
         ],
         "type": "object",
         "properties": {
           "rpt": {
-            "minLength": 1,
             "pattern": "^[A-Za-z0-9\\-_]+(\\.[A-Za-z0-9\\-_]+){2}$",
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "iss": {
             "minLength": 1,

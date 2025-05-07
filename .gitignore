@@ -381,7 +381,6 @@ terraform.rc
 # .tfstate files
 *.tfstate
 *.tfstate.*
-/services/MaPSCDAService/app/MaPSCDAService/MaPSCDAService/appsettings.Development.json
-/services/PensionsDataService/app/PensionsDataService/PensionsDataService/appsettings.Development.json
-/services/TokenIntegrationService/app/TokenIntegrationService/appsettings.Development.json
-/services/PeiIntegrationService/app/PeiIntegrationService/PeiIntegrationService/appsettings.Development.json
+
+# All (Dev) App settings files
+**/appsettings.Development.json

@@ -16,7 +16,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:7071"
+      "url": "http://localhost:7123"
     }
   ],
   "paths": {
@@ -51,6 +51,14 @@
             "in": "header",
             "description": "The unique id of pension owner session as issued by the requesting system",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "description": "An Id with which to group all logging statements made during a single session",
             "schema": {
               "type": "string"
             }
@@ -96,10 +104,18 @@
         "operationId": "delete-pensions-retrieval-records-id",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "The id of pension retrieval record to be deleted",
+            "name": "userSessionId",
+            "in": "header",
+            "description": "The unique id of pension owner session as issued by the requesting system",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "description": "An Id with which to group all logging statements made during a single session",
             "schema": {
               "type": "string"
             }

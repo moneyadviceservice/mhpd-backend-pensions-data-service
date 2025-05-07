@@ -21,10 +21,15 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
         Summary = "Get Pensions Retrieval Record",
         Description = "Get the pensions retrieval record that contains the information on the state of a process to retrieve the pensions data for a user session from the PDP ecosystem")]
     [OpenApiParameter(
-        "userSessionId",
+        HeaderConstants.UserSessionId,
         In = ParameterLocation.Header, 
         Description = "The unique id of pension owner session as issued by the requesting system",
         Required = true)]
+    [OpenApiParameter(
+        HeaderConstants.CorrelationId,
+        In = ParameterLocation.Header,
+        Description = "An Id with which to group all logging statements made during a single session",
+        Required = false)]
     [OpenApiResponseWithBody(HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(object), Description = "The OK response message containing pension retrieval record.")]
     [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest, Description = "BadRequest")]
     [OpenApiResponseWithoutBody(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
@@ -43,10 +48,15 @@ public class RetrievalRecordFunction(ILogger<RetrievalRecordFunction> logger, IP
         Summary = "Delete Pensions Retrieval Record",
         Description = "Deletes the given pension retrieval record id.")]
     [OpenApiParameter(
-        "id",
-        In = ParameterLocation.Path, 
-        Description = "The id of pension retrieval record to be deleted",
+        HeaderConstants.UserSessionId,
+        In = ParameterLocation.Header,
+        Description = "The unique id of pension owner session as issued by the requesting system",
         Required = true)]
+    [OpenApiParameter(
+        HeaderConstants.CorrelationId,
+        In = ParameterLocation.Header,
+        Description = "An Id with which to group all logging statements made during a single session",
+        Required = false)]
     [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "No Content")]
     [OpenApiResponseWithoutBody(HttpStatusCode.NotFound, Description = "Not Found")]
     public async Task<IActionResult> DeleteAsync([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "pensions-retrieval-records")] HttpRequest req)

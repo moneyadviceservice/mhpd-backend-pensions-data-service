@@ -20,19 +20,18 @@ namespace RetrievedPensionsRecordFunction
             Summary = "Get Retrieved Pension Records",
             Description = "Get the retrieved retrieved-pensions-records that contains pensions information has been retrieved from the PDP Ecosystem for peis.")]
         [OpenApiParameter(
-            "pensionsRetrievalRecordId",
+            Constants.RetrievedRecordQuery,
             In = ParameterLocation.Query, 
             Description = "The id of the pensions retrieval record that the retrieved pension record is associated with.",
             Required = true)]
+        [OpenApiParameter(
+        HeaderConstants.CorrelationId,
+        In = ParameterLocation.Header,
+        Description = "An Id with which to group all logging statements made during a single session",
+        Required = false)]
         [OpenApiResponseWithBody(HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(string), 
             Description = "The array of Retrieved Pension Records that match the provided query parameters")]
         [OpenApiResponseWithoutBody(HttpStatusCode.BadRequest, Description = "BadRequest")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.Unauthorized, Description = "Unauthorized")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.Forbidden, Description = "Forbidden")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.InternalServerError, Description = "Internal Server Error")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.BadGateway, Description = "BadGateway")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.ServiceUnavailable, Description = "Service Unavailable")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.GatewayTimeout, Description = "Gateway Timeout")]
         public async Task<IActionResult> GetAsync([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "retrieved-pension-records")] HttpRequest req)
         {
             return await ProcessRetrievedRecordsAsync(req, repository.GetRetrievedRecordsAsync);
@@ -43,12 +42,17 @@ namespace RetrievedPensionsRecordFunction
             Summary = "Delete Pensions Retrieved Record",
             Description = "Deletes the given pension retrieved record id.")]
         [OpenApiParameter(
-            "id",
-            In = ParameterLocation.Path, 
-            Description = "The id of pension retrieved record to be deleted",
+            Constants.RetrievedRecordQuery,
+            In = ParameterLocation.Query,
+            Description = "The id of the pensions retrieval record that the retrieved pension record is associated with.",
             Required = true)]
-        [OpenApiResponseWithoutBody(HttpStatusCode.NoContent, Description = "No Content")]
-        [OpenApiResponseWithoutBody(HttpStatusCode.NotFound, Description = "Not Found")]
+        [OpenApiParameter(
+        HeaderConstants.CorrelationId,
+        In = ParameterLocation.Header,
+        Description = "An Id with which to group all logging statements made during a single session",
+        Required = false)]
+        [OpenApiResponseWithBody(HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(int),
+            Description = "The number of records deleted as part of the request")]
         public async Task<IActionResult> DeleteAsync([HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "retrieved-pension-records")] HttpRequest req)
         {
             return await ProcessRetrievedRecordsAsync(req, repository.DeleteRetrievedRecordsAsync);

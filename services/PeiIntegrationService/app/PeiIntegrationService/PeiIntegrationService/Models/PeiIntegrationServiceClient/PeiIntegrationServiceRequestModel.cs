@@ -27,5 +27,5 @@ public class PeiIntegrationServiceRequestModel
 
     [RegularExpression(ApiConstants.GuidPattern)]
     [FromHeader(Name = HeaderConstants.CorrelationId)]
-    public string CorrelationId { get; set; } = string.Empty;
+    public string? CorrelationId { get; set; } = string.Empty;
 }

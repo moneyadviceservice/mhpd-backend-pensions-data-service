@@ -16,7 +16,7 @@
   },
   "servers": [
     {
-      "url": "http://localhost:7071"
+      "url": "http://localhost:7289"
     }
   ],
   "paths": {
@@ -54,6 +54,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "description": "An Id with which to group all logging statements made during a single session",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -69,24 +77,6 @@
           },
           "400": {
             "description": "BadRequest"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "502": {
-            "description": "BadGateway"
-          },
-          "503": {
-            "description": "Service Unavailable"
-          },
-          "504": {
-            "description": "Gateway Timeout"
           }
         }
       },
@@ -96,21 +86,34 @@
         "operationId": "delete-pensions-retrieved-records-id",
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
-            "description": "The id of pension retrieved record to be deleted",
+            "name": "pensionsRetrievalRecordId",
+            "in": "query",
+            "description": "The id of the pensions retrieval record that the retrieved pension record is associated with.",
             "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "description": "An Id with which to group all logging statements made during a single session",
             "schema": {
               "type": "string"
             }
           }
         ],
         "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "404": {
-            "description": "Not Found"
+          "200": {
+            "description": "The number of records deleted as part of the request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "integer",
+                  "format": "int32"
+                }
+              }
+            }
           }
         }
       }

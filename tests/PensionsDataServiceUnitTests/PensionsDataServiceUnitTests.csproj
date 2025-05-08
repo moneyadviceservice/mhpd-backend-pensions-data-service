@@ -18,12 +18,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit" />
+      <ProjectReference Include="..\..\app\PensionsDataService\PensionsDataService.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\app\PensionsDataService\PensionsDataService\PensionsDataService.csproj" />
-      <ProjectReference Include="..\..\app\PensionsDataService\PensionsDataService\PensionsDataService.csproj" />
+        <Using Include="Xunit" />
     </ItemGroup>
 
 </Project>

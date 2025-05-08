@@ -1,53 +1,25 @@
 module "CDA_service" {
-  source                 = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=vnet_integration"
+  source                 = "github.com/moneyadviceservice/terraform-module-app-service.git?ref=add-deployment-slots"
   name                   = "CDA-service"
   product                = var.product
   resource_group_name    = data.azurerm_resource_group.this.name
   location               = var.location
   env                    = var.env
   os_type                = "Linux"
-  sku_name               = "B3"
+  sku_name               = local.sku_name
+  zone_redundant         = local.zone_redundant
   ftps_state             = var.ftps_state
   app_command_line       = "dotnet MaPSCDAService.dll"
   dotnet_stack           = true
   enable_client_affinity = true
-  connection_strings = [{
-    name  = "CosmosDBConnectionString"
-    type  = "Custom"
-    value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
-  }]
+  connection_strings = [
+    local.cosmos_db_connection_string
+  ]
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
 
-  app_settings = {
-    "APPINSIGHTS_INSTRUMENTATIONKEY"                        = module.CDA_service.instrumentation_key
-    "APPINSIGHTS_PROFILERFEATURE_VERSION"                   = "1.0.0"
-    "APPINSIGHTS_SNAPSHOTFEATURE_VERSION"                   = "1.0.0"
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"                 = "InstrumentationKey=${module.CDA_service.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.CDA_service.app_insights_app_id}"
-    "APPLICATIONINSIGHTS_ENABLESQLQUERYCOLLECTION"          = "disabled"
-    "ApplicationInsightsAgent_EXTENSION_VERSION"            = "~2"
-    "DISABLE_APPINSIGHTS_SDK"                               = "disabled"
-    "DiagnosticServices_EXTENSION_VERSION"                  = "~3"
-    "IGNORE_APPINSIGHTS_SDK"                                = "disabled"
-    "InstrumentationEngine_EXTENSION_VERSION"               = "disabled"
-    "KeyVaultConfiguration__KeyVaultURL"                    = "https://${var.product}-${var.env}.vault.azure.net/"
-    "SnapshotDebugger_EXTENSION_VERSION"                    = "disabled"
-    "UriSettings__RedirectTargetUrl"                        = var.env == "staging" || var.env == "prod" ? "${var.cda_base_url}/ig/authorize" : var.env == "test" ? "https://sys.pensionsdashboards.org.uk/ig/authorize" : "https://pdp-data-access-test-harness.netlify.app/"
-    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                       = "true"
-    "XDT_MicrosoftApplicationInsights_BaseExtensions"       = "disabled"
-    "XDT_MicrosoftApplicationInsights_Mode"                 = "recommended"
-    "XDT_MicrosoftApplicationInsights_PreemptSdk"           = "disabled"
-    "JwtSettings__PrivateKey"                               = data.azurerm_key_vault_secret.maps_cda_service_private_key.value
-    "JwtSettings__ExpiryInSeconds"                          = 600
-    "JwtSettings__Audience"                                 = var.cda_base_url
-    "JwtSettings__Kid"                                      = data.azurerm_key_vault_secret.maps_cda_service_kid.value
-    "JwtSettings__Role"                                     = "owner"
-    "TokenIntegrationServiceUrl"                            = "https://maps-api-management-${var.env}.azure-api.net/token-integration-service/"
-    "PeiIntegrationServiceUrl"                              = "https://maps-api-management-${var.env}.azure-api.net/pei-integration-service/"
-    "CosmosBusinessConfiguration__DatabaseId"               = "mhpd-business-layer"
-    "CosmosBusinessConfiguration__UserSessionDataContainer" = "mhpdUserSessionData"
-  }
-  tags = {}
+  app_settings = local.cda_service_app_settings
+  tags         = {}
 }
 
 resource "azurerm_key_vault_access_policy" "cda_application_access" {
@@ -65,4 +37,30 @@ resource "azurerm_key_vault_access_policy" "cda_application_access" {
     "List",
     "Get",
   ]
+}
+
+module "cda_staging_slot" {
+  count = var.env == "prod" ? 1 : 0
+
+  source              = "github.com/moneyadviceservice/terraform-module-app-service.git/slots?ref=add-deployment-slots"
+  env                 = var.env
+  product             = var.product
+  resource_group_name = data.azurerm_resource_group.this.name
+
+  dotnet_stack = true
+
+  slot_os_type = "Linux"
+  name         = "CDA-service"
+  id           = module.CDA_service.app_service_id
+
+  public_network_access_enabled = local.public_network_access_enabled
+  enable_vnet_integration       = local.enable_vnet_integration
+  subnet_id                     = local.subnet_id
+
+  connection_strings = [
+    local.cosmos_db_connection_string
+  ]
+  app_settings           = local.cda_service_app_settings
+  tags                   = {}
+  enable_client_affinity = true
 }

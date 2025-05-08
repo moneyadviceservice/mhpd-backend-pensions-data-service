@@ -1,5 +1,5 @@
 module "retrieved_pensions_details_function" {
-  source = "github.com/moneyadviceservice/terraform-module-function-app.git?ref=vnet_integration"
+  source = "github.com/moneyadviceservice/terraform-module-function-app.git?ref=zone_redundancy"
 
   os_type = "Windows"
   product = var.product
@@ -9,30 +9,40 @@ module "retrieved_pensions_details_function" {
   name                    = "retrieved-pensions"
   location                = var.location
   env                     = var.env
-  sku_name                = "EP1"
+  sku_name                = local.sku_name
   dotnet_stack            = true
   enable_vnet_integration = local.enable_vnet_integration
   subnet_id               = local.subnet_id
   connection_strings = [
-    {
-      name  = "CosmosDBConnectionString"
-      type  = "Custom"
-      value = "AccountEndpoint=https://${var.product}-cosmos-${var.env}.documents.azure.com:443/;AccountKey=${data.azurerm_cosmosdb_account.this.primary_key}"
-    },
-    {
-      name  = "ServiceBusConnectionString"
-      type  = "Custom"
-      value = data.azurerm_servicebus_namespace.this.default_primary_connection_string
-    }
+    local.cosmos_db_connection_string,
+    local.service_bus_connection_string
   ]
 
-  app_settings = {
-    "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                         = "true"
-    "WEBSITE_RUN_FROM_PACKAGE"                                = "1"
-    "WEBSITE_USE_PLACEHOLDER_DOTNETISOLATED"                  = "1"
-    "APPLICATIONINSIGHTS_CONNECTION_STRING"                   = "InstrumentationKey=${module.retrieved_pensions_details_function.instrumentation_key};IngestionEndpoint=https://uksouth-1.in.applicationinsights.azure.com/;LiveEndpoint=https://uksouth.livediagnostics.monitor.azure.com/;ApplicationId=${module.retrieved_pensions_details_function.app_insights_app_id}"
-    "CosmosBusinessConfiguration__DatabaseId"                 = "mhpd-business-layer"
-    "CosmosBusinessConfiguration__RetrievedPensionsContainer" = "mhpdRetrievedPensionRecords"
-    "CommonServiceBusConfiguration__InboundQueue"             = "retrieved-pension-details"
-  }
+  app_settings   = local.retrieved_pensions_app_settings
+  zone_redundant = local.zone_redundant
+}
+
+module "retrieved_pensions_details_staging_slot" {
+  count = var.env == "prod" ? 1 : 0
+
+  source = "github.com/moneyadviceservice/terraform-module-function-app.git/slots?ref=zone_redundancy"
+
+  id           = module.retrieved_pensions_details_function.function_app_id
+  slot_os_type = "Windows"
+  product      = var.product
+
+  resource_group_name     = data.azurerm_resource_group.mhpd.name
+  name                    = "retrieved-pensions"
+  location                = var.location
+  env                     = var.env
+  sku_name                = local.sku_name
+  dotnet_stack            = true
+  enable_vnet_integration = local.enable_vnet_integration
+  subnet_id               = local.subnet_id
+  connection_strings = [
+    local.cosmos_db_connection_string,
+    local.service_bus_connection_string
+  ]
+
+  app_settings = local.retrieved_pensions_app_settings
 }

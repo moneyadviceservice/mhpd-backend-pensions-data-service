@@ -134,6 +134,24 @@
           }
         }
       }
+    },
+    "/csrf-token": {
+      "get": {
+        "summary": "Get CSRF token",
+        "description": "Returns a CSRF token and sets it as an HttpOnly cookie.",
+        "responses": {
+          "200": {
+            "description": "CSRF token set",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

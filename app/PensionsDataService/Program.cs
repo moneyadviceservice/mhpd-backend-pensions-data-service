@@ -1,6 +1,7 @@
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.Models.OpenApi;
 using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
@@ -52,6 +53,7 @@ builder.Services.AddHttpLogging(logging =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
+    c.DocumentFilter<CsrfEndpointFilter>();
     c.AddServer(new OpenApiServer
     {
         Url = builder.Configuration.GetValue<string>("OpenApiServerUrl") ?? "https:\\localhost:3000"

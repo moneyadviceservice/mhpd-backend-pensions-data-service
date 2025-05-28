@@ -4,6 +4,11 @@
     "title": "PensionsDataService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
     "version": "1.0"
   },
+  "servers": [
+    {
+      "url": "https://maps-api-management-dev.azure-api.net/pension-data-service/"
+    }
+  ],
   "paths": {
     "/pensions-data": {
       "get": {

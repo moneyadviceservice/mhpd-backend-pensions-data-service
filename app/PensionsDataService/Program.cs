@@ -4,6 +4,7 @@ using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
+using Microsoft.OpenApi.Models;
 using PensionsDataService.HttpClients;
 using System.Diagnostics.CodeAnalysis;
 
@@ -31,6 +32,7 @@ builder.Services.AddCommonConfigurations();
 builder.Services.AddIntegrationServices();
 builder.Services.AddMhpdUtilities();
 builder.Services.AddMhpdCosmosDb(builder.Configuration);
+builder.Services.AddAntiForgeryValidation();
 
 builder.Services.AddApplicationInsightsTelemetry();
 
@@ -48,7 +50,13 @@ builder.Services.AddHttpLogging(logging =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddServer(new OpenApiServer
+    {
+        Url = builder.Configuration.GetValue<string>("OpenApiServerUrl") ?? "https:\\localhost:3000"
+    });
+});
 builder.Services.AddHttpClient(); 
 
 var app = builder.Build();
@@ -61,14 +69,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.UseHttpLogging();
+app.UseCsrfTokenEndpoint();
 
-app.Run();
+await app.RunAsync();
 
 [ExcludeFromCodeCoverage]
-public partial class Program { }
+public static partial class Program { }

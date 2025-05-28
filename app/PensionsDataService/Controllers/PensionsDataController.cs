@@ -232,7 +232,7 @@ public class PensionsDataController(
             var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(requestHeader);
             var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(retrievalRecordResult.Id, requestHeader.CorrelationId!);
 
-            logger.LogWarning("Delete request removed {retrievalCount} pension retrieval records and {retrievedCount} retrieved pension records", retrievalCount, retrievedCount);
+            logger.LogWarning("Delete request removed {RetrievalCount} pension retrieval records and {RetrievedCount} retrieved pension records", retrievalCount, retrievedCount);
         }
 
         return new NoContentResult();

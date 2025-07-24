@@ -74,7 +74,7 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 app.UseHttpLogging();
-app.UseCsrfTokenEndpoint();
+app.UseMhpdSecureEndpoints();
 
 await app.RunAsync();
 

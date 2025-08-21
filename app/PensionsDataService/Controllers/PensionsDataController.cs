@@ -212,8 +212,15 @@ public class PensionsDataController(
     
     [HttpDelete]
     [Route("pensions-data")]
-    public async Task<IActionResult> DeletePensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> DeletePensionsDataAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
+        var requestHeader = new RequestHeaderModel
+        {
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        };
+
         if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
         {
             logger.LogError(ErrorMessage, validationMessage);
@@ -233,6 +240,15 @@ public class PensionsDataController(
             var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(retrievalRecordResult.Id, requestHeader.CorrelationId!);
 
             logger.LogWarning("Delete request removed {RetrievalCount} pension retrieval records and {RetrievedCount} retrieved pension records", retrievalCount, retrievedCount);
+        }
+
+        if(await userSessionDataRepository.DeleteByIdAsync(requestHeader.UserSessionId!, requestHeader.UserSessionId!))
+        {
+            logger.LogInformation("User session data deleted for UserSessionId {UserSessionId}", requestHeader.UserSessionId);
+        }
+        else
+        {
+            logger.LogWarning("Unable to delete session data for UserSessionId {UserSessionId}", requestHeader.UserSessionId);
         }
 
         return new NoContentResult();

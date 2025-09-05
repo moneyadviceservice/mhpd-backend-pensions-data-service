@@ -197,8 +197,6 @@ public class RetrievalRecordServiceClientTests
     public async Task DeleteAsync_Request_ReturnsResult()
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel { UserSessionId = "test-session-id", CorrelationId = "corr-Id" };
-
         var expectedCount = 2;
 
         var httpResponse = new HttpResponseMessage
@@ -226,7 +224,7 @@ public class RetrievalRecordServiceClientTests
         var client = new RetrievalRecordServiceClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act
-        var result = await client.DeleteAsync(requestHeader);
+        var result = await client.DeleteAsync("test-session-id", "corr-Id");
 
         // Assert
         Assert.Equal(expectedCount, result);

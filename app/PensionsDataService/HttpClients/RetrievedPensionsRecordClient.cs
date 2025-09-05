@@ -1,6 +1,7 @@
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
 using MhpdCommon.Utils;
@@ -12,6 +13,8 @@ public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory,
 {
     public async Task<int> DeleteAsync(string pensionsRetrievalRecordId, string correlationId)
     {
+        logger.LogWarning("Sending request to delete retrieved pension records for session {Session}", correlationId);
+
         var httpClient = httpClientFactory.CreateClient(HttpClientNames.RetrievedPensionsService);
         httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
 
@@ -33,6 +36,8 @@ public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory,
     {
         try
         {
+            logger.LogRequestSent(request);
+            logger.LogRequestSent(requestHeader);
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.RetrievedPensionsService);
             httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
             
@@ -52,11 +57,13 @@ public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory,
             // Check if the content is null, empty, or consists only of whitespace
             if (string.IsNullOrWhiteSpace(content))
             {
-                logger.LogInformation("No retrieved pensions record for {Id}", request.PensionsRetrievalRecordId);
+                logger.LogWarning("No retrieved pensions record for {Id}", request.PensionsRetrievalRecordId);
                 return result;
             }
             
             result = await response.Content.ReadFromJsonAsync<List<RetrievedPensionRecord>>();
+            logger.LogResponseReceived(result);
+
             return result ?? throw new InvalidOperationException("Response content was null.");
         }
         catch (HttpRequestException ex)

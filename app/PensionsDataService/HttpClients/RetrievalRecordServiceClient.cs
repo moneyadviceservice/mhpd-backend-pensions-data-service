@@ -1,6 +1,7 @@
 using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
 
@@ -8,13 +9,15 @@ namespace PensionsDataService.HttpClients;
 
 public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, ILogger<RetrievalRecordServiceClient> logger) : IRetrievalRecordServiceClient
 {
-    public async Task<int> DeleteAsync(RequestHeaderModel requestHeader)
+    public async Task<int> DeleteAsync(string userSessionId, string correlationId)
     {
+        logger.LogWarning("Sending request to delete pensions retrieval records for session {Session}", userSessionId);
+
         var httpClient = httpClientFactory.CreateClient(HttpClientNames.PensionRetrievalService);
 
         // Add request headers
-        httpClient.DefaultRequestHeaders.Add(HeaderConstants.UserSessionId, requestHeader.UserSessionId);
-        httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
+        httpClient.DefaultRequestHeaders.Add(HeaderConstants.UserSessionId, userSessionId);
+        httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, correlationId);
 
         // Send the request to the constructed endpoint
         var response = await httpClient.DeleteAsync(HttpEndpoints.Internal.PensionsRetrievalRecords);
@@ -29,6 +32,7 @@ public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, 
     {
         try
         {
+            logger.LogRequestSent(requestHeader);
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.PensionRetrievalService);
             
             // Add request headers
@@ -49,12 +53,14 @@ public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, 
             // Check if the content is null, empty, or consists only of whitespace
             if (string.IsNullOrWhiteSpace(content))
             {
-                logger.LogInformation("No pension data for {UserSessionId}", requestHeader.UserSessionId);
+                logger.LogWarning("No pension data for {UserSessionId}", requestHeader.UserSessionId);
                 return result;
             }
             
             // Attempt to read the response content
             result = await response.Content.ReadFromJsonAsync<PensionsRetrievalRecord>();
+            logger.LogResponseReceived(result);
+
             return result ?? throw new InvalidOperationException("Response content was null.");
         }
         catch (HttpRequestException ex)

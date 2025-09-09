@@ -64,11 +64,10 @@ public class PensionsDataController(
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} GET");
-        logger.LogRequest(requestHeader);
+        logger.LogRequestReceived(requestHeader);
 
         // Get the pensions retrieval record associated with the passed userSessionId
         var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
-        logger.LogResponse(retrievalRecordResult);
 
         if (string.IsNullOrEmpty(retrievalRecordResult.Id))
         {
@@ -90,16 +89,12 @@ public class PensionsDataController(
         // Check pensions-retrieval-records response has any PeiData items with retrievalStatus = RETRIEVAL_REQUESTED
         if (retrievalRecordResult.PeiData.Exists(s => s.RetrievalStatus == PensionProviderConstants.RetrievalStatus.RetrievalRequested))
         {
-            logger.LogRequest(retrievalRecordResult.Id);
-            
             // Call the GET retrieved-pension-records endpoint to retrieve the retrieved pension records associated
             // with the Pensions Retrieval Record returned in the GET pensions-retrieval-records response.
             var retrievedRecordResult = await _retrievedPensionsRecordClient.GetAsync(new PensionsRetrievalRecordIdModel
             {
                 PensionsRetrievalRecordId = retrievalRecordResult.Id
             }, requestHeader);
-            
-            logger.LogResponse(retrievedRecordResult);
 
             if (retrievedRecordResult.Count > 0)
             {
@@ -118,7 +113,7 @@ public class PensionsDataController(
 
         response.PredictedRemainingDataRetrievalTime = GetRemainingRetrievalTime(retrievalRecordResult, _predictedTotalDataRetrievalTime);
         
-        logger.LogResponse(response);
+        logger.LogResponseSent(response);
 
         return Ok(response);
     }
@@ -134,14 +129,12 @@ public class PensionsDataController(
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST");
-        logger.LogRequest(requestHeader);
-        logger.LogRequest(request);
+        logger.LogRequestReceived(requestHeader);
+        logger.LogRequestReceived(request);
 
         // Get pei from the token integration service
         var result = await _tokenIntegrationServiceClientRpts
-            .PostIdTokenAsync(CreateCdaTokenServiceRequestModel(request, logger), requestHeader.CorrelationId);
-        
-        logger.LogResponse(result);
+            .PostIdTokenAsync(CreateCdaTokenServiceRequestModel(request), requestHeader.CorrelationId);
 
         var userSessionId = requestHeader.UserSessionId!;
 
@@ -162,7 +155,7 @@ public class PensionsDataController(
         logger.LogInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
 
         var response = Accepted();
-        logger.LogResponse(response);
+        logger.LogResponseSent(response);
         
         return await Task.FromResult<IActionResult>(response);
     }
@@ -180,8 +173,8 @@ public class PensionsDataController(
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST PensionsDataRetrieval");
-        logger.LogRequest(requestHeader);
-        logger.LogRequest(request);
+        logger.LogRequestReceived(requestHeader);
+        logger.LogRequestReceived(request);
 
         var userSessionId = requestHeader.UserSessionId!;
 
@@ -206,36 +199,66 @@ public class PensionsDataController(
         await PostPensionDataRetrievalMessage(peisId, requestHeader, userSessionId);
 
         var response = Accepted(new { predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime });
-        logger.LogResponse(response);
+        logger.LogResponseSent(response);
         return response;
     }
     
     [HttpDelete]
     [Route("pensions-data")]
-    public async Task<IActionResult> DeletePensionsDataAsync([FromHeader] RequestHeaderModel requestHeader)
+    public async Task<IActionResult> DeletePensionsDataAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
-        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
+        // Get the pensions retrieval record associated with the passed userSessionId
+        var (retrievalRecord, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} - {Constants.HttpDelete}", userSessionId, correlationId);
+
+        if (earlyResponse != null)
         {
-            logger.LogError(ErrorMessage, validationMessage);
-            return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
+            return earlyResponse;
         }
 
-        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} DELETE");
-        logger.LogRequest(requestHeader);
-
-        // Get the pensions retrieval record associated with the passed userSessionId
-        var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
-        logger.LogResponse(retrievalRecordResult);
-
-        if (!string.IsNullOrEmpty(retrievalRecordResult.Id))
+        if (!string.IsNullOrEmpty(retrievalRecord.Id))
         {
-            var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(requestHeader);
-            var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(retrievalRecordResult.Id, requestHeader.CorrelationId!);
+            var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
+            var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(retrievalRecord.Id, correlationId!);
 
             logger.LogWarning("Delete request removed {RetrievalCount} pension retrieval records and {RetrievedCount} retrieved pension records", retrievalCount, retrievedCount);
         }
 
+        if(await userSessionDataRepository.DeleteByIdAsync(userSessionId!, userSessionId!))
+        {
+            logger.LogInformation("User session data deleted for UserSessionId {UserSessionId}", userSessionId);
+        }
+        else
+        {
+            logger.LogWarning("Unable to delete session data for UserSessionId {UserSessionId}", userSessionId);
+        }
+
         return new NoContentResult();
+    }
+
+    private async Task<(PensionsRetrievalRecord retrievalRecord, IActionResult? earlyResponse)>
+    TryGetRequestedPensionAsync(string endpoint, string? userSessionId, string? correlationId)
+    {
+        var requestHeader = new RequestHeaderModel
+        {
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        };
+
+        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
+        {
+            logger.LogError(ErrorMessage, validationMessage);
+            return (null!, BadRequest(validationMessage));
+        }
+
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} {endpoint}");
+        logger.LogRequestReceived(requestHeader);
+
+        // Get the pensions retrieval record associated with the passed userSessionId
+        var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
+
+        return (retrievalRecordResult, null);
     }
 
     private static int GetRemainingRetrievalTime(PensionsRetrievalRecord retrievalRecord, int totalEstimatedDuration)
@@ -334,8 +357,7 @@ public class PensionsDataController(
     }
 
     private static TokenClientRequestModel CreateCdaTokenServiceRptsRequestModel(string ticket, 
-        string rqp,
-        ILogger<PensionsDataController> logger, string? asUri, string clientId)
+        string rqp, string? asUri, string clientId)
     {
         var request = new TokenClientRequestModel
         {
@@ -344,13 +366,11 @@ public class PensionsDataController(
             AsUri = asUri,
             ClientId = clientId
         };
-        
-        logger.LogRequest(request);
 
         return request;
     }
 
-    private static PensionsDataRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request, ILogger<PensionsDataController> logger)
+    private static PensionsDataRequestModel CreateCdaTokenServiceRequestModel(PensionsDataRequestModel request)
     {
         var requestModel = new PensionsDataRequestModel
         {
@@ -360,8 +380,6 @@ public class PensionsDataController(
             RedirectUrl = request.RedirectUrl,
             CodeVerifier = request.CodeVerifier
         };
-        
-        logger.LogRequest(requestModel);
 
         return requestModel;
     }
@@ -550,7 +568,7 @@ public class PensionsDataController(
         string userSessionId)
     {
         var tokenResult = await _tokenIntegrationServiceClientRpts.PostAccessTokenAsync(
-            CreateCdaTokenServiceRptsRequestModel(request.Ticket, rqp, logger, AsUri, request.ClientId), requestHeader.CorrelationId);
+            CreateCdaTokenServiceRptsRequestModel(request.Ticket, rqp, AsUri, request.ClientId), requestHeader.CorrelationId);
 
         if (!IsValidToken(tokenResult.Pct) || !IsValidToken(tokenResult.AccessToken))
         {
@@ -589,7 +607,7 @@ public class PensionsDataController(
     private async Task PostPensionDataRetrievalMessage(string peisId, RequestHeaderModel requestHeader, string userSessionId)
     {
         var message = CreateRequestPayload(peisId, requestHeader);
-        logger.LogInformation("Posting message to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
+        logger.LogWarning("Posting message to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
         await _messagingService.SendMessageAsync(message, _serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
     }
 

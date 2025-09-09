@@ -734,11 +734,8 @@ public class PensionsDataControllerTests
     public async Task DeletePensionsDataAsync_ReturnsResult(bool recordsExist)
     {
         // Arrange
-        var requestHeader = new RequestHeaderModel
-        {
-            UserSessionId = "123e4567-e89b-12d3-a456-426614174000",
-            CorrelationId = Guid.NewGuid().ToString()
-        };
+        var userSessionId = Guid.NewGuid().ToString();
+        var correlationId = Guid.NewGuid().ToString();
 
         var getResult = new PensionsRetrievalRecord
         {
@@ -750,12 +747,26 @@ public class PensionsDataControllerTests
             .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
             .ReturnsAsync(getResult);
 
+        _mockUserSessionDataRepository
+            .Setup(repo => repo.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Returns(Task.FromResult(recordsExist));
+
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var deleteResult = await _controller.DeletePensionsDataAsync(requestHeader);
+        var deleteResult = await _controller.DeletePensionsDataAsync(userSessionId, correlationId);
 
         // Assert
+        if (recordsExist)
+        {
+            _mockRetrievalRecordFunctionClient
+                .Verify(client => client.DeleteAsync(userSessionId, correlationId), Times.Once);
+            _mockRetrievedPensionsRecordClient
+                .Verify(client => client.DeleteAsync(getResult.Id, correlationId), Times.Once);
+        }
+
+        _mockUserSessionDataRepository
+            .Verify(repo => repo.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         Assert.IsType<NoContentResult>(deleteResult);
     }
     

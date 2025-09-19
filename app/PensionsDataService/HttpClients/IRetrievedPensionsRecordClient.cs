@@ -6,7 +6,9 @@ namespace PensionsDataService.HttpClients;
 
 public interface IRetrievedPensionsRecordClient
 {
-    Task<List<RetrievedPensionRecord>> GetAsync(PensionsRetrievalRecordIdModel request, RequestHeaderModel requestHeader);
+    Task<List<RetrievedPensionRecord>> GetRetrievedPensionsAsync(RetrievedPensionsRequest request, RequestHeaderModel requestHeader);
 
-    Task<int> DeleteAsync(string pensionsRetrievalRecordId, string correlationId);
+    Task<List<string>> GetRetrievedPeisAsync(RequestHeaderModel requestHeader);
+
+    Task<int> DeleteAsync(string userSessionId, string correlationId);
 }

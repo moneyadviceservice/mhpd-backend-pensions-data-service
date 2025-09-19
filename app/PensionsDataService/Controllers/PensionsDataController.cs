@@ -1,4 +1,3 @@
-using System.Text.Json;
 using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
 using MhpdCommon.Models.Configuration;
@@ -13,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
+using System.Text.Json;
+using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataService.Controllers;
 
@@ -45,7 +46,171 @@ public class PensionsDataController(
         PensionProviderConstants.RetrievalStatus.RetrievalComplete,
         PensionProviderConstants.RetrievalStatus.RetrievalFailed
     ];
-    
+
+    private static readonly IEnumerable<string> ExcludedCategories =
+    [
+        Category.Error,
+        Category.Unsupported
+    ];
+
+    [HttpGet]
+    [Route("pensions-status")]
+    public async Task<IActionResult> GetPensionsStatusAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var (requestedPension, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} Status - GET", userSessionId, correlationId);
+
+        if (earlyResponse != null)
+        {
+            return earlyResponse;
+        }
+
+        var retrievedPeis = await _retrievedPensionsRecordClient.GetRetrievedPeisAsync(new RequestHeaderModel
+        {
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        });
+
+        var isComplete = IsPensionsDataRetrievalComplete(
+            requestedPension.PeiRetrievalComplete,
+            requestedPension.PeiData,
+            retrievedPeis
+        );
+
+        var response = new PensionsStatusResponseModel
+        {
+            PensionsDataRetrievalComplete = isComplete,
+            PredictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime,
+            PredictedRemainingDataRetrievalTime = GetRemainingRetrievalTime(requestedPension, _predictedTotalDataRetrievalTime)
+        };
+
+        logger.LogResponseSent(response);
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [Route("pensions-summary")]
+    public async Task<IActionResult> GetPensionSummaryAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var (requestedPension, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} Summary - GET", userSessionId, correlationId);
+
+        if (earlyResponse != null)
+        {
+            return earlyResponse;
+        }
+
+        var retrievedPensions = await GetRetrievedPensionsAsync(userSessionId!, correlationId!);
+
+        var isComplete = IsPensionsDataRetrievalComplete(
+            requestedPension.PeiRetrievalComplete,
+            requestedPension.PeiData,
+            retrievedPensions.Select(r => r.Pei!)
+        );
+
+        var response = new PensionSummary
+        {
+            IsPensionRetrievalComplete = isComplete
+        };
+
+        foreach (var peiData in requestedPension.PeiData)
+        {
+            // Check if there is a matching pei in the retrievedPensionsRecords
+            var matchingRecord = retrievedPensions.Find(record => record.Pei == peiData.Pei);
+
+            if (!ExcludedCategories.Contains(matchingRecord?.Category))
+            {
+                response.TotalPensionsFound++;
+            }
+
+            response.Pensions.Add(new PensionItem
+            {
+                Pei = peiData.Pei,
+                RetrievalStatus = GetPeiStatus(matchingRecord),
+                SchemeName = matchingRecord?.SchemeName ?? peiData.Description ?? Constants.Unknown,
+                AdministratorName = matchingRecord?.Administrator ?? Constants.Unknown,
+                HasIncome = matchingRecord?.HasIncome ?? Constants.Unknown,
+                PensionType = matchingRecord?.PensionType ?? Constants.Unknown,
+                Category = matchingRecord?.Category ?? Category.None
+            });
+        }
+
+        logger.LogResponseSent(response);
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [Route("pensions/{category}")]
+    public async Task<IActionResult> GetPensionsByCategoryAsync([FromRoute] string category, [FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var (requestedPension, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} By Category - GET", userSessionId, correlationId);
+
+        if (earlyResponse != null)
+        {
+            return earlyResponse;
+        }
+
+        var retrievedPensions = await GetRetrievedPensionsAsync(userSessionId!, correlationId!);
+
+        var isComplete = IsPensionsDataRetrievalComplete(
+            requestedPension.PeiRetrievalComplete,
+            requestedPension.PeiData,
+            retrievedPensions.Select(r => r.Pei!)
+        );
+
+        var response = new PensionData
+        {
+            IsPensionRetrievalComplete = isComplete
+        };
+
+        foreach(var pension in retrievedPensions) 
+        {
+            if(category != Category.Contact &&
+                pension.Category == Category.Contact)
+            {
+                ++response.TotalContactPensions;
+            }
+
+            if (pension.Category == category)
+            {
+                response.Arrangements.Add(pension.RetrievalResult);
+            }
+        }
+
+        logger.LogResponseSent(response);
+
+        return Ok(response);
+    }
+
+    [HttpGet]
+    [Route("pension-detail/{id}")]
+    public async Task<IActionResult> GetPensionDetailAsync([FromRoute] string id, [FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var (_, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} Detail - GET", userSessionId, correlationId);
+
+        if (earlyResponse != null)
+        {
+            return earlyResponse;
+        }
+
+        var retrievedPensions = await GetRetrievedPensionsAsync(userSessionId!, correlationId!, id);
+
+        if (retrievedPensions.Count == 0 || retrievedPensions.Count > 1)
+        {
+            return NotFound($"No pension found with id {id}");
+        }
+
+        return Ok(retrievedPensions[0].RetrievalResult);
+    }
+
     [HttpGet]
     [Route("pensions-data")]
     public async Task<IActionResult> GetPensionsDataAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId, 
@@ -91,10 +256,7 @@ public class PensionsDataController(
         {
             // Call the GET retrieved-pension-records endpoint to retrieve the retrieved pension records associated
             // with the Pensions Retrieval Record returned in the GET pensions-retrieval-records response.
-            var retrievedRecordResult = await _retrievedPensionsRecordClient.GetAsync(new PensionsRetrievalRecordIdModel
-            {
-                PensionsRetrievalRecordId = retrievalRecordResult.Id
-            }, requestHeader);
+            var retrievedRecordResult = await _retrievedPensionsRecordClient.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), requestHeader);
 
             if (retrievedRecordResult.Count > 0)
             {
@@ -198,7 +360,12 @@ public class PensionsDataController(
 
         await PostPensionDataRetrievalMessage(peisId, requestHeader, userSessionId);
 
-        var response = Accepted(new { predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime });
+        var response = Accepted(new
+        {
+            predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime,
+            pensionRetrievalStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        });
+
         logger.LogResponseSent(response);
         return response;
     }
@@ -209,23 +376,15 @@ public class PensionsDataController(
         [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
         // Get the pensions retrieval record associated with the passed userSessionId
-        var (retrievalRecord, earlyResponse) = await TryGetRequestedPensionAsync(
+        var (_, _) = await TryGetRequestedPensionAsync(
         $"{Constants.LogSource} - {Constants.HttpDelete}", userSessionId, correlationId);
 
-        if (earlyResponse != null)
-        {
-            return earlyResponse;
-        }
+        var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
+        var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(userSessionId!, correlationId!);
 
-        if (!string.IsNullOrEmpty(retrievalRecord.Id))
-        {
-            var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
-            var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(retrievalRecord.Id, correlationId!);
+        logger.LogWarning("Delete request removed {RetrievalCount} pension retrieval records and {RetrievedCount} retrieved pension records", retrievalCount, retrievedCount);
 
-            logger.LogWarning("Delete request removed {RetrievalCount} pension retrieval records and {RetrievedCount} retrieved pension records", retrievalCount, retrievedCount);
-        }
-
-        if(await userSessionDataRepository.DeleteByIdAsync(userSessionId!, userSessionId!))
+        if (await userSessionDataRepository.DeleteByIdAsync(userSessionId!, userSessionId!))
         {
             logger.LogInformation("User session data deleted for UserSessionId {UserSessionId}", userSessionId);
         }
@@ -235,30 +394,6 @@ public class PensionsDataController(
         }
 
         return new NoContentResult();
-    }
-
-    private async Task<(PensionsRetrievalRecord retrievalRecord, IActionResult? earlyResponse)>
-    TryGetRequestedPensionAsync(string endpoint, string? userSessionId, string? correlationId)
-    {
-        var requestHeader = new RequestHeaderModel
-        {
-            UserSessionId = userSessionId,
-            CorrelationId = correlationId
-        };
-
-        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
-        {
-            logger.LogError(ErrorMessage, validationMessage);
-            return (null!, BadRequest(validationMessage));
-        }
-
-        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} {endpoint}");
-        logger.LogRequestReceived(requestHeader);
-
-        // Get the pensions retrieval record associated with the passed userSessionId
-        var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
-
-        return (retrievalRecordResult, null);
     }
 
     private static int GetRemainingRetrievalTime(PensionsRetrievalRecord retrievalRecord, int totalEstimatedDuration)
@@ -434,7 +569,22 @@ public class PensionsDataController(
 
         return retrievalStatus;
     }
-    
+
+    private static string GetPeiStatus(RetrievedPensionRecord? record)
+    {
+        if (record == null)
+        {
+            return PensionProviderConstants.RetrievalStatus.RetrievalRequested;
+        }
+
+        if (record.RetrievalResult is JsonElement { ValueKind: JsonValueKind.Array })
+        {
+            return PensionProviderConstants.RetrievalStatus.RetrievalComplete;
+        }
+
+        return PensionProviderConstants.RetrievalStatus.RetrievalFailed;
+    }
+
     private static bool IsPensionsDataRetrievalComplete(bool peiRetrievalComplete, List<PeiDataModel> peiData)
     {
         // Return true if PeiRetrievalComplete is true and either no PeiData or all PeiData have a status indicating retrieval was completed
@@ -445,6 +595,65 @@ public class PensionsDataController(
     
         // Return false if PensionsDataRetrievalComplete is false
         return false;
+    }
+
+    private static bool IsPensionsDataRetrievalComplete(bool peiRetrievalComplete, List<PeiDataModel> peiData, IEnumerable<string> retrievedPeis)
+    {
+        // Return true if PeiRetrievalComplete is true and either no PeiData or all Peis have been retrieved
+        if (peiRetrievalComplete)
+        {
+            return peiData.Count == 0 || peiData.TrueForAll(p => retrievedPeis.Contains(p.Pei));
+        }
+
+        // Return false if PensionsDataRetrievalComplete is false
+        return false;
+    }
+
+    private async Task<(PensionsRetrievalRecord requestedPension, IActionResult? earlyResponse)>
+    TryGetRequestedPensionAsync(string endpoint, string? userSessionId, string? correlationId)
+    {
+        var requestHeader = new RequestHeaderModel
+        {
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        };
+
+        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
+        {
+            logger.LogError(ErrorMessage, validationMessage);
+            return (null!, BadRequest(validationMessage));
+        }
+
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} {endpoint}");
+        logger.LogRequestReceived(requestHeader);
+
+        // Get the pensions retrieval record associated with the passed userSessionId
+        var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
+
+        if (string.IsNullOrEmpty(retrievalRecordResult.Id))
+        {
+            // No session data found, return an empty response
+            return (null!, new JsonResult(null) { StatusCode = StatusCodes.Status200OK });
+        }
+
+        return (retrievalRecordResult, null);
+    }
+
+    private async Task<List<RetrievedPensionRecord>> GetRetrievedPensionsAsync(string userSessionId, string correlationId, string? assetId = null)
+    {
+        var requestHeader = new RequestHeaderModel
+        {
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        };
+
+        var pensions = await _retrievedPensionsRecordClient.GetRetrievedPensionsAsync(
+            new RetrievedPensionsRequest
+            {
+                AssetId = assetId
+            }, requestHeader);
+
+        return pensions;
     }
 
     private static Tuple<Dictionary<int, dynamic>, Dictionary<string, List<JsonElement>>> GetMappedRetrievalResults(List<RetrievedPensionRecord> retrievedRecordResults)

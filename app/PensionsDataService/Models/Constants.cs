@@ -6,5 +6,6 @@
         public const string HttpDelete = "DELETE";
         public const string LogSource = "Pension Data Service";
         public const string InvalidCorrelationId = "Invalid correlation Id";
+        public const string Unknown = "Unknown";
     }
 }

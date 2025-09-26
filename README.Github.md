@@ -16,10 +16,8 @@ The service follows a modular architecture with clear separation of concerns. Ke
 
 - **Controllers**: Handle incoming HTTP requests and orchestrate responses.
 - **wwwroot**: Contains a dynamic Open Api spec for this service's Api. This document reflects any changes to the controller's endpoints
-- **Models**: Define the structure of data being transmitted and received. [WIKI Models](https://mapswiki.atlassian.net/wiki/spaces/MPD/pages/13666559/Models)
+- **Models**: Define the structure of data being transmitted and received.
 - **Utilities**: Contain reusable functions and helper classes.
-- **Wiki Link**: [Pension Data Service Architecture](https://mapswiki.atlassian.net/wiki/spaces/MPD/pages/117735487/Pensions+Data+Service)
-- **Architecture Diagram HLD**: [MHPD HL Architecture](https://mapswiki.atlassian.net/wiki/spaces/MPD/pages/13666036/High+Level+Architecture)
 
 ## Tech Stack
 
@@ -41,10 +39,10 @@ The Pension Data Service is built using the following technologies:
 
 The MaPSCDAService has the following key service dependencies:
 
-- **[Token Integration Service](https://dev.azure.com/moneyandpensionsservice/MaPS%20Digital/_git/mhpd-backend-token-integration-service)**: Used to obtain Id and Access tokens from the Cda emulator.
-- **[Maps Cda Service](https://dev.azure.com/moneyandpensionsservice/MaPS%20Digital/_git/mhpd-backend-cda-service)**: Needed to obtain a requesting party token. This enable communications with the token service above
-- **[Pension Retrieval Service](https://dev.azure.com/moneyandpensionsservice/MaPS%20Digital/_git/mhpd-backend-pensions-retrieval-service)**: Initiates the fetching of pension arrangements associated with a Pei.
-- **[Retrieved Pensions Service](https://dev.azure.com/moneyandpensionsservice/MaPS%20Digital/_git/mhpd-backend-retrieved-pensions-service)**: Returns any obtianed pension arrangements.
+- **Token Integration Service**: Used to obtain Id and Access tokens from the Cda emulator.
+- **[Maps Cda Service](https://github.com/moneyadviceservice/mhpd-backend-cda-service)**: Needed to obtain a requesting party token. This enable communications with the token service above
+- **[Pension Retrieval Service](https://github.com/moneyadviceservice/mhpd-backend-pensions-retrieval-service)**: Initiates the fetching of pension arrangements associated with a Pei.
+- **[Retrieved Pensions Service](https://github.com/moneyadviceservice/mhpd-backend-retrieved-pensions-service)**: Returns any obtianed pension arrangements.
 
 ## Installation
 
@@ -52,7 +50,7 @@ To set up the Pension Data Service locally, follow these steps:
 
 1. **Clone the Repository**:
 ```bash
-   git clone https://moneyandpensionsservice@dev.azure.com/moneyandpensionsservice/MaPS%20Digital/_git/mhpd-backend-pensions-data-service
+   git clone https://github.com/moneyadviceservice/mhpd-backend-pensions-data-service.git
    cd app
 ```
 
@@ -80,7 +78,7 @@ dotnet restore
   "TokenIntegrationServiceUrl": "$(TokenIntegrationServiceUrl)",
   "PensionRetrievalServiceUrl": "$(PensionRetrievalServiceUrl)",
   "RetrievedPensionsServiceUrl": "$(RetrievedPensionsServiceUrl)",
-  "OpenApiServerUrl": "https://maps-api-management-dev.azure-api.net/pension-data-service/",
+  "OpenApiServerUrl": "$(OpenApiServerUrl)",
   "CosmosDBConnectionString": "$(CosmosDBConnectionString)",
   "ServiceBusConnectionString": "$(ServiceBusConnectionString)",
   "CosmosBusinessConfiguration": {
@@ -115,19 +113,6 @@ dotnet test
 ## Logging
 Logging is configured to capture detailed information about requests and errors. Logs are written using the ILogger interface, providing insights into the operation of the service
 
-## Pipelines
-- infrastructure-deploy.yml
-  - Terraform infrastructure for the function apps and app services
-  - Pipeline name is 'MHPD-backend-infrastructure'
-- pensions-data-app-service-deploy.yml
-  - Deploy .NET App to pension-data-service-<env>
-  - Pipeline name is 'mhpd-backend-pensions-data-service-deploy'
-- pension-data-api-publish.yml
-  - Exports the API spec to api-docs repo and bumps the version of the APIm resource
-  - Pipeline name is 'mhpd-backend-pensions-data-service-api-publish'
-- ci.yml
-  - Builds and tests the project
-  - Pipeline name is 'mhpd-backend-pensions-data-service-ci'
 
 ## Contributing
 Submit a pull request or open an issue for any enhancements or bug fixes.

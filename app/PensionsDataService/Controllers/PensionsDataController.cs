@@ -225,7 +225,7 @@ public class PensionsDataController(
         if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
         {
             logger.LogError(ErrorMessage, validationMessage);
-            return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
+            return BadRequest(validationMessage);
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} GET");
@@ -287,7 +287,7 @@ public class PensionsDataController(
         if (!TryValidateRequests(request, requestHeader, out var validationMessage))
         {
             logger.LogError(ErrorMessage, validationMessage);
-            return await Task.FromResult<IActionResult>(BadRequest(validationMessage));
+            return BadRequest(validationMessage);
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST");
@@ -302,7 +302,7 @@ public class PensionsDataController(
 
         if (!IsValidUserSessionData(userSessionId, result.PeisId))
         {
-            return await Task.FromResult<IActionResult>(StatusCode(500, "Internal server error"));
+            return StatusCode(500, "Internal server error");
         }
         
         // Add the idToken to the userSessionData container against the userSessionId for downstream use
@@ -319,7 +319,7 @@ public class PensionsDataController(
         var response = Accepted();
         logger.LogResponseSent(response);
         
-        return await Task.FromResult<IActionResult>(response);
+        return response;
     }
 
     // This endpoint is called once the claims gathering process has been completed

@@ -125,3 +125,7 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 ### 🔧 Release 0.5.0 — 2025-09-08
 - Applied industry standard security response headers.
 - Updated logging output consistency to improve traceability.
+
+### 🔧 Release 0.7.0 — 2025-10-08
+- HasIncome property of pension retrieval summary now returned as a boolean.
+- Removed support for Multiplicity pension arrangements with duplicate payment details.

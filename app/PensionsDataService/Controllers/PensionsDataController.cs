@@ -132,7 +132,7 @@ public class PensionsDataController(
                 RetrievalStatus = GetPeiStatus(matchingRecord),
                 SchemeName = matchingRecord?.SchemeName ?? peiData.Description ?? Constants.Unknown,
                 AdministratorName = matchingRecord?.Administrator ?? Constants.Unknown,
-                HasIncome = matchingRecord?.HasIncome ?? Constants.Unknown,
+                HasIncome = bool.TryParse(matchingRecord?.HasIncome, out var hasIncome) && hasIncome,
                 PensionType = matchingRecord?.PensionType ?? Constants.Unknown,
                 Category = matchingRecord?.Category ?? Category.None
             });

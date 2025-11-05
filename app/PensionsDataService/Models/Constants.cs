@@ -7,5 +7,17 @@
         public const string LogSource = "Pension Data Service";
         public const string InvalidCorrelationId = "Invalid correlation Id";
         public const string Unknown = "Unknown";
+
+        public static class Analytics
+        {
+            public const string StartDate = "startDateYYYYMM";
+            public const string RetirementDate = "retirementDateYYYYMM";
+            public const string DateOfBirth = "yearOfBirthYYYY";
+            public const string MembershipStartDate = "membershipStartDateYYYYMM";
+            public const string MembershipEndDate = "membershipEndDateYYYYMM";
+            public const string PayableDate = "payableDateYYYYMM";
+            public const string LastPaymentDate = "lastPaymentDateYYYYMM";
+            public const string PensionAdministrator = "pensionAdministratorName";
+        }
     }
 }

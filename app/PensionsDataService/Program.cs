@@ -7,6 +7,7 @@ using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi.Models;
 using PensionsDataService.HttpClients;
+using PensionsDataService.Utilities;
 using System.Diagnostics.CodeAnalysis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<PensionServiceClients>();
 builder.Services.AddScoped<IRetrievalRecordServiceClient, RetrievalRecordServiceClient>();
 builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsRecordClient>();
-
+builder.Services.AddScoped<IPensionAnonymizer, PensionAnonymizer>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUrlNotValidUrlValidationPensionsData>();

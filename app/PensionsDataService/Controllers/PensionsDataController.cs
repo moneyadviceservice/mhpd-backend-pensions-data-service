@@ -12,8 +12,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
+using PensionsDataService.Utilities;
 using System.Text.Json;
 using static MhpdCommon.ViewData.EvaluationConstants;
+using System.Linq;
 
 namespace PensionsDataService.Controllers;
 
@@ -25,7 +27,8 @@ public class PensionsDataController(
     PensionsDataRequestValidatorPipeline requestValidators,
     PensionServiceClients serviceClients,
     IOptions<PeiOrchestrationSettings> peiRetrievalOptions,
-    ICosmosDbRepository<UserSessionData> userSessionDataRepository)
+    ICosmosDbRepository<UserSessionData> userSessionDataRepository,
+    IPensionAnonymizer pensionAnonymizer)
     : ControllerBase
 {
     private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClientRpts = serviceClients.TokenIntegrationServiceClient;
@@ -209,6 +212,64 @@ public class PensionsDataController(
         }
 
         return Ok(retrievedPensions[0].RetrievalResult);
+    }
+
+    [HttpGet]
+    [Route("pensions/analytics")]
+    public async Task<IActionResult> GetPensionsAnalyticsAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var (requestedPension, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} Analytics - GET", userSessionId, correlationId);
+
+        if (earlyResponse != null)
+        {
+            return earlyResponse;
+        }
+
+        var retrievedPensions = await GetRetrievedPensionsAsync(userSessionId!, correlationId!);
+
+        var isComplete = IsPensionsDataRetrievalComplete(
+            requestedPension.PeiRetrievalComplete,
+            requestedPension.PeiData,
+            retrievedPensions.Select(r => r.Pei!)
+        );
+
+        if(!isComplete)
+        {
+            logger.LogWarning("Pension analytics data requested before retrieval was complete for UserSessionId {UserSessionId}", userSessionId);
+            return BadRequest("Pension data retrieval is not complete");
+        }
+
+        List<RetrievedPensionRecord>? anonymizedPensions;
+
+        try
+        {
+            var json = JsonSerializer.Serialize(retrievedPensions.Where(pension => pension.Category != Category.Error));
+            var anonymizedJson = pensionAnonymizer.Anonymize(json);
+            anonymizedPensions = JsonSerializer.Deserialize<List<RetrievedPensionRecord>>(anonymizedJson);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error anonymizing pensions data for UserSessionId {UserSessionId}", userSessionId);
+            anonymizedPensions = null;
+        }
+
+        if (anonymizedPensions is null)
+        {
+            return StatusCode(500, "Unable to collect pension retrieval analytics data");
+        }
+
+        var response = new AnalyticsData
+        {
+            TotalErrorPensions = retrievedPensions.Count(pension => pension.Category ==  Category.Error),
+            TotalPensions = anonymizedPensions.Count,
+            Arrangements = anonymizedPensions.Select(pension => pension.RetrievalResult!)
+        };
+
+        logger.LogResponseSent(response);
+
+        return Ok(response);
     }
 
     [HttpGet]

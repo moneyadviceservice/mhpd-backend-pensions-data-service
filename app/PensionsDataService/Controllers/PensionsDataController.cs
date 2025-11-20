@@ -125,7 +125,7 @@ public class PensionsDataController(
             {
                 Pei = peiData.Pei,
                 RetrievalStatus = GetPeiStatus(matchingRecord),
-                SchemeName = matchingRecord?.SchemeName ?? peiData.Description ?? Constants.Unknown,
+                SchemeName = !string.IsNullOrEmpty(matchingRecord?.SchemeName) ? matchingRecord.SchemeName : peiData.Description ?? Constants.Unknown,
                 AdministratorName = matchingRecord?.Administrator ?? Constants.Unknown,
                 HasIncome = bool.TryParse(matchingRecord?.HasIncome, out var hasIncome) && hasIncome,
                 PensionType = matchingRecord?.PensionType ?? Constants.Unknown,
@@ -238,31 +238,25 @@ public class PensionsDataController(
             return BadRequest("Pension data retrieval is not complete");
         }
 
-        List<RetrievedPensionRecord>? anonymizedPensions;
+        var response = new AnalyticsData();
 
         try
         {
-            var json = JsonSerializer.Serialize(retrievedPensions.Where(pension => pension.Category != Category.Error));
+            response.SplitPensionsByStatus(retrievedPensions, requestedPension.PeiData);
+            var json = JsonSerializer.Serialize(response);
             var anonymizedJson = pensionAnonymizer.Anonymize(json);
-            anonymizedPensions = JsonSerializer.Deserialize<List<RetrievedPensionRecord>>(anonymizedJson);
+            response = JsonSerializer.Deserialize<AnalyticsData>(anonymizedJson);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error anonymizing pensions data for UserSessionId {UserSessionId}", userSessionId);
-            anonymizedPensions = null;
+            response = null;
         }
 
-        if (anonymizedPensions is null)
+        if (response is null)
         {
             return StatusCode(500, "Unable to collect pension retrieval analytics data");
         }
-
-        var response = new AnalyticsData
-        {
-            TotalErrorPensions = retrievedPensions.Count(pension => pension.Category ==  Category.Error),
-            TotalPensions = anonymizedPensions.Count,
-            Arrangements = anonymizedPensions.Select(pension => pension.RetrievalResult!)
-        };
 
         logger.LogResponseSent(response);
 

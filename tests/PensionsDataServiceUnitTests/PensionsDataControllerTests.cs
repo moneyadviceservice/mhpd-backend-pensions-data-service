@@ -1018,10 +1018,13 @@ public class PensionsDataControllerTests
 
         var peis = CreatePeisList();
         var errorPei = CreatePei();
+        var pendingPei = CreatePei();
+        var contactPei = CreatePei();
+        var unsupportedPei = CreatePei();
 
         var retrievalPeis = new List<string>(peis)
         {
-            errorPei
+            errorPei, pendingPei, contactPei, unsupportedPei
         };
 
         var requestedPension = CreateRetrievalRecord(retrievalPeis);
@@ -1031,6 +1034,9 @@ public class PensionsDataControllerTests
         if (isRetrievalComplete)
         {
             retrievedPensions = CreateRetrievedRecords(peis, errorPei);
+            retrievedPensions.Add(CreateValidRetrievedPension(contactPei, Category.Contact));
+            retrievedPensions.Add(CreateValidRetrievedPension(pendingPei, Category.Pending));
+            retrievedPensions.Add(CreateValidRetrievedPension(unsupportedPei, Category.Unsupported));
         }
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -1052,8 +1058,13 @@ public class PensionsDataControllerTests
             var okResult = Assert.IsType<OkObjectResult>(response);
             var responseModel = Assert.IsType<AnalyticsData>(okResult.Value);
             Assert.Equal(1, responseModel.TotalErrorPensions);
-            Assert.Equal(3, responseModel.TotalPensions);
-            Assert.Equal(3, responseModel.Arrangements.Count());
+            Assert.Equal(5, responseModel.TotalPensions);
+            Assert.Equal(1, responseModel.TotalUnsupportedPensions);
+            Assert.Equal(3, responseModel.ConfirmedPensions.Count);
+            Assert.Single(responseModel.UnconfirmedPensions);
+            Assert.Single(responseModel.IncompletePensions);
+            Assert.Single(responseModel.UnsupportedPensions);
+            Assert.Single(responseModel.ErroredPensions);
         }
         else
         {
@@ -1192,7 +1203,7 @@ public class PensionsDataControllerTests
             MatchType = "POSS",
             AssetId = "asset-2",
             Category = Category.Error,
-            SchemeName = "Scheme Two",
+            SchemeName = "",
             HasIncome = "true",
             Administrator = "Admin Two",
             RetrievalResult = JsonSerializer.Deserialize<dynamic>(error)

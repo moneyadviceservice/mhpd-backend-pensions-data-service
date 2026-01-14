@@ -14,9 +14,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddScoped<PensionServiceClients>();
+builder.Services.AddScoped<PensionServiceUtilities>();
 builder.Services.AddScoped<IRetrievalRecordServiceClient, RetrievalRecordServiceClient>();
 builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsRecordClient>();
 builder.Services.AddScoped<IPensionAnonymizer, PensionAnonymizer>();
+builder.Services.AddScoped<ICardDataRuleEngine, CardDataRuleEngine>();
+builder.Services.AddScoped<ISummaryDataRuleEngine, SummaryDataRuleEngine>();
+builder.Services.AddScoped<IPensionNavigator, PensionNavigator>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeInvalidFormatValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, AuthorisationCodeNotPresentValidationPensionsData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, RedirectUrlNotValidUrlValidationPensionsData>();

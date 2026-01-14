@@ -1,0 +1,199 @@
+﻿using MhpdCommon.Constants;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.ViewData;
+using PensionsDataService.Extensions;
+using PensionsDataService.Models;
+using PensionsDataService.Utilities;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace PensionsDataServiceUnitTests.Extensions;
+
+public class PensionDataExtensionsTests
+{
+    private readonly PensionNavigator _navigator;
+    private readonly SummaryDataRuleEngine _engine;
+
+    public PensionDataExtensionsTests()
+    {
+        _navigator = new PensionNavigator();
+        _engine = new SummaryDataRuleEngine(_navigator);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_DoesNothing_WhenPensionsListIsEmpty()
+    {
+        var response = new PensionData();
+
+        response.EnrichSummaryData([], _engine);
+
+        Assert.Null(response.SummaryData);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_DoesNothing_WhenNoStatePensionExists()
+    {
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            CreatePension("DC", "2030-01-01", "2040-01-01", 1000, 12000)
+        };
+
+        var response = new PensionData();
+
+        response.EnrichSummaryData(pensions, _engine);
+
+        Assert.Null(response.SummaryData);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_SetsSummaryData_WhenStatePensionExistsAndHasValues()
+    {
+        var statePension = CreatePension(Constants.PensionTypes.SP, "2035-01-01");
+        var pension1 = CreatePension("DC", "2030-01-01", "2040-01-01", 1000, 12000);
+        var pension2 = CreatePension("DC", "2034-01-01", "2050-01-01", 500, 6000);
+
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            statePension,
+            pension1,
+            pension2
+        };
+
+        var response = new PensionData();
+
+        response.EnrichSummaryData(pensions, _engine);
+
+        Assert.NotNull(response.SummaryData);
+        Assert.Equal(1500, response.SummaryData!.MonthlyTotal);
+        Assert.Equal(18000, response.SummaryData.AnnualTotal);
+        Assert.Equal("2035-01-01", response.SummaryData.StatePensionDate);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_DoesNotSetSummaryData_WhenRuleEngineReturnsEmpty()
+    {
+        var statePension = CreatePension(Constants.PensionTypes.SP, null);
+
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            statePension
+        };
+
+        var response = new PensionData();
+
+        response.EnrichSummaryData(pensions, _engine);
+
+        Assert.Null(response.SummaryData);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_MutatesExistingResponseObject()
+    {
+        var statePension = CreatePension(Constants.PensionTypes.SP, "2035-01-01");
+
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            statePension
+        };
+
+        var response = new PensionData();
+        var originalReference = response;
+
+        response.EnrichSummaryData(pensions, _engine);
+
+        Assert.Same(originalReference, response);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_DoesNotThrow_OnMalformedJson()
+    {
+        var malformed = new RetrievedPensionRecord
+        {
+            PensionType = Constants.PensionTypes.SP,
+            RetrievalResult = JsonSerializer.SerializeToElement(new JsonObject())
+        };
+
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            malformed
+        };
+
+        var response = new PensionData();
+
+        var exception = Record.Exception(() =>
+        {
+            response.EnrichSummaryData(pensions, _engine);
+        });
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void EnrichSummaryData_IgnoresPensionsOutsideWindow()
+    {
+        var statePension = CreatePension(Constants.PensionTypes.SP, "2035-01-01");
+
+        var pension = CreatePension("DC", "2036-01-01", "2040-01-01", 1000, 12000);
+
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            statePension,
+            pension
+        };
+
+        var response = new PensionData();
+
+        response.EnrichSummaryData(pensions, _engine);
+
+        Assert.NotNull(response.SummaryData);
+        Assert.Equal(0, response.SummaryData!.MonthlyTotal);
+        Assert.Equal(0, response.SummaryData.AnnualTotal);
+    }
+
+    // ---------------------------
+    // Helpers
+    // ---------------------------
+
+    private static RetrievedPensionRecord CreatePension(
+        string pensionType,
+        string? payableDate,
+        string? lastPaymentDate = null,
+        decimal? monthlyAmount = null,
+        decimal? annualAmount = null)
+    {
+        var component = new JsonObject
+        {
+            [PensionConstants.IllustrationType] = EvaluationConstants.IllustrationType.Estimated,
+            [PensionConstants.PayableDetails] = new JsonObject()
+        };
+
+        if (payableDate != null)
+            component[PensionConstants.PayableDetails]![PensionConstants.PayableDate] = payableDate;
+
+        if (lastPaymentDate != null)
+            component[PensionConstants.PayableDetails]![PensionConstants.LastPaymentDate] = lastPaymentDate;
+
+        if (monthlyAmount.HasValue)
+            component[PensionConstants.PayableDetails]![PensionConstants.MonthlyAmount] = monthlyAmount.Value;
+
+        if (annualAmount.HasValue)
+            component[PensionConstants.PayableDetails]![PensionConstants.AnnualAmount] = annualAmount.Value;
+
+        var illustration = new JsonObject
+        {
+            [PensionConstants.IllustrationDate] = "2024-01-01",
+            [PensionConstants.IllustrationComponents] = new JsonArray(component)
+        };
+
+        var root = new JsonObject
+        {
+            [PensionConstants.BenefitIllustrations] = new JsonArray(illustration)
+        };
+
+        return new RetrievedPensionRecord
+        {
+            PensionType = pensionType,
+            RetrievalResult = JsonSerializer.SerializeToElement(root)
+        };
+    }
+}

@@ -15,7 +15,6 @@ using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
 using PensionsDataService.Utilities;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataService.Controllers;
@@ -29,7 +28,7 @@ public class PensionsDataController(
     PensionServiceClients serviceClients,
     IOptions<PeiOrchestrationSettings> peiRetrievalOptions,
     ICosmosDbRepository<UserSessionData> userSessionDataRepository,
-    IPensionAnonymizer pensionAnonymizer)
+    PensionServiceUtilities serviceUtilities)
     : ControllerBase
 {
     private readonly ITokenIntegrationServiceClient _tokenIntegrationServiceClientRpts = serviceClients.TokenIntegrationServiceClient;
@@ -164,7 +163,7 @@ public class PensionsDataController(
             IsPensionRetrievalComplete = isComplete
         };
 
-        var enrichedPensions = retrievedPensions.EnrichLinkedPensions();
+        var enrichedPensions = retrievedPensions.EnrichLinkedPensions().EnrichCardData(serviceUtilities.CardDataRuleEngine);
 
         foreach (var pension in enrichedPensions) 
         {
@@ -179,6 +178,8 @@ public class PensionsDataController(
                 response.Arrangements.Add(pension.RetrievalResult);
             }
         }
+
+        response.EnrichSummaryData(enrichedPensions, serviceUtilities.SummaryDataRuleEngine);
 
         logger.LogResponseSent(response);
 
@@ -244,7 +245,7 @@ public class PensionsDataController(
         {
             response.SplitPensionsByStatus(retrievedPensions, requestedPension.PeiData);
             var json = JsonSerializer.Serialize(response);
-            var anonymizedJson = pensionAnonymizer.Anonymize(json);
+            var anonymizedJson = serviceUtilities.Anonymizer.Anonymize(json);
             response = JsonSerializer.Deserialize<AnalyticsData>(anonymizedJson);
         }
         catch (Exception ex)

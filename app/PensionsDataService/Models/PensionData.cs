@@ -6,5 +6,7 @@ public class PensionData
 
     public int TotalContactPensions { get; set; }
 
+    public SummaryData? SummaryData { get; set; }
+
     public List<dynamic> Arrangements { get; set; } = [];
 }

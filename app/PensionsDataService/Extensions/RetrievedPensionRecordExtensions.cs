@@ -6,7 +6,7 @@ using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataService.Extensions;
 
-public static class RetrievedPensionRecordExtensions
+public static partial class RetrievedPensionRecordExtensions
 {
     private static readonly IEnumerable<string> UnlinkableCategories =
     [
@@ -72,6 +72,7 @@ public static class RetrievedPensionRecordExtensions
                 AssetId = record.AssetId,
                 PensionLinkId = record.PensionLinkId,
                 Category = record.Category,
+                PensionType = record.PensionType,
                 RetrievalResult = JsonSerializer.SerializeToElement(arrangement)
             });
         }

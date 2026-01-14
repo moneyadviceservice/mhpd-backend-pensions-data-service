@@ -19,6 +19,7 @@ using PensionsDataService.Models;
 using PensionsDataService.Utilities;
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataServiceUnitTests;
@@ -33,6 +34,8 @@ public class PensionsDataControllerTests
     private readonly Mock<IMessagingService> _mockMessagingService = new();
     private readonly Mock<ICosmosDbRepository<UserSessionData>> _mockUserSessionDataRepository = new();
     private readonly Mock<IPensionAnonymizer> _mockPensionAnonymizer = new();
+    private readonly Mock<ICardDataRuleEngine> _mockCardDataRuleEngine = new();
+    private readonly Mock<ISummaryDataRuleEngine> _mockSummaryDataRuleEngine = new();
 
     private readonly PensionsDataController _controller;
 
@@ -108,6 +111,18 @@ public class PensionsDataControllerTests
         _mockPensionAnonymizer.Setup(p => p.Anonymize(It.IsAny<string>()))
             .Returns((string data) => data);
 
+        _mockCardDataRuleEngine.Setup(c => c.Evaluate(It.IsAny<JsonNode>(), It.IsAny<string>()))
+            .Returns(new CardData());
+
+        _mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord>(), It.IsAny<IReadOnlyList<RetrievedPensionRecord>>()))
+            .Returns(new SummaryData());
+
+        Mock<PensionServiceUtilities> mockServiceUtilities = new(
+            _mockPensionAnonymizer.Object,
+            _mockCardDataRuleEngine.Object,
+            _mockSummaryDataRuleEngine.Object
+            );
+
         _controller = new PensionsDataController(
             mockLogger.Object, 
             _mockIdValidator.Object, 
@@ -115,7 +130,7 @@ public class PensionsDataControllerTests
             mockServiceClients.Object, 
             mockOrchestrationSettings.Object,
             _mockUserSessionDataRepository.Object,
-            _mockPensionAnonymizer.Object
+            mockServiceUtilities.Object
         );
     }
 

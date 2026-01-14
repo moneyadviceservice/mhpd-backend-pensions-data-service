@@ -19,5 +19,10 @@
             public const string LastPaymentDate = "lastPaymentDateYYYYMM";
             public const string PensionAdministrator = "pensionAdministratorName";
         }
+
+        public static class PensionTypes
+        {
+            public const string SP = "SP";
+        }
     }
 }

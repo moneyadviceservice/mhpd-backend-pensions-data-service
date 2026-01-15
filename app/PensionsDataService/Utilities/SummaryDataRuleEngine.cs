@@ -7,17 +7,13 @@ namespace PensionsDataService.Utilities;
 
 public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRuleEngine
 {
-    public SummaryData Evaluate(RetrievedPensionRecord statePension, IReadOnlyList<RetrievedPensionRecord> pensions)
+    public SummaryData Evaluate(RetrievedPensionRecord statePension, IEnumerable<RetrievedPensionRecord> pensions)
     {
         var summary = new SummaryData();
 
         var stateArrangement = JsonNode.Parse(statePension.RetrievalResult!.GetRawText());
 
-        var spIllustration = navigator.SelectLatestIllustration(stateArrangement);
-
-        var earliestComponent = spIllustration == null
-            ? null
-            : navigator.SelectEarliestComponent(spIllustration, EvaluationConstants.IllustrationType.Estimated);
+        var earliestComponent = navigator.SelectIllustrationComponent(stateArrangement);
 
         DateTime? spRetirementDate = navigator.SelectRetirementDate(stateArrangement, earliestComponent);
         summary.StatePensionDate = spRetirementDate?.ToString("yyyy-MM-dd");
@@ -29,17 +25,18 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
 
         foreach (var pension in pensions)
         {
+            if(pension.HasIncome == Boolean.FalseString)
+            {
+                continue;
+            }
+
             JsonNode? arrangement = JsonNode.Parse(pension.RetrievalResult!.GetRawText());
             if (arrangement == null)
             {
                 continue;
             }
 
-            var illustration = navigator.SelectLatestIllustration(arrangement);
-
-            var component = illustration == null
-                ? null
-                : navigator.SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
+            var component = navigator.SelectIllustrationComponent(arrangement);
 
             PayableDetails payableDetails = navigator.GetPayableDetails(component);
 

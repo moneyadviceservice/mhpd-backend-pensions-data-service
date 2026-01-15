@@ -1,4 +1,5 @@
 ﻿using MhpdCommon.Constants;
+using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 using System.Globalization;
 using System.Text.Json.Nodes;
@@ -7,6 +8,57 @@ namespace PensionsDataService.Utilities;
 
 public class PensionNavigator : IPensionNavigator
 {
+    public JsonNode? SelectIllustrationComponent(JsonNode retrievalResult)
+    {
+        var illustration = SelectLatestIllustration(retrievalResult);
+
+        if(illustration == null)
+        {
+            return null;
+        }
+
+        var earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
+
+        if (earliestComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
+        {
+            earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
+        }
+
+        return earliestComponent;
+    }
+
+    public JsonNode? SelectLatestIllustration(JsonNode retrievalResult)
+    {
+        var illustrationsNode = retrievalResult[PensionConstants.BenefitIllustrations];
+
+        if (illustrationsNode is not JsonArray illustrations || illustrations.Count == 0)
+        {
+            return null;
+        }
+
+        JsonNode? fallback = illustrations[0];
+        DateTime? latestDate = null;
+        JsonNode? latestNode = null;
+
+        foreach (var illustration in illustrations)
+        {
+            var dateStr = illustration?[PensionConstants.IllustrationDate]?.GetValue<string>();
+
+            if (!DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                continue;
+            }
+
+            if (latestDate == null || date > latestDate)
+            {
+                latestDate = date;
+                latestNode = illustration;
+            }
+        }
+
+        return latestNode ?? fallback;
+    }
+
     public JsonNode? SelectEarliestComponent(JsonNode benefitIllustration, string illustrationType)
     {
         var componentsNode = benefitIllustration[PensionConstants.IllustrationComponents];
@@ -47,38 +99,6 @@ public class PensionNavigator : IPensionNavigator
         }
 
         return earliestNode ?? fallback;
-    }
-
-    public JsonNode? SelectLatestIllustration(JsonNode retrievalResult)
-    {
-        var illustrationsNode = retrievalResult[PensionConstants.BenefitIllustrations];
-
-        if (illustrationsNode is not JsonArray illustrations || illustrations.Count == 0)
-        {
-            return null;
-        }
-
-        JsonNode? fallback = illustrations[0];
-        DateTime? latestDate = null;
-        JsonNode? latestNode = null;
-
-        foreach (var illustration in illustrations)
-        {
-            var dateStr = illustration?[PensionConstants.IllustrationDate]?.GetValue<string>();
-
-            if (!DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
-            {
-                continue;
-            }
-
-            if (latestDate == null || date > latestDate)
-            {
-                latestDate = date;
-                latestNode = illustration;
-            }
-        }
-
-        return latestNode ?? fallback;
     }
 
     public DateTime? SelectRetirementDate(JsonNode retrievalResult, JsonNode? component)

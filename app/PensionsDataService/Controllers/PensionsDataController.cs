@@ -179,7 +179,7 @@ public class PensionsDataController(
             }
         }
 
-        response.EnrichSummaryData(enrichedPensions, serviceUtilities.SummaryDataRuleEngine);
+        response.EnrichSummaryData(enrichedPensions, category, serviceUtilities.SummaryDataRuleEngine);
 
         logger.LogResponseSent(response);
 

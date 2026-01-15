@@ -8,12 +8,7 @@ public sealed class CardDataRuleEngine(IPensionNavigator navigator) : ICardDataR
 {
     public CardData Evaluate(JsonNode retrievalResult, string category)
     {
-        var illustration = navigator.SelectLatestIllustration(retrievalResult);
-
-        var earliestComponent = illustration == null
-            ? null
-            : navigator.SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
-
+        var earliestComponent = navigator.SelectIllustrationComponent(retrievalResult);
 
         return new CardData
         {

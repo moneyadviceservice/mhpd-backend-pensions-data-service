@@ -73,6 +73,7 @@ public static partial class RetrievedPensionRecordExtensions
                 PensionLinkId = record.PensionLinkId,
                 Category = record.Category,
                 PensionType = record.PensionType,
+                HasIncome = record.HasIncome,
                 RetrievalResult = JsonSerializer.SerializeToElement(arrangement)
             });
         }

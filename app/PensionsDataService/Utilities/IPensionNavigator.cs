@@ -5,6 +5,8 @@ namespace PensionsDataService.Utilities;
 
 public interface IPensionNavigator
 {
+    JsonNode? SelectIllustrationComponent(JsonNode retrievalResult);
+
     JsonNode? SelectLatestIllustration(JsonNode retrievalResult);
 
     JsonNode? SelectEarliestComponent(JsonNode benefitIllustration, string illustrationType);

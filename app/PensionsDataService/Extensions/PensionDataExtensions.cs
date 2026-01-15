@@ -9,6 +9,7 @@ public static class PensionDataExtensions
     public static void EnrichSummaryData(
         this PensionData response,
         IReadOnlyList<RetrievedPensionRecord> pensions,
+        string pensionCategory,
         ISummaryDataRuleEngine ruleEngine)
     {
         ArgumentNullException.ThrowIfNull(response);
@@ -26,7 +27,7 @@ public static class PensionDataExtensions
             return;
         }
 
-        SummaryData summary = ruleEngine.Evaluate(statePension, pensions);
+        SummaryData summary = ruleEngine.Evaluate(statePension, pensions.Where(pension => pension.Category == pensionCategory));
 
         if (!summary.HasAnyValue)
         {

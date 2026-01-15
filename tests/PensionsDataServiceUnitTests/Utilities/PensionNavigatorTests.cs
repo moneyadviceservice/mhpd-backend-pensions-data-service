@@ -93,20 +93,41 @@ public class PensionNavigatorTests
     }
 
     [Fact]
-    public void SelectEarliestComponent_Tie_PicksFirst()
+    public void SelectIllustrationComponent_Tie_PicksFirst()
     {
         var node = JsonNode.Parse("""
         {
-          "illustrationComponents": [
-            { "illustrationType": "ERI", "id": 1, "payableDetails": { "payableDate": "2030-01-01" }},
-            { "illustrationType": "ERI", "id": 2, "payableDetails": { "payableDate": "2030-01-01" }}
+          "benefitIllustrations": [
+            { "illustrationDate": "2024-01-01", "illustrationComponents": [
+                { "illustrationType": "ERI", "id": 1, "payableDetails": { "payableDate": "2030-01-01" }},
+                { "illustrationType": "ERI", "id": 2, "payableDetails": { "payableDate": "2030-01-01" }}
+            ] }
           ]
         }
         """)!;
 
-        var component = _navigator.SelectEarliestComponent(node, "ERI");
+        var component = _navigator.SelectIllustrationComponent(node);
         var result = component!["id"]!.GetValue<int>();
         Assert.Equal(1, result);
+    }
+
+    [Fact]
+    public void SelectIllustrationComponent_EriIsDB_PicksAP()
+    {
+        var node = JsonNode.Parse("""
+        {
+          "benefitIllustrations": [
+            { "illustrationDate": "2024-01-01", "illustrationComponents": [
+                { "illustrationType": "ERI", "unavailableReason": "DB", "payableDetails": { "payableDate": "2030-01-01" }},
+                { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01" }}
+            ] }
+          ]
+        }
+        """)!;
+
+        var component = _navigator.SelectIllustrationComponent(node);
+        var result = component!["illustrationType"]!.GetValue<string>();
+        Assert.Equal("AP", result);
     }
 
     [Fact]

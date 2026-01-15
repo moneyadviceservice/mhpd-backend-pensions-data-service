@@ -1,4 +1,6 @@
-﻿namespace PensionsDataService.Models
+﻿using MhpdCommon.ViewData;
+
+namespace PensionsDataService.Models
 {
     public static class Constants
     {
@@ -22,7 +24,12 @@
 
         public static class PensionTypes
         {
-            public const string SP = "SP";
+            public static readonly string SP = PensionEnums.PensionType.SP.ToString();
+        }
+
+        public static class UnavailableCodes
+        {
+            public const string DB = "DB";
         }
     }
 }

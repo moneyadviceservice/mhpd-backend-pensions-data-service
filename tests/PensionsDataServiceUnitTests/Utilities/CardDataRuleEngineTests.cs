@@ -21,39 +21,15 @@ public class CardDataRuleEngineTests
         var rr = JsonNode.Parse("{}")!;
         var illustration = JsonNode.Parse("{}")!;
 
-        _navigator.Setup(x => x.SelectLatestIllustration(rr))
+        _navigator.Setup(x => x.SelectIllustrationComponent(rr))
             .Returns(illustration);
 
-        _navigator.Setup(x => x.SelectEarliestComponent(illustration, It.IsAny<string>()))
-            .Returns((JsonNode?)null);
-
         _ruleEngine.Evaluate(rr, EvaluationConstants.Category.Confirmed);
 
-        _navigator.Verify(x => x.SelectLatestIllustration(rr), Times.Once);
-        _navigator.Verify(x => x.SelectEarliestComponent(illustration, It.IsAny<string>()), Times.Once);
-        _navigator.Verify(x => x.SelectMonthlyAmount(It.IsAny<JsonNode>()), Times.Once);
-        _navigator.Verify(x => x.SelectUnavailableCode(It.IsAny<JsonNode>()), Times.Once);
-        _navigator.Verify(x => x.SelectRetirementDate(rr, It.IsAny<JsonNode?>()), Times.Once);
-    }
-
-    [Fact]
-    public void ComponentSelector_IsNotCalled()
-    {
-        var rr = JsonNode.Parse("{}")!;
-
-        _navigator.Setup(x => x.SelectLatestIllustration(rr))
-            .Returns((JsonNode?)null);
-
-        _navigator.Setup(x => x.SelectEarliestComponent(rr, It.IsAny<string>()))
-            .Returns((JsonNode?)null);
-
-        _ruleEngine.Evaluate(rr, EvaluationConstants.Category.Confirmed);
-
-        _navigator.Verify(x => x.SelectLatestIllustration(rr), Times.Once);
-        _navigator.Verify(x => x.SelectEarliestComponent(It.IsAny<JsonNode>(), It.IsAny<string>()), Times.Never);
-        _navigator.Verify(x => x.SelectMonthlyAmount(It.IsAny<JsonNode>()), Times.Once);
-        _navigator.Verify(x => x.SelectUnavailableCode(It.IsAny<JsonNode>()), Times.Once);
-        _navigator.Verify(x => x.SelectRetirementDate(rr, null), Times.Once);
+        _navigator.Verify(x => x.SelectIllustrationComponent(rr), Times.Once);
+        _navigator.Verify(x => x.SelectMonthlyAmount(illustration), Times.Once);
+        _navigator.Verify(x => x.SelectUnavailableCode(illustration), Times.Once);
+        _navigator.Verify(x => x.SelectRetirementDate(rr, illustration), Times.Once);
     }
 
     [Fact]
@@ -62,19 +38,15 @@ public class CardDataRuleEngineTests
         var rr = JsonNode.Parse("{}")!;
         var illustration = JsonNode.Parse("{}")!;
 
-        _navigator.Setup(x => x.SelectLatestIllustration(rr))
+        _navigator.Setup(x => x.SelectIllustrationComponent(rr))
             .Returns(illustration);
-
-        _navigator.Setup(x => x.SelectEarliestComponent(illustration, It.IsAny<string>()))
-            .Returns((JsonNode?)null);
 
         _ruleEngine.Evaluate(rr, EvaluationConstants.Category.Pending);
 
-        _navigator.Verify(x => x.SelectLatestIllustration(rr), Times.Once);
-        _navigator.Verify(x => x.SelectEarliestComponent(illustration, It.IsAny<string>()), Times.Once);
+        _navigator.Verify(x => x.SelectIllustrationComponent(rr), Times.Once);
         _navigator.Verify(x => x.SelectMonthlyAmount(It.IsAny<JsonNode>()), Times.Never);
         _navigator.Verify(x => x.SelectUnavailableCode(It.IsAny<JsonNode>()), Times.Never);
-        _navigator.Verify(x => x.SelectRetirementDate(rr, It.IsAny<JsonNode?>()), Times.Once);
+        _navigator.Verify(x => x.SelectRetirementDate(rr, illustration), Times.Once);
     }
 }
 

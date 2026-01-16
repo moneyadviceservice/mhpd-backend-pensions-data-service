@@ -769,7 +769,32 @@ public class PensionsDataControllerTests
             .Verify(repo => repo.DeleteByIdAsync(userSessionId, userSessionId), Times.Once);
         Assert.IsType<NoContentResult>(deleteResult);
     }
-    
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DeletePensionsDataAsync_InvalidData_ReturnsBadRequest(bool invalidSession)
+    {
+        // Arrange
+        var userSessionId = Guid.NewGuid().ToString();
+        var correlationId = Guid.NewGuid().ToString();
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(userSessionId)).Returns(invalidSession);
+        _mockIdValidator.Setup(v => v.IsValidGuid(correlationId)).Returns(!invalidSession);
+
+        // Act
+        var deleteResult = await _controller.DeletePensionsDataAsync(userSessionId, correlationId);
+
+        // Assert
+        _mockRetrievalRecordFunctionClient
+                .Verify(client => client.DeleteAsync(userSessionId, correlationId), Times.Never);
+        _mockRetrievedPensionsRecordClient
+            .Verify(client => client.DeleteAsync(userSessionId, correlationId), Times.Never);
+        _mockUserSessionDataRepository
+            .Verify(repo => repo.DeleteByIdAsync(userSessionId, userSessionId), Times.Never);
+        Assert.IsType<BadRequestObjectResult>(deleteResult);
+    }
+
     [Fact]
     public async Task PostPensionsDataRetrievalAsync_ReturnsBadRequest_WhenValidationFails()
     {

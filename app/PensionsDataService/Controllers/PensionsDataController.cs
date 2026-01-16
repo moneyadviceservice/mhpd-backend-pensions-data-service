@@ -361,8 +361,13 @@ public class PensionsDataController(
         [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
         // Get the pensions retrieval record associated with the passed userSessionId
-        var (_, _) = await TryGetRequestedPensionAsync(
+        var (_, earlyResponse) = await TryGetRequestedPensionAsync(
         $"{Constants.LogSource} - {Constants.HttpDelete}", userSessionId, correlationId);
+
+        if (earlyResponse != null && earlyResponse is not JsonResult)
+        {
+            return earlyResponse;
+        }
 
         var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
         var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(userSessionId!, correlationId!);

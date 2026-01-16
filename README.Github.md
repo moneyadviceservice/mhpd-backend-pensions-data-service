@@ -130,7 +130,8 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 - HasIncome property of pension retrieval summary now returned as a boolean.
 - Removed support for Multiplicity pension arrangements with duplicate payment details.
 
-### 🔧 Release 0.8.0 — 2025-12-03
+### 🔧 Release 0.8.0 — 2026-01-12
+- Added Support for HYB Pension Type.
 - Added Support for AVC Pension Type.
-- Added Support for linked pensions
-- Added Data analytics endpoint
+- Added Support for linked pensions.
+- Added Data analytics endpoint.

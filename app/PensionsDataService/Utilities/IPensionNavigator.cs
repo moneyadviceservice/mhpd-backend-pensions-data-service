@@ -11,11 +11,15 @@ public interface IPensionNavigator
 
     JsonNode? SelectEarliestComponent(JsonNode benefitIllustration, string illustrationType);
 
+    JsonNode? SelectEarliestLumpSumComponent(JsonNode retrievalResult, string illustrationType);
+
     DateTime? SelectRetirementDate(JsonNode retrievalResult, JsonNode? component);
 
     decimal? SelectMonthlyAmount(JsonNode? component);
 
     decimal? SelectAnnualAmount(JsonNode? component);
+
+    decimal? SelectLumpSumAmount(JsonNode? component);
 
     string? SelectAmountNotProvidedReason(JsonNode? component);
 

@@ -6,6 +6,8 @@ public class PayableDetails
 
     public decimal? AnnualAmount { get; init; }
 
+    public decimal? LumpSumAmount { get; init; }
+
     public DateTime? PayableDate { get; init; }
 
     public DateTime? LastPaymentDate { get; init; }

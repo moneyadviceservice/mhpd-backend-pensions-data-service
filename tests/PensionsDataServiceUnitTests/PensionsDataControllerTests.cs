@@ -1,4 +1,3 @@
-using Azure;
 using MhpdCommon.Constants;
 using MhpdCommon.Models.Configuration;
 using MhpdCommon.Models.MessageBodyModels;
@@ -36,6 +35,7 @@ public class PensionsDataControllerTests
     private readonly Mock<IPensionAnonymizer> _mockPensionAnonymizer = new();
     private readonly Mock<ICardDataRuleEngine> _mockCardDataRuleEngine = new();
     private readonly Mock<ISummaryDataRuleEngine> _mockSummaryDataRuleEngine = new();
+    private readonly Mock<ITimelineSeriesBuilder> _mockTimeSeriesBuilder = new();
 
     private readonly PensionsDataController _controller;
 
@@ -117,10 +117,14 @@ public class PensionsDataControllerTests
         _mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord>(), It.IsAny<IReadOnlyList<RetrievedPensionRecord>>()))
             .Returns(new SummaryData());
 
+        _mockTimeSeriesBuilder.Setup(t => t.Build(It.IsAny<IEnumerable<RetrievedPensionRecord>>()))
+            .Returns(new TimelineSeries());
+
         Mock<PensionServiceUtilities> mockServiceUtilities = new(
             _mockPensionAnonymizer.Object,
             _mockCardDataRuleEngine.Object,
-            _mockSummaryDataRuleEngine.Object
+            _mockSummaryDataRuleEngine.Object, 
+            _mockTimeSeriesBuilder.Object
             );
 
         _controller = new PensionsDataController(
@@ -423,7 +427,6 @@ public class PensionsDataControllerTests
         // Arrange
         var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
 
-        // Simulate an empty response from the retrieval record function client
         var retrievalRecord = new PensionsRetrievalRecord
         {
             Id = Guid.NewGuid().ToString(),
@@ -559,6 +562,66 @@ public class PensionsDataControllerTests
         Assert.False(responseModel.IsPensionRetrievalComplete);
         Assert.Equal(peis.Count + 1, responseModel.Pensions.Count);
         Assert.NotNull(responseModel.Pensions.SingleOrDefault(pension => pension.RetrievalStatus == PensionProviderConstants.RetrievalStatus.RetrievalRequested));
+    }
+
+    [Fact]
+    public async Task GetPensionTimelineAsync_WhenHasPeiData_ThenReturnsOkWithResponse()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+
+        var peis = CreatePeisList();
+        var requestedPension = CreateRetrievalRecord(peis);
+        var retrievedPensions = CreateRetrievedRecords(peis);
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(requestedPension);
+
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetRetrievedPensionsAsync(It.IsAny<RetrievedPensionsRequest>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievedPensions);
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionTimelineAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var responseModel = Assert.IsType<TimelineSeries>(okResult.Value);
+        Assert.True(responseModel.IsPensionRetrievalComplete);
+    }
+
+    [Fact]
+    public async Task GetPensionTimelineAsync_WhenPeiNotRetrieved_ThenReturnsOkWithResponse()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+
+        var peis = CreatePeisList();
+        var missingPei = CreatePei();
+
+        var requestedPension = CreateRetrievalRecord(peis, missingPei);
+        var retrievedPensions = CreateRetrievedRecords(peis);
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(requestedPension);
+
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetRetrievedPensionsAsync(It.IsAny<RetrievedPensionsRequest>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievedPensions);
+
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionTimelineAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var responseModel = Assert.IsType<TimelineSeries>(okResult.Value);
+        Assert.False(responseModel.IsPensionRetrievalComplete);
     }
 
     [Theory]

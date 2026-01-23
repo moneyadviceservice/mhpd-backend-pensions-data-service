@@ -187,6 +187,36 @@ public class PensionsDataController(
     }
 
     [HttpGet]
+    [Route("pensions-timeline")]
+    public async Task<IActionResult> GetPensionTimelineAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var (requestedPension, earlyResponse) = await TryGetRequestedPensionAsync(
+        $"{Constants.LogSource} Summary - GET", userSessionId, correlationId);
+
+        if (earlyResponse != null)
+        {
+            return earlyResponse;
+        }
+
+        var retrievedPensions = await GetRetrievedPensionsAsync(userSessionId!, correlationId!);
+
+        var isComplete = IsPensionsDataRetrievalComplete(
+            requestedPension.PeiRetrievalComplete,
+            requestedPension.PeiData,
+            retrievedPensions.Select(r => r.Pei!)
+        );
+
+        var timeSeries = serviceUtilities.TimelineSeriesBuilder.Build(retrievedPensions.Where(pension => pension.Category == Category.Confirmed));
+
+        timeSeries.IsPensionRetrievalComplete = isComplete;
+
+        logger.LogResponseSent(timeSeries);
+
+        return Ok(timeSeries);
+    }
+
+    [HttpGet]
     [Route("pension-detail/{id}")]
     public async Task<IActionResult> GetPensionDetailAsync([FromRoute] string id, [FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
         [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)

@@ -202,6 +202,46 @@ public class PensionNavigatorTests
         Assert.Null(result);
     }
 
+    [Fact]
+    public void SelectEarliestLumpSumComponent_Returns_Earliest_Across_All_Illustrations()
+    {
+        var json = JsonNode.Parse("""
+        {
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2023-01-01",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "payableDetails": {
+                    "payableDate": "2035-01-01",
+                    "amount": 50000
+                  }
+                }
+              ]
+            },
+            {
+              "illustrationDate": "2020-01-01",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "payableDetails": {
+                    "payableDate": "2030-01-01",
+                    "amount": 30000
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """)!;
+
+        var component = _navigator.SelectEarliestLumpSumComponent(json, "ERI");
+
+        Assert.NotNull(component);
+        Assert.Equal(30000m, _navigator.SelectLumpSumAmount(component));
+    }
+
     #endregion
 
     #region SelectMonthlyAmount
@@ -310,6 +350,7 @@ public class PensionNavigatorTests
             "payableDetails": {
                 "monthlyAmount": 1000,
                 "annualAmount": 12000,
+                "amount": 50000,
                 "payableDate": "2035-01-01",
                 "lastPaymentDate": "2065-01-01",
                 "reason": "N/A"
@@ -321,6 +362,7 @@ public class PensionNavigatorTests
 
         Assert.Equal(1000m, result.MonthlyAmount);
         Assert.Equal(12000m, result.AnnualAmount);
+        Assert.Equal(50000m, result.LumpSumAmount);
         Assert.Equal(new DateTime(2035, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), result.PayableDate);
         Assert.Equal(new DateTime(2065, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), result.LastPaymentDate);
         Assert.Equal("N/A", result.AmountNotProvidedReason);
@@ -333,6 +375,7 @@ public class PensionNavigatorTests
 
         Assert.Null(result.MonthlyAmount);
         Assert.Null(result.AnnualAmount);
+        Assert.Null(result.LumpSumAmount);
         Assert.Null(result.PayableDate);
         Assert.Null(result.LastPaymentDate);
         Assert.Null(result.AmountNotProvidedReason);
@@ -353,6 +396,7 @@ public class PensionNavigatorTests
 
         Assert.Equal(500m, result.MonthlyAmount);
         Assert.Null(result.AnnualAmount);
+        Assert.Null(result.LumpSumAmount);
         Assert.Null(result.PayableDate);
         Assert.Null(result.LastPaymentDate);
         Assert.Null(result.AmountNotProvidedReason);

@@ -102,6 +102,34 @@
         }
       }
     },
+    "/pensions-timeline": {
+      "get": {
+        "tags": [
+          "PensionsData"
+        ],
+        "parameters": [
+          {
+            "name": "userSessionId",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/pension-detail/{id}": {
       "get": {
         "tags": [

@@ -101,6 +101,40 @@ public class PensionNavigator : IPensionNavigator
         return earliestNode ?? fallback;
     }
 
+    public JsonNode? SelectEarliestLumpSumComponent(JsonNode retrievalResult, string illustrationType)
+    {
+        DateTime? earliestDate = null;
+        JsonNode? earliestNode = null;
+
+        foreach (var component in GetIllustrationComponents(retrievalResult))
+        {
+            if (!IsMatchingIllustrationType(component, illustrationType))
+            {
+                continue;
+            }
+
+            if (!HasLumpSumAmount(component))
+            {
+                continue;
+            }
+
+            var date = GetPayableDate(component);
+            if (!date.HasValue)
+            {
+                continue;
+            }
+
+            if (earliestDate == null || date < earliestDate)
+            {
+                earliestDate = date;
+                earliestNode = component;
+            }
+        }
+
+        return earliestNode;
+    }
+
+
     public DateTime? SelectRetirementDate(JsonNode retrievalResult, JsonNode? component)
     {
         // Use the payableDetails.payableDate if there is one
@@ -137,6 +171,7 @@ public class PensionNavigator : IPensionNavigator
         {
             MonthlyAmount = SelectMonthlyAmount(component),
             AnnualAmount = SelectAnnualAmount(component),
+            LumpSumAmount = SelectLumpSumAmount(component),
             PayableDate = SelectPayableDate(component),
             LastPaymentDate = SelectLastPaymentDate(component),
             AmountNotProvidedReason = SelectAmountNotProvidedReason(component)
@@ -153,16 +188,21 @@ public class PensionNavigator : IPensionNavigator
         return SelectAmount(component, PensionConstants.AnnualAmount);
     }
 
+    public decimal? SelectLumpSumAmount(JsonNode? component)
+    {
+        return SelectAmount(component, PensionConstants.Amount);
+    }
+
     private static decimal? SelectAmount(JsonNode? component, string amountName)
     {
-        var monthlyAmountNode = component?[PensionConstants.PayableDetails]?[amountName];
+        var amountNode = component?[PensionConstants.PayableDetails]?[amountName];
 
-        if (monthlyAmountNode == null)
+        if (amountNode == null)
         {
             return null;
         }
 
-        if (monthlyAmountNode is JsonValue valueNode &&
+        if (amountNode is JsonValue valueNode &&
             valueNode.TryGetValue<decimal>(out var amount))
         {
             return amount;
@@ -194,5 +234,45 @@ public class PensionNavigator : IPensionNavigator
             return date;
         }
         return null;
+    }
+
+    private static IEnumerable<JsonNode> GetIllustrationComponents(JsonNode retrievalResult)
+    {
+        if (retrievalResult[PensionConstants.BenefitIllustrations] is not JsonArray illustrations)
+        {
+            yield break;
+        }
+
+        foreach (var illustration in illustrations)
+        {
+            if (illustration?[PensionConstants.IllustrationComponents] is not JsonArray components)
+            {
+                continue;
+            }
+
+            foreach (var component in components)
+            {
+                yield return component!;
+            }
+        }
+    }
+
+    private static bool IsMatchingIllustrationType(JsonNode component, string illustrationType)
+    {
+        return component?[PensionConstants.IllustrationType]?.GetValue<string>() == illustrationType;
+    }
+
+    private static bool HasLumpSumAmount(JsonNode component)
+    {
+        return component?[PensionConstants.PayableDetails]?[PensionConstants.Amount]?.GetValue<decimal>() != null;
+    }
+
+    private static DateTime? GetPayableDate(JsonNode component)
+    {
+        var dateStr = component?[PensionConstants.PayableDetails]?[PensionConstants.PayableDate]?.GetValue<string>();
+
+        return DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? date
+            : null;
     }
 }

@@ -13,4 +13,6 @@ public class PayableDetails
     public DateTime? LastPaymentDate { get; init; }
 
     public string? AmountNotProvidedReason { get; set; }
+
+    public bool HasAmount => MonthlyAmount.HasValue || AnnualAmount.HasValue || LumpSumAmount.HasValue;
 }

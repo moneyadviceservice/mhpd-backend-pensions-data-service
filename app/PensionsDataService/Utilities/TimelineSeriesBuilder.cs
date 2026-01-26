@@ -62,18 +62,11 @@ public class TimelineSeriesBuilder(ITimelineArrangementFactory arrangementFactor
 
         var hasLumpSum = arrangements.Any(a => a.LumpSumAmount.HasValue);
 
-        var statePension = PensionEnums.PensionType.SP.ToString();
-
-        if (pensionTypes.Remove(statePension))
-        {
-            series.Keys.Add(statePension);
-        }
-
         series.Keys.AddRange(pensionTypes);
 
         if (hasLumpSum)
         {
-            series.Keys.Add("LU");
+            series.Keys.Add(Constants.PensionTypes.LU);
         }
     }
 }

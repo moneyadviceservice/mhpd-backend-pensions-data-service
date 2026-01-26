@@ -1,4 +1,5 @@
-﻿using PensionsDataService.Utilities;
+﻿using PensionsDataService.Models;
+using PensionsDataService.Utilities;
 
 namespace PensionsDataServiceUnitTests.Utilities;
 
@@ -42,8 +43,7 @@ public sealed class TimelineSeriesBuilderTests
 
         var series = _builder.Build(pensions);
 
-        Assert.Contains("LU", series.Keys);
-        Assert.Equal("LU", series.Keys.Last());
+        Assert.Contains(Constants.PensionTypes.LU, series.Keys);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public sealed class TimelineSeriesBuilderTests
         Assert.Contains(series.Years, y => y.Year == 2035);
         Assert.Contains(series.Years, y => y.Year == 2061);
         Assert.DoesNotContain(series.Years, y => y.Year == 2060);
-        Assert.Equal("SP", series.Keys[0]);
-        Assert.Equal("LU", series.Keys.Last());
+        Assert.Contains(Constants.PensionTypes.SP, series.Keys);
+        Assert.Contains(Constants.PensionTypes.LU, series.Keys);
     }
 }

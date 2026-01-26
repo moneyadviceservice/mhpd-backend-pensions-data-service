@@ -25,6 +25,7 @@ namespace PensionsDataService.Models
         public static class PensionTypes
         {
             public static readonly string SP = PensionEnums.PensionType.SP.ToString();
+            public const string LU = "LU";
         }
 
         public static class UnavailableCodes

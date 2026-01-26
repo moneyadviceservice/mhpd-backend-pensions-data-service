@@ -22,14 +22,8 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
             return null;
         }
 
-        var illustration = _navigator.SelectLatestIllustration(root);
-        if (illustration == null)
-        {
-            return null;
-        }
-
         // Recurring payment component
-        var recurringComponent = _navigator.SelectEarliestComponent(illustration, IllustrationType.Estimated);
+        var recurringComponent = _navigator.SelectIllustrationComponent(root);
 
         if (recurringComponent == null)
         {
@@ -41,6 +35,11 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
 
         PayableDetails recurringPayableDetails = _navigator.GetPayableDetails(recurringComponent);
         PayableDetails lumpSumPayableDetails = _navigator.GetPayableDetails(lumpSumComponent);
+
+        if (!recurringPayableDetails.HasAmount)
+        {
+            return null;
+        }
 
         return new TimelineArrangement
         {

@@ -21,7 +21,7 @@ public class TimelineYear
     private void InsertInPayableDateOrder(TimelineArrangement arrangement)
     {
         int index = Arrangements.FindIndex(a =>
-            a.StartYear > arrangement.StartYear);
+            a.PayableDate > arrangement.PayableDate);
 
         if (index < 0)
         {

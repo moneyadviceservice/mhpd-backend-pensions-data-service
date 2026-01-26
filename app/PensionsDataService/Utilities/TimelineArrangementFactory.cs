@@ -50,7 +50,7 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
             AnnualAmount = recurringPayableDetails.AnnualAmount,
             LumpSumAmount = lumpSumPayableDetails.LumpSumAmount,
             LumpSumYear = lumpSumPayableDetails.PayableDate?.Year,
-            StartYear = recurringPayableDetails.PayableDate!.Value.Year,
+            PayableDate = recurringPayableDetails.PayableDate!.Value,
             EndYear = recurringPayableDetails.LastPaymentDate?.Year
         };
     }

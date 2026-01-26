@@ -20,8 +20,8 @@ public class TimelineYear
 
     private void InsertInPayableDateOrder(TimelineArrangement arrangement)
     {
-        int index = Arrangements.FindIndex(a =>
-            a.PayableDate > arrangement.PayableDate);
+        int index = Arrangements.FindIndex(existing =>
+            CompareArrangements(existing, arrangement) > 0);
 
         if (index < 0)
         {
@@ -31,5 +31,31 @@ public class TimelineYear
         {
             Arrangements.Insert(index, arrangement);
         }
+    }
+
+    private static int CompareArrangements(
+    TimelineArrangement first,
+    TimelineArrangement second)
+    {
+        // Primary: Start year
+        int result = first.PayableDate.CompareTo(second.PayableDate);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        // Secondary: Scheme name (case insensitive)
+        result = string.Compare(
+            first.SchemeName,
+            second.SchemeName,
+            StringComparison.OrdinalIgnoreCase);
+
+        if (result != 0)
+        {
+            return result;
+        }
+
+        // Tertiary: Monthly amount
+        return (first.MonthlyAmount ?? 0m).CompareTo(second.MonthlyAmount ?? 0m);
     }
 }

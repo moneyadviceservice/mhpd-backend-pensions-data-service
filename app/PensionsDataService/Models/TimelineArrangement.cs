@@ -2,7 +2,7 @@
 
 public class TimelineArrangement
 {
-    internal DateTime PayableDate { get; init; }
+    public DateTime PayableDate { get; init; }
     public int StartYear => PayableDate.Year;
     public int? EndYear { get; init; }
     public int? LumpSumYear { get; init; }

@@ -43,7 +43,7 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
 
         return new TimelineArrangement
         {
-            Id = pension.Id,
+            Id = pension.AssetId,
             SchemeName = pension.SchemeName,
             PensionType = pension.PensionType,
             MonthlyAmount = recurringPayableDetails.MonthlyAmount,

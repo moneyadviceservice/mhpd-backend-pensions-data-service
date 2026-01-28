@@ -247,4 +247,100 @@ internal static class TestData
             }
         ];
     }
+
+    public static RetrievedPensionRecord CreateConfirmedPensionWithDetailData()
+    {
+        var json = """
+        {
+          "retirementDate": "2040-01-01",
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2025-01-01",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "DB",
+                  "payableDetails": {
+                    "monthlyAmount": 3200,
+                    "annualAmount": 38400,
+                    "payableDate": "2040-02-01"
+                  },
+                  "illustrationWarnings": ["PSO", "PNR"]
+                },
+                {
+                  "illustrationType": "AP",
+                  "dcPot": 125000,
+                  "payableDetails": {
+                    "amount": 25000,
+                    "payableDate": "2040-03-01"
+                  }
+                }
+              ]
+            },
+            {
+              "illustrationDate": "2022-01-01",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "payableDetails": {
+                    "amount": 25000,
+                    "payableDate": "2040-03-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-1",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreatePensionWithWarnings()
+        => CreateConfirmedPensionWithDetailData();
+
+    public static RetrievedPensionRecord CreatePensionWithoutLumpSum()
+    {
+        var json = """
+        {
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2025-01-01",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "DB",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "payableDate": "2038-01-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-2",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreatePensionWithoutIllustrations()
+    {
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-3",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>("{}")
+        };
+    }
 }

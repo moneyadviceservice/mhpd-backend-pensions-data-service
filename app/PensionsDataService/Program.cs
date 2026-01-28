@@ -20,6 +20,7 @@ builder.Services.AddScoped<IRetrievedPensionsRecordClient, RetrievedPensionsReco
 builder.Services.AddScoped<IPensionAnonymizer, PensionAnonymizer>();
 builder.Services.AddScoped<ICardDataRuleEngine, CardDataRuleEngine>();
 builder.Services.AddScoped<ISummaryDataRuleEngine, SummaryDataRuleEngine>();
+builder.Services.AddScoped<IDetailDataRuleEngine, DetailDataRuleEngine>();
 builder.Services.AddScoped<ITimelineSeriesBuilder, TimelineSeriesBuilder>();
 builder.Services.AddScoped<ITimelineArrangementFactory, TimelineArrangementFactory>();
 builder.Services.AddScoped<IPensionNavigator, PensionNavigator>();

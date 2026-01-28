@@ -15,6 +15,7 @@ using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
 using PensionsDataService.Utilities;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataService.Controllers;
@@ -237,7 +238,14 @@ public class PensionsDataController(
         }
 
         var enrichedPensions = retrievedPensions.EnrichLinkedPensions();
-        var pensionDetail = enrichedPensions.Where(pension => pension.AssetId == id).Select(pension => pension.RetrievalResult);
+        var pensionDetail = enrichedPensions.Where(pension => pension.AssetId == id).Select(pension =>
+        {
+            JsonNode node = JsonNode.Parse(pension.RetrievalResult!.GetRawText());
+            var enrichedJson = node.EnrichDetailData(serviceUtilities.DetailDataRuleEngine).ToJsonString();
+
+            return JsonDocument.Parse(enrichedJson).RootElement;
+        });
+
         logger.LogResponseSent(pensionDetail);
         return Ok(pensionDetail);
     }

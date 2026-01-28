@@ -33,9 +33,6 @@ public class PensionsDataControllerTests
     private readonly Mock<IMessagingService> _mockMessagingService = new();
     private readonly Mock<ICosmosDbRepository<UserSessionData>> _mockUserSessionDataRepository = new();
     private readonly Mock<IPensionAnonymizer> _mockPensionAnonymizer = new();
-    private readonly Mock<ICardDataRuleEngine> _mockCardDataRuleEngine = new();
-    private readonly Mock<ISummaryDataRuleEngine> _mockSummaryDataRuleEngine = new();
-    private readonly Mock<ITimelineSeriesBuilder> _mockTimeSeriesBuilder = new();
 
     private readonly PensionsDataController _controller;
 
@@ -54,7 +51,11 @@ public class PensionsDataControllerTests
         Mock<ILogger<PensionsDataController>> mockLogger = new();
         Mock<IOptions<CommonServiceBusConfiguration>> mockServiceBusOptions = new();
         Mock<IOptions<PeiOrchestrationSettings>> mockOrchestrationSettings = new();
-        
+        Mock<ICardDataRuleEngine> mockCardDataRuleEngine = new();
+        Mock<ISummaryDataRuleEngine> mockSummaryDataRuleEngine = new();
+        Mock<ITimelineSeriesBuilder> mockTimeSeriesBuilder = new();
+        Mock<IDetailDataRuleEngine> mockDetailDataRuleEngine = new();
+
         var configuration = new CosmosBusinessConfiguration
         {
             DatabaseId = "TestDatabase",
@@ -111,20 +112,24 @@ public class PensionsDataControllerTests
         _mockPensionAnonymizer.Setup(p => p.Anonymize(It.IsAny<string>()))
             .Returns((string data) => data);
 
-        _mockCardDataRuleEngine.Setup(c => c.Evaluate(It.IsAny<JsonNode>(), It.IsAny<string>()))
+        mockCardDataRuleEngine.Setup(c => c.Evaluate(It.IsAny<JsonNode>(), It.IsAny<string>()))
             .Returns(new CardData());
 
-        _mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord>(), It.IsAny<IReadOnlyList<RetrievedPensionRecord>>()))
+        mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord>(), It.IsAny<IReadOnlyList<RetrievedPensionRecord>>()))
             .Returns(new SummaryData());
 
-        _mockTimeSeriesBuilder.Setup(t => t.Build(It.IsAny<IEnumerable<RetrievedPensionRecord>>()))
+        mockTimeSeriesBuilder.Setup(t => t.Build(It.IsAny<IEnumerable<RetrievedPensionRecord>>()))
             .Returns(new TimelineSeries());
+
+        mockDetailDataRuleEngine.Setup(d => d.Evaluate(It.IsAny<JsonNode>()))
+            .Returns(new DetailData());
 
         Mock<PensionServiceUtilities> mockServiceUtilities = new(
             _mockPensionAnonymizer.Object,
-            _mockCardDataRuleEngine.Object,
-            _mockSummaryDataRuleEngine.Object, 
-            _mockTimeSeriesBuilder.Object
+            mockCardDataRuleEngine.Object,
+            mockSummaryDataRuleEngine.Object, 
+            mockTimeSeriesBuilder.Object,
+            mockDetailDataRuleEngine.Object
             );
 
         _controller = new PensionsDataController(

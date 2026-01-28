@@ -17,14 +17,19 @@ public class PensionNavigator : IPensionNavigator
             return null;
         }
 
-        var earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
+        var earliestEriComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
 
-        if (earliestComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
+        if (earliestEriComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
         {
-            earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
+            var earliestApComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
+
+            if (earliestApComponent?[PensionConstants.PayableDetails]?[PensionConstants.MonthlyAmount]?.GetValue<decimal>() > 0)
+            {
+                return earliestApComponent;
+            }
         }
 
-        return earliestComponent;
+        return earliestEriComponent;
     }
 
     public JsonNode? SelectLatestIllustration(JsonNode retrievalResult)

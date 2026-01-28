@@ -119,7 +119,7 @@ public class PensionNavigatorTests
           "benefitIllustrations": [
             { "illustrationDate": "2024-01-01", "illustrationComponents": [
                 { "illustrationType": "ERI", "unavailableReason": "DB", "payableDetails": { "payableDate": "2030-01-01" }},
-                { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01" }}
+                { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01", "monthlyAmount": 24000 }}
             ] }
           ]
         }
@@ -128,6 +128,25 @@ public class PensionNavigatorTests
         var component = _navigator.SelectIllustrationComponent(node);
         var result = component!["illustrationType"]!.GetValue<string>();
         Assert.Equal("AP", result);
+    }
+
+    [Fact]
+    public void SelectIllustrationComponent_EriIsDBApHasNoAmount_PicksAP()
+    {
+        var node = JsonNode.Parse("""
+        {
+          "benefitIllustrations": [
+            { "illustrationDate": "2024-01-01", "illustrationComponents": [
+                { "illustrationType": "ERI", "unavailableReason": "DB", "payableDetails": { "payableDate": "2030-01-01" }},
+                { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01" }}
+            ] }
+          ]
+        }
+        """)!;
+
+        var component = _navigator.SelectIllustrationComponent(node);
+        var result = component!["illustrationType"]!.GetValue<string>();
+        Assert.Equal("ERI", result);
     }
 
     [Fact]

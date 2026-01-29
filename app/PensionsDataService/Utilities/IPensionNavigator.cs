@@ -9,7 +9,7 @@ public interface IPensionNavigator
 
     JsonNode? SelectLatestIllustration(JsonNode retrievalResult);
 
-    JsonNode? SelectEarliestComponent(JsonNode benefitIllustration, string illustrationType);
+    JsonNode? SelectEarliestComponent(JsonNode? benefitIllustration, string illustrationType);
 
     JsonNode? SelectEarliestLumpSumComponent(JsonNode retrievalResult, string illustrationType);
 

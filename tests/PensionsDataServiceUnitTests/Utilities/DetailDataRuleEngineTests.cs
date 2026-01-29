@@ -100,6 +100,14 @@ public class DetailDataRuleEngineTests
         // Assert
         var detail = arrangement["detailData"];
         Assert.NotNull(detail);
-        Assert.All(detail.AsObject(), kvp => Assert.Null(kvp.Value));
+        Assert.Null(detail[PensionConstants.RetirementDate]);
+        Assert.Null(detail[PensionConstants.MonthlyAmount]);
+        Assert.Null(detail[PensionConstants.BenefitType]);
+        Assert.Null(detail[PensionConstants.IllustrationDate]);
+        Assert.Null(detail[PensionConstants.PayableDate]);
+        Assert.Null(detail["potValue"]);
+        Assert.Null(detail["lumpSumAmount"]);
+        Assert.Null(detail["unavailableCode"]);
+        Assert.NotNull(detail["warnings"]);
     }
 }

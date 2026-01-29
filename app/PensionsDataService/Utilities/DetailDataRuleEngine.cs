@@ -13,12 +13,6 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
         ArgumentNullException.ThrowIfNull(retrievalResult);
 
         var illustration = navigator.SelectLatestIllustration(retrievalResult);
-
-        if (illustration == null)
-        {
-            return new DetailData();
-        }
-
         var recurringComponent = navigator.SelectIllustrationComponent(retrievalResult);
         var accruedComponent = navigator.SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
 
@@ -31,7 +25,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
         return new DetailData
         {
             RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent)),
-            IllustrationDate = FormatDate(illustration[PensionConstants.IllustrationDate]?.GetValue<DateTime?>()),
+            IllustrationDate = FormatDate(illustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>()),
             MonthlyAmount = navigator.SelectMonthlyAmount(recurringComponent),
             PayableDate = FormatDate(recurringPayableDetails.PayableDate),
             PotValue = accruedComponent?[PensionConstants.RetirementPot]?.GetValue<decimal?>(),

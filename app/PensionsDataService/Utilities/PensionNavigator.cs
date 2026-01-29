@@ -64,8 +64,13 @@ public class PensionNavigator : IPensionNavigator
         return latestNode ?? fallback;
     }
 
-    public JsonNode? SelectEarliestComponent(JsonNode benefitIllustration, string illustrationType)
+    public JsonNode? SelectEarliestComponent(JsonNode? benefitIllustration, string illustrationType)
     {
+        if (benefitIllustration == null)
+        {
+            return null;
+        }
+
         var componentsNode = benefitIllustration[PensionConstants.IllustrationComponents];
 
         if (componentsNode is not JsonArray components || components.Count == 0)

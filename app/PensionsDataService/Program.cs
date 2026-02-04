@@ -35,7 +35,6 @@ builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, Cli
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, ClientSecretNotGuidValidationPensionData>();
 builder.Services.AddScoped<ITokenRequestValidator<PensionsDataRequestModel>, ClientSecretNotPresentValidationPensionData>();
 builder.Services.AddScoped<PensionsDataRequestValidatorPipeline>();
-builder.Services.AddMhpdServiceBusTools();
 builder.Services.AddMhpdHttpClients();
 builder.Services.AddCommonConfigurations();
 builder.Services.AddIntegrationServices();

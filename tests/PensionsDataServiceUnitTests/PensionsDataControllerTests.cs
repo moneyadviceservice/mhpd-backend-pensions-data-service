@@ -72,9 +72,8 @@ public class PensionsDataControllerTests
         response.Setup(r => r.Resource).Returns(model!);
 
         // Arrange: Set up the mocks for the dependencies
-        _mockMessagingService
-            .Setup(m => m.SendMessageAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+        _mockRetrievalRecordFunctionClient.Setup(m => m.PostAsync(It.IsAny<RequestHeaderModel>(), It.IsAny<PensionRetrievalPayload>()))
+            .ReturnsAsync(new PensionsRetrievalRecord());
 
         // Set up the CommonServiceBusConfiguration with your required values
         var serviceBusConfig = new CommonServiceBusConfiguration
@@ -99,8 +98,7 @@ public class PensionsDataControllerTests
             _mockRetrievalRecordFunctionClient.Object,
             _mockRetrievedPensionsRecordClient.Object,
             _mockMapsCdaServiceClient.Object,
-            mockServiceBusOptions.Object,
-            _mockMessagingService.Object      
+            mockServiceBusOptions.Object     
         );
         
         // Get ordered validators
@@ -951,9 +949,6 @@ public class PensionsDataControllerTests
 
         _mockUserSessionDataRepository.Setup(x => x.InsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<string>()))
             .Verifiable();
-        
-        _mockMessagingService.Setup(x => x.SendMessageAsync(It.IsAny<PensionRetrievalPayload>(), It.IsAny<string>(), It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
         
         // Act
         var result = await _controller.PostPensionsDataRetrievalAsync(request, requestHeader);

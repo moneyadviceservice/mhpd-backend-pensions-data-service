@@ -36,8 +36,6 @@ public class PensionsDataController(
     private readonly IMapsCdaServiceClient _mapsCdaServiceClient = serviceClients.MapsCdaServiceClient;
     private readonly IRetrievalRecordServiceClient _retrievalRecordServiceClient = serviceClients.RetrievalRecordServiceClient;
     private readonly IRetrievedPensionsRecordClient _retrievedPensionsRecordClient = serviceClients.RetrievedPensionsRecordClient;
-    private readonly IOptions<CommonServiceBusConfiguration> _serviceBusOptions = serviceClients.ServiceBusOptions;
-    private readonly IMessagingService _messagingService = serviceClients.MessagingService;
     private readonly int _predictedTotalDataRetrievalTime = peiRetrievalOptions.Value.TotalPensionRetrievalDuration;
     private const string ErrorMessage = "Error: {ErrorMessage}";
     private const string AsUri = "https://example.com"; //NOSONAR
@@ -381,12 +379,12 @@ public class PensionsDataController(
             return InternalServerErrorResult();
         }
 
-        await PostPensionDataRetrievalMessage(peisId, requestHeader, userSessionId);
+        var pensionsRetrievalRecord = await PostPensionDataRetrievalMessage(peisId, requestHeader, userSessionId);
 
         var response = Accepted(new
         {
             predictedTotalDataRetrievalTime = _predictedTotalDataRetrievalTime,
-            pensionRetrievalStartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            pensionRetrievalStartTime = pensionsRetrievalRecord.JobStartTimestamp
         });
 
         logger.LogResponseSent(response);
@@ -570,7 +568,6 @@ public class PensionsDataController(
             return peiData.Count == 0 || peiData.TrueForAll(p => retrievedPeis.Contains(p.Pei));
         }
 
-        // Return false if PensionsDataRetrievalComplete is false
         return false;
     }
 
@@ -702,11 +699,13 @@ public class PensionsDataController(
         return peisId;
     }
 
-    private async Task PostPensionDataRetrievalMessage(string peisId, RequestHeaderModel requestHeader, string userSessionId)
+    private async Task<PensionsRetrievalRecord> PostPensionDataRetrievalMessage(string peisId, RequestHeaderModel requestHeader, string userSessionId)
     {
+        logger.LogWarning("Posting request to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
         var message = CreateRequestPayload(peisId, requestHeader);
-        logger.LogWarning("Posting message to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
-        await _messagingService.SendMessageAsync(message, _serviceBusOptions.Value.OutboundQueue!, requestHeader.CorrelationId);
+        var pensionsRetrievalRecord = await _retrievalRecordServiceClient.PostAsync(requestHeader, message);
+        return pensionsRetrievalRecord;
+
     }
 
     private static bool IsValidToken(string? token) => !string.IsNullOrEmpty(token);

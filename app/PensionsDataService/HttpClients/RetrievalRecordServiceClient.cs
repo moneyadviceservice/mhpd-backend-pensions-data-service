@@ -2,6 +2,7 @@ using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
 
@@ -28,56 +29,53 @@ public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, 
         return await response.Content.ReadFromJsonAsync<int>();
     }
 
-    public async Task<PensionsRetrievalRecord> GetAsync(RequestHeaderModel requestHeader)
+    public Task<PensionsRetrievalRecord> PostAsync(RequestHeaderModel requestHeader, PensionRetrievalPayload payload)
+    {
+        return HandleHttpResponseResultAsync<PensionsRetrievalRecord>(requestHeader, httpClient => httpClient.PostAsJsonAsync(HttpEndpoints.Internal.PensionsRetrievalRecords, payload));
+    }
+
+    public Task<PensionsRetrievalRecord> GetAsync(RequestHeaderModel requestHeader)
+    {
+        return HandleHttpResponseResultAsync<PensionsRetrievalRecord>(requestHeader, httpClient => httpClient.GetAsync(HttpEndpoints.Internal.PensionsRetrievalRecords));
+    }
+
+    private async Task<T> HandleHttpResponseResultAsync<T>(RequestHeaderModel requestHeader, Func<HttpClient, Task<HttpResponseMessage>> ClientMethod)
+        where T : new()
     {
         try
         {
             logger.LogRequestSent(requestHeader);
             var httpClient = httpClientFactory.CreateClient(HttpClientNames.PensionRetrievalService);
-            
-            // Add request headers
             httpClient.DefaultRequestHeaders.Add(HeaderConstants.UserSessionId, requestHeader.UserSessionId);
             httpClient.DefaultRequestHeaders.Add(HeaderConstants.CorrelationId, requestHeader.CorrelationId);
 
-            // Send the request to the constructed endpoint
-            var response = await httpClient.GetAsync(HttpEndpoints.Internal.PensionsRetrievalRecords);
-
-            // Check if the response is successful
+            var response = await ClientMethod(httpClient);
             response.EnsureSuccessStatusCode();
-            
-            // Read the response content as a string
             var content = await response.Content.ReadAsStringAsync();
-
-            var result = new PensionsRetrievalRecord();
-                
-            // Check if the content is null, empty, or consists only of whitespace
+            var result = new T();
             if (string.IsNullOrWhiteSpace(content))
             {
                 logger.LogWarning("No pension data for {UserSessionId}", requestHeader.UserSessionId);
                 return result;
             }
-            
-            // Attempt to read the response content
-            result = await response.Content.ReadFromJsonAsync<PensionsRetrievalRecord>();
+
+            result = await response.Content.ReadFromJsonAsync<T>();
             logger.LogResponseReceived(result);
 
             return result ?? throw new InvalidOperationException("Response content was null.");
         }
         catch (HttpRequestException ex)
         {
-            // Log the error and throw a more specific exception
             logger.LogError(ex, "An HTTP request error occurred while calling the retrieval record endpoint");
             throw new ServiceCommunicationException("Error communicating with retrieval record endpoint", ex);
         }
         catch (InvalidOperationException ex)
         {
-            // Log and handle specific invalid operation errors with contextual information
             logger.LogError(ex, "Invalid operation: {Message}", ex.Message);
             throw new InvalidOperationException("An invalid operation occurred during retrieval record function communication", ex);
         }
         catch (Exception ex)
         {
-            // Log any other exceptions with context, but do not throw a generic Exception
             logger.LogError(ex, "An unexpected error occurred in get pensions-retrieval-records");
             throw new ServiceCommunicationException("An unexpected error occurred during retrieval record function communication", ex);
         }

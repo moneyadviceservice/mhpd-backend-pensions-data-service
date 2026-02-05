@@ -32,13 +32,13 @@ public static class Helper
         var validators = new List<ITokenRequestValidator<PensionsDataRequestModel>>
         {
             new AuthorisationCodeNotPresentValidationPensionsData(logger2.Object),
-            new AuthorisationCodeInvalidFormatValidationPensionsData(logger3.Object, new IdValidator()),
+            new AuthorisationCodeInvalidFormatValidationPensionsData(logger3.Object, idValidator.Object),
             new RedirectUrlNotPresentValidationPensionsData(logger4.Object),
             new RedirectUrlNotValidUrlValidationPensionsData(logger5.Object),
             new CodeVerifierNotPresentValidationPensionsData(logger6.Object),
             new CodeVerifierNotBase64StringPensionsData(logger7.Object),
             new ClientIdNotPresentValidationPensionData(logger8.Object),
-            new ClientIdInvalidFormatValidationPensionData(logger9.Object, new IdValidator()),
+            new ClientIdInvalidFormatValidationPensionData(logger9.Object, idValidator.Object),
             new ClientSecretNotPresentValidationPensionData(logger10.Object),
             new ClientSecretNotGuidValidationPensionData(logger11.Object, idValidator.Object),
         };

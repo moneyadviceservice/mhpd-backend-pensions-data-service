@@ -9,6 +9,7 @@ using Microsoft.OpenApi.Models;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Utilities;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,11 @@ builder.Services.AddApplicationInsightsTelemetry();
 
 builder.Services.AddScoped<ICosmosDbRepository<UserSessionData>, UserSessionDataRepository>();
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.DefaultIgnoreCondition =
+        JsonIgnoreCondition.WhenWritingNull;
+});
 
 builder.Services.AddHttpLogging(logging =>
 {

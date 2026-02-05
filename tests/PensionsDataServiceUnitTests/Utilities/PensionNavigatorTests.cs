@@ -131,7 +131,7 @@ public class PensionNavigatorTests
     }
 
     [Fact]
-    public void SelectIllustrationComponent_EriIsDBApHasNoAmount_PicksAP()
+    public void SelectIllustrationComponent_EriIsDBApHasNoAmount_PicksERI()
     {
         var node = JsonNode.Parse("""
         {

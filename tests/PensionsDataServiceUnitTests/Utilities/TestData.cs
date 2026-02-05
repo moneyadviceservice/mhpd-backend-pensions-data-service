@@ -203,11 +203,19 @@ internal static class TestData
                   "benefitIllustrations": [
                     {
                       "illustrationDate": "2020-01-01",
+                      "payableDetailsType": "LUMPSUM",
                       "illustrationComponents": [
                         {
                           "illustrationType": "ERI",
                           "payableDetails": {
                             "payableDate": "2030-01-01",
+                            "amount": 50000
+                          }
+                        },
+                        {
+                          "illustrationType": "AP",
+                          "payableDetails": {
+                            "payableDate": "2030-02-01",
                             "amount": 50000
                           }
                         }
@@ -230,11 +238,20 @@ internal static class TestData
                   "benefitIllustrations": [
                     {
                       "illustrationDate": "2020-01-01",
+                      "payableDetailsType": "RECURRING",
                       "illustrationComponents": [
                         {
                           "illustrationType": "ERI",
                           "payableDetails": {
                             "payableDate": "2035-01-01",
+                            "monthlyAmount": 1500,
+                            "annualAmount": 18000
+                          }
+                        },
+                        {
+                          "illustrationType": "AP",
+                          "payableDetails": {
+                            "payableDate": "2035-02-01",
                             "monthlyAmount": 1500,
                             "annualAmount": 18000
                           }
@@ -256,6 +273,7 @@ internal static class TestData
           "benefitIllustrations": [
             {
               "illustrationDate": "2025-01-01",
+              "payableDetailsType": "RECURRING",
               "illustrationComponents": [
                 {
                   "illustrationType": "ERI",
@@ -271,7 +289,8 @@ internal static class TestData
                   "illustrationType": "AP",
                   "dcPot": 125000,
                   "payableDetails": {
-                    "amount": 25000,
+                    "monthlyAmount": 3200,
+                    "annualAmount": 38400,
                     "payableDate": "2040-03-01"
                   }
                 }
@@ -279,12 +298,21 @@ internal static class TestData
             },
             {
               "illustrationDate": "2022-01-01",
+              "payableDetailsType": "LUMPSUM",
               "illustrationComponents": [
                 {
                   "illustrationType": "ERI",
                   "payableDetails": {
                     "amount": 25000,
-                    "payableDate": "2040-03-01"
+                    "payableDate": "2040-04-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "dcPot": 125000,
+                  "payableDetails": {
+                    "amount": 25000,
+                    "payableDate": "2040-05-01"
                   }
                 }
               ]
@@ -311,6 +339,7 @@ internal static class TestData
           "benefitIllustrations": [
             {
               "illustrationDate": "2025-01-01",
+              "payableDetailsType": "RECURRING",
               "illustrationComponents": [
                 {
                   "illustrationType": "ERI",
@@ -318,6 +347,53 @@ internal static class TestData
                   "payableDetails": {
                     "monthlyAmount": 3000,
                     "payableDate": "2038-01-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "benefitType": "DB",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "payableDate": "2038-02-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-2",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreateDCPension()
+    {
+        var json = """
+        {
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2025-01-01",
+              "payableDetailsType": "RECURRING",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "DC",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "payableDate": "2038-01-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "benefitType": "DB",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "payableDate": "2038-02-01"
                   }
                 }
               ]

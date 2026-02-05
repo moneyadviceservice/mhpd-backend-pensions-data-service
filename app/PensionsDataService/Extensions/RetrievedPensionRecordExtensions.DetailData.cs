@@ -26,7 +26,8 @@ public static partial class RetrievedPensionRecordExtensions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            WriteIndented = true
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         options.Converters.Add(new JsonStringEnumConverter());

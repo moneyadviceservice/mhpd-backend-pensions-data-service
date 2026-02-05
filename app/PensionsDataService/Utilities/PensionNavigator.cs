@@ -32,6 +32,23 @@ public class PensionNavigator : IPensionNavigator
         return earliestEriComponent;
     }
 
+    public JsonNode? SelectEarliestIllustrationComponent(JsonNode? illustration)
+    {
+        var earliestEriComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
+
+        if (earliestEriComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
+        {
+            var earliestApComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
+
+            if (earliestApComponent?[PensionConstants.PayableDetails]?[PensionConstants.MonthlyAmount]?.GetValue<decimal>() > 0)
+            {
+                return earliestApComponent;
+            }
+        }
+
+        return earliestEriComponent;
+    }
+
     public JsonNode? SelectLatestIllustration(JsonNode retrievalResult)
     {
         var illustrationsNode = retrievalResult[PensionConstants.BenefitIllustrations];
@@ -50,6 +67,56 @@ public class PensionNavigator : IPensionNavigator
             var dateStr = illustration?[PensionConstants.IllustrationDate]?.GetValue<string>();
 
             if (!DateTime.TryParse(dateStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                continue;
+            }
+
+            if (latestDate == null || date > latestDate)
+            {
+                latestDate = date;
+                latestNode = illustration;
+            }
+        }
+
+        return latestNode ?? fallback;
+    }
+
+    public JsonNode? SelectLatestIllustration(JsonNode retrievalResult, string payableDetailsType)
+    {
+        var illustrationsNode = retrievalResult[PensionConstants.BenefitIllustrations];
+
+        if (illustrationsNode is not JsonArray illustrations || illustrations.Count == 0)
+        {
+            return null;
+        }
+
+        List<string> matchingPayableDetails = [payableDetailsType];
+
+        if(payableDetailsType == EvaluationConstants.PayableDetailsType.Recurring)
+        {
+            matchingPayableDetails.Add(EvaluationConstants.PayableDetailsType.None);
+        }
+
+        // Filter by type first
+        var matching = illustrations
+            .Where(c => matchingPayableDetails.Contains(c?[PensionConstants.PayableDetailsType]?.GetValue<string>()!))
+            .ToList();
+
+        if (matching.Count == 0)
+        {
+            return null;
+        }
+
+        JsonNode? fallback = illustrations[0];
+        DateTime? latestDate = null;
+        JsonNode? latestNode = null;
+
+        foreach (var illustration in matching)
+        {
+            var component = SelectEarliestIllustrationComponent(illustration);
+            var date = SelectPayableDate(component);
+
+            if (date == null)
             {
                 continue;
             }
@@ -184,6 +251,7 @@ public class PensionNavigator : IPensionNavigator
             LumpSumAmount = SelectLumpSumAmount(component),
             PayableDate = SelectPayableDate(component),
             LastPaymentDate = SelectLastPaymentDate(component),
+            IsIncreasing = SelectIncreasing(component),
             AmountNotProvidedReason = SelectAmountNotProvidedReason(component)
         };
     }
@@ -224,6 +292,11 @@ public class PensionNavigator : IPensionNavigator
     public string? SelectAmountNotProvidedReason(JsonNode? component)
     {
         return component?[PensionConstants.PayableDetails]?[PensionConstants.AmountNotProvidedReason]?.GetValue<string>();
+    }
+
+    private static bool? SelectIncreasing(JsonNode? component)
+    {
+        return component?[PensionConstants.PayableDetails]?[PensionConstants.Increasing]?.GetValue<bool>();
     }
 
     private static DateTime? SelectPayableDate(JsonNode? component)

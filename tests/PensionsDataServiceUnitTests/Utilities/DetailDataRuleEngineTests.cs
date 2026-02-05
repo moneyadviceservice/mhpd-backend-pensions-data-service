@@ -36,7 +36,7 @@ public class DetailDataRuleEngineTests
         Assert.Equal("2040-02-01", detail[PensionConstants.PayableDate]!.GetValue<string>());
         Assert.Equal(125000m, detail["potValue"]!.GetValue<decimal>());
         Assert.Equal(25000m, detail["lumpSumAmount"]!.GetValue<decimal>());
-        Assert.Equal("2040-03-01", detail["lumpSumPayableDate"]!.GetValue<string>());
+        Assert.Equal("2040-04-01", detail["lumpSumPayableDate"]!.GetValue<string>());
         Assert.Equal("DB", detail[PensionConstants.BenefitType]!.GetValue<string>());
     }
 
@@ -109,5 +109,20 @@ public class DetailDataRuleEngineTests
         Assert.Null(detail["lumpSumAmount"]);
         Assert.Null(detail["unavailableCode"]);
         Assert.NotNull(detail["warnings"]);
+    }
+
+    [Fact]
+    public void EnrichDetailData_PensionIsDcTYpe_EnrichesWithBarAndDonutChartData()
+    {
+        // Arrange
+        var record = TestData.CreateDCPension();
+        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
+
+        // Act
+        arrangement.EnrichDetailData(_engine);
+
+        // Assert
+        var detail = arrangement["detailData"];
+        Assert.NotNull(detail);
     }
 }

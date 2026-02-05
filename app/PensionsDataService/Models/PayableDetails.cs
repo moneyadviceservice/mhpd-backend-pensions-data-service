@@ -14,5 +14,7 @@ public class PayableDetails
 
     public string? AmountNotProvidedReason { get; set; }
 
+    public bool? IsIncreasing { get; init; }
+
     public bool HasAmount => MonthlyAmount.HasValue || AnnualAmount.HasValue || LumpSumAmount.HasValue;
 }

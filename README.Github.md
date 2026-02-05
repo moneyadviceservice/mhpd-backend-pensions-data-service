@@ -135,3 +135,12 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 - Added Support for AVC Pension Type.
 - Added Support for linked pensions.
 - Added Data analytics endpoint.
+
+### 🔧 Release 0.9.0 — 2026-02-12
+- Package updated to benefit from the other changes in common
+- Use new retrieval endpoint to start retrieval orchestration removing the race condition where message wouldn’t be picked up before status call.
+- pensionRetrievalStartTime now comes directly from the JobStartTimestamp of the retrieval service
+- Remove dependency on azure service bus now no longer used here.
+- Service to communicate with internal services directly
+- Service network rules changed to allow traffic from other apps on the vnet
+

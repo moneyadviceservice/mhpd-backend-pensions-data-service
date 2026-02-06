@@ -109,20 +109,16 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
             lumpSumDate = recurringDate;
         }
 
-        IllustrationBarChart? barChart = null;
+        IllustrationBarChart barChart = new()
+        {
+            Eri = BuildRecurringChartData(eriComponent),
+            Ap = BuildRecurringChartData(apComponent),
+            IllustrationDate = recurringDate
+        };
+
         IllustrationDonutChart? donutChart = null;
 
-        if (eriComponent != null || apComponent!= null) 
-        {
-            barChart = new IllustrationBarChart
-            {
-                Eri = BuildRecurringChartData(eriComponent),
-                Ap = BuildRecurringChartData(apComponent),
-                IllustrationDate = recurringDate
-            };
-        }
-
-        if (lumpSumEriComponent != null || lumpSumApComponent != null || eriPotComponent != null || apPotComponent != null)
+        if (lumpSumEriComponent != null || lumpSumApComponent != null || fabricateLumpSum)
         {
             donutChart = new IllustrationDonutChart
             {

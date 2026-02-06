@@ -111,6 +111,8 @@ public class DetailDataRuleEngineTests
         Assert.Null(detail["lumpSumAmount"]);
         Assert.Null(detail["unavailableCode"]);
         Assert.NotNull(detail["warnings"]);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
+        Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);
     }
 
     [Fact]

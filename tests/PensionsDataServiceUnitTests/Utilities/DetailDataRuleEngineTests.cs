@@ -85,6 +85,8 @@ public class DetailDataRuleEngineTests
         Assert.Null(detail["lumpSumAmount"]);
         Assert.Null(detail["unavailableCode"]);
         Assert.NotNull(detail["warnings"]);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
+        Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);
     }
 
     [Fact]
@@ -112,7 +114,7 @@ public class DetailDataRuleEngineTests
     }
 
     [Fact]
-    public void EnrichDetailData_PensionIsDcTYpe_EnrichesWithBarAndDonutChartData()
+    public void EnrichDetailData_PensionIsDCType_EnrichesWithBarAndDonutChartData()
     {
         // Arrange
         var record = TestData.CreateDCPension();
@@ -124,5 +126,51 @@ public class DetailDataRuleEngineTests
         // Assert
         var detail = arrangement["detailData"];
         Assert.NotNull(detail);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["donut"]);
+    }
+
+    [Fact]
+    public void EnrichDetailData_PensionIsAVCTYpe_EnrichesWithBarAndDonutChartData()
+    {
+        // Arrange
+        var record = TestData.CreateAVCPension();
+        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
+
+        // Act
+        arrangement.EnrichDetailData(_engine);
+
+        // Assert
+        var detail = arrangement["detailData"];
+        Assert.NotNull(detail);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["donut"]);
+    }
+
+    [Theory]
+    [InlineData("DB", false)]
+    [InlineData("DC", true)]
+    public void EnrichDetailData_PensionIsHYBTYpe_EnrichesWithBarAndDonutChartData(string benefitType, bool shouldHaveDonut)
+    {
+        // Arrange
+        var record = TestData.CreateHYBPension(benefitType);
+        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
+
+        // Act
+        arrangement.EnrichDetailData(_engine);
+
+        // Assert
+        var detail = arrangement["detailData"];
+        Assert.NotNull(detail);
+        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
+
+        if (shouldHaveDonut)
+        {
+            Assert.NotNull(detail["incomeAndValues"]?[0]?["donut"]);
+        }
+        else
+        {
+            Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);
+        }
     }
 }

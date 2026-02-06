@@ -95,6 +95,8 @@ public class PensionNavigator : IPensionNavigator
         if(payableDetailsType == EvaluationConstants.PayableDetailsType.Recurring)
         {
             matchingPayableDetails.Add(EvaluationConstants.PayableDetailsType.None);
+            matchingPayableDetails.Add(EvaluationConstants.PayableDetailsType.NoPayment);
+            matchingPayableDetails.Add(null!);
         }
 
         // Filter by type first

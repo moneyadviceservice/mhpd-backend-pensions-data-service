@@ -383,6 +383,7 @@ internal static class TestData
                 {
                   "illustrationType": "ERI",
                   "benefitType": "DC",
+                  "dcPot": 125000,
                   "payableDetails": {
                     "monthlyAmount": 3000,
                     "payableDate": "2038-01-01"
@@ -390,7 +391,86 @@ internal static class TestData
                 },
                 {
                   "illustrationType": "AP",
-                  "benefitType": "DB",
+                  "benefitType": "DC",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "payableDate": "2038-02-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-2",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreateAVCPension()
+    {
+        var json = """
+        {
+          "pensionType": "AVC",
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2025-01-01",
+              "payableDetailsType": "NOPAYMENT",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "payableDetails": {
+                    "reason": "SML",
+                    "payableDate": "2038-01-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "payableDetails": {
+                    "reason": "SML",
+                    "payableDate": "2038-02-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-2",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreateHYBPension(string benefitType)
+    {
+        var json = $$"""
+        {"pensionType": "HYB",
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2025-01-01",
+              "payableDetailsType": "RECURRING",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "dcPot": 125000,
+                  "benefitType": "{{benefitType}}",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "payableDate": "2038-01-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "dcPot": 125000,
+                  "benefitType": "{{benefitType}}",
                   "payableDetails": {
                     "monthlyAmount": 3000,
                     "payableDate": "2038-02-01"

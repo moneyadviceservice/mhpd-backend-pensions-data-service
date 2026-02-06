@@ -3,6 +3,7 @@ using MhpdCommon.Extensions;
 using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 using System.Text.Json.Nodes;
+using static MhpdCommon.ViewData.PensionEnums;
 
 namespace PensionsDataService.Utilities;
 
@@ -14,8 +15,9 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
         ArgumentNullException.ThrowIfNull(retrievalResult);
 
         var eriIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.Recurring);
-        var recurringComponent = navigator.SelectEarliestComponent(eriIllustration, EvaluationConstants.IllustrationType.Estimated);
-        var accruedComponent = navigator.SelectEarliestComponent(eriIllustration, EvaluationConstants.IllustrationType.Accrued);
+        var recurringComponent = navigator.SelectEarliestIllustrationComponent(eriIllustration);
+        var recurringEriComponent = navigator.SelectEarliestComponent(eriIllustration, EvaluationConstants.IllustrationType.Estimated);
+        var recurringApComponent = navigator.SelectEarliestComponent(eriIllustration, EvaluationConstants.IllustrationType.Accrued);
 
         var lumpSumIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.LumpSum);
         var lumpSumEriComponent = navigator.SelectEarliestIllustrationComponent(lumpSumIllustration);
@@ -32,21 +34,28 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
             IllustrationDate = eriIllustrtationDate,
             MonthlyAmount = navigator.SelectMonthlyAmount(recurringComponent),
             PayableDate = FormatDate(recurringPayableDetails.PayableDate),
-            PotValue = accruedComponent?[PensionConstants.RetirementPot]?.GetValue<decimal?>(),
+            PotValue = recurringApComponent?[PensionConstants.RetirementPot]?.GetValue<decimal?>(),
             LumpSumAmount = navigator.SelectLumpSumAmount(lumpSumEriComponent),
             LumpSumPayableDate = FormatDate((lumpSumPayableDetails.PayableDate)),
             BenefitType = recurringComponent?[PensionConstants.BenefitType]?.GetValue<string>(),
             UnavailableCode = navigator.SelectUnavailableCode(recurringComponent),
-            Warnings = ExtractWarnings(recurringComponent, accruedComponent)
+            Warnings = ExtractWarnings(recurringComponent, recurringApComponent)
         };
 
+        // For DC and AVC pension types, there will be no lump sum component,
+        // instead the retirement pot value from the recurring component will be used in the donut chart
+        var pensionType = recurringEriComponent?[PensionConstants.BenefitType]?.GetValue<string?>();
+        pensionType ??= retrievalResult[PensionConstants.PensionType]?.GetValue<string?>();
+        bool fabricateLumpSum = pensionType == PensionType.DC.GetDisplayValue() || pensionType == PensionType.AVC.GetDisplayValue();
+
         detailData.IncomeAndValues.Add(ExtractIncomeAndValues(
-                eriIllustrtationDate,
-                recurringComponent,
-                accruedComponent,
-                lumpSumIllustrationDate,
-                lumpSumEriComponent,
-                lumpSumApComponent));
+            eriIllustrtationDate,
+            recurringEriComponent,
+            recurringApComponent,
+            lumpSumIllustrationDate,
+            lumpSumEriComponent,
+            lumpSumApComponent,
+            fabricateLumpSum));
 
         return detailData;
     }
@@ -86,14 +95,15 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
     }
 
     private IllustrationIncome ExtractIncomeAndValues(string? recurringDate, JsonNode? eriComponent, JsonNode? apComponent, 
-        string? lumpSumDate, JsonNode? lumpSumEriComponent, JsonNode? lumpSumApComponent)
+        string? lumpSumDate, JsonNode? lumpSumEriComponent, JsonNode? lumpSumApComponent, bool fabricateLumpSum)
     { 
-        var benefitType = eriComponent?[PensionConstants.BenefitType]?.GetValue<string?>();
         JsonNode? eriPotComponent = null;
         JsonNode? apPotComponent = null;
 
-        if (benefitType == PensionEnums.PensionType.DC.GetDisplayValue())
+        if (fabricateLumpSum)
         {
+            // For DC and AVC pension types, there will be no lump sum component,
+            // instead the retirement pot value from the recurring component will be used in the donut chart
             eriPotComponent = eriComponent;
             apPotComponent = apComponent;
             lumpSumDate = recurringDate;

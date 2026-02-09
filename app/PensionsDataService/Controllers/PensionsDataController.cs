@@ -396,28 +396,28 @@ public class PensionsDataController(
     public async Task<IActionResult> DeletePensionsDataAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
         [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
-        // Get the pensions retrieval record associated with the passed userSessionId
-        var (_, earlyResponse) = await TryGetRequestedPensionAsync(
-        $"{Constants.LogSource} - {Constants.HttpDelete}", userSessionId, correlationId);
-
-        if (earlyResponse != null && earlyResponse is not JsonResult)
+        var requestHeader = new RequestHeaderModel
         {
-            return earlyResponse;
+            UserSessionId = userSessionId,
+            CorrelationId = correlationId
+        };
+
+        if (!TryValidateRequestHeader(requestHeader, out var validationMessage))
+        {
+            logger.LogError(ErrorMessage, validationMessage);
+            return BadRequest(validationMessage);
         }
 
-        var retrievalCount = await _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
-        var retrievedCount = await _retrievedPensionsRecordClient.DeleteAsync(userSessionId!, correlationId!);
+        using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} - {Constants.HttpDelete}");
+        logger.LogRequestReceived(requestHeader);
 
-        logger.LogWarning("Delete request removed {RetrievalCount} pension retrieval records and {RetrievedCount} retrieved pension records", retrievalCount, retrievedCount);
+        var retrievalCountTask = _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
+        var retrievedCountTask = _retrievedPensionsRecordClient.DeleteAsync(userSessionId!, correlationId!);
+        var userSessionDeleteTask = userSessionDataRepository.DeleteByIdAsync(userSessionId!, userSessionId!);
 
-        if (await userSessionDataRepository.DeleteByIdAsync(userSessionId!, userSessionId!))
-        {
-            logger.LogInformation("User session data deleted for UserSessionId {UserSessionId}", userSessionId);
-        }
-        else
-        {
-            logger.LogWarning("Unable to delete session data for UserSessionId {UserSessionId}", userSessionId);
-        }
+        await Task.WhenAll(retrievalCountTask, retrievedCountTask, userSessionDeleteTask);
+
+        logger.LogWarning("Deleted data for {UserSessionId}", userSessionId);
 
         return new NoContentResult();
     }

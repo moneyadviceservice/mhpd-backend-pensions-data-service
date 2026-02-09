@@ -13,19 +13,23 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
     public DetailData Evaluate(JsonNode retrievalResult)
     {
         ArgumentNullException.ThrowIfNull(retrievalResult);
+        // recurringComponent = The ERI component - unless the this has an unavailable code of DB in which case it will be the AP component.
+        // recurringEriComponent = Always the ERI component of the recurring illustration
+        // recurringApComponent = Always the AP component of the recurring illustration
+        var recurringIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.Recurring);
+        var recurringComponent = navigator.SelectEarliestIllustrationComponent(recurringIllustration);
+        var recurringEriComponent = navigator.SelectEarliestComponent(recurringIllustration, EvaluationConstants.IllustrationType.Estimated);
+        var recurringApComponent = navigator.SelectEarliestComponent(recurringIllustration, EvaluationConstants.IllustrationType.Accrued);
 
-        var eriIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.Recurring);
-        var recurringComponent = navigator.SelectEarliestIllustrationComponent(eriIllustration);
-        var recurringEriComponent = navigator.SelectEarliestComponent(eriIllustration, EvaluationConstants.IllustrationType.Estimated);
-        var recurringApComponent = navigator.SelectEarliestComponent(eriIllustration, EvaluationConstants.IllustrationType.Accrued);
-
+        // lumpSumEriComponent = Always the ERI component of the lump sum illustration
+        // lumpSumApComponent = Always the AP component of the lump sum illustration
         var lumpSumIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.LumpSum);
         var lumpSumEriComponent = navigator.SelectEarliestIllustrationComponent(lumpSumIllustration);
         var lumpSumApComponent = navigator.SelectEarliestComponent(lumpSumIllustration, EvaluationConstants.IllustrationType.Accrued);
 
         PayableDetails recurringPayableDetails = navigator.GetPayableDetails(recurringComponent);
         PayableDetails lumpSumPayableDetails = navigator.GetPayableDetails(lumpSumEriComponent);
-        var eriIllustrtationDate = FormatDate(eriIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
+        var eriIllustrtationDate = FormatDate(recurringIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
         var lumpSumIllustrationDate = FormatDate(lumpSumIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
 
         var detailData = new DetailData
@@ -38,7 +42,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
             LumpSumAmount = navigator.SelectLumpSumAmount(lumpSumEriComponent),
             LumpSumPayableDate = FormatDate((lumpSumPayableDetails.PayableDate)),
             BenefitType = recurringComponent?[PensionConstants.BenefitType]?.GetValue<string>(),
-            UnavailableCode = navigator.SelectUnavailableCode(recurringComponent),
+            UnavailableCode = navigator.SelectUnavailableCode(recurringComponent) ?? navigator.SelectUnavailableCode(recurringApComponent),
             Warnings = ExtractWarnings(recurringComponent, recurringApComponent)
         };
 

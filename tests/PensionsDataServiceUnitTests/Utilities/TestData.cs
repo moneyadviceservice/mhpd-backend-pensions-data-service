@@ -352,6 +352,7 @@ internal static class TestData
                 {
                   "illustrationType": "AP",
                   "benefitType": "DB",
+                  "unavailableReason": "NEW",
                   "payableDetails": {
                     "monthlyAmount": 3000,
                     "payableDate": "2038-02-01"

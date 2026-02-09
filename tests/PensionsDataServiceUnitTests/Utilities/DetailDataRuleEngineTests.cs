@@ -83,7 +83,7 @@ public class DetailDataRuleEngineTests
         Assert.NotNull(detail[PensionConstants.PayableDate]);
         Assert.Null(detail["potValue"]);
         Assert.Null(detail["lumpSumAmount"]);
-        Assert.Null(detail["unavailableCode"]);
+        Assert.Equal("NEW", detail["unavailableCode"]!.GetValue<string>());
         Assert.NotNull(detail["warnings"]);
         Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
         Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);

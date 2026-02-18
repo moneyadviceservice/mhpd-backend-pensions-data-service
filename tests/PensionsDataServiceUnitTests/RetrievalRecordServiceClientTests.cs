@@ -224,9 +224,9 @@ public class RetrievalRecordServiceClientTests
         var client = new RetrievalRecordServiceClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act
-        var result = await client.DeleteAsync("test-session-id", "corr-Id");
+        await client.DeleteAsync("test-session-id", "corr-Id");
 
         // Assert
-        Assert.Equal(expectedCount, result);
+        // Doesnt Throw
     }
 }

@@ -228,11 +228,10 @@ public class RetrievedPensionsRecordClientTests
     public async Task DeleteAsync_Request_ReturnsResult()
     {
         // Arrange
-        var expectedCount = 4;
 
         var httpResponse = new HttpResponseMessage
         {
-            Content = JsonContent.Create(expectedCount),
+            Content = JsonContent.Create(0),
             StatusCode = HttpStatusCode.OK,
         };
 
@@ -256,9 +255,9 @@ public class RetrievedPensionsRecordClientTests
         var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act
-        var result = await client.DeleteAsync("user-session-Id", "correlation-Id");
+        await client.DeleteAsync("user-session-Id", "correlation-Id");
 
         // Assert
-        Assert.Equal(expectedCount, result);
+        // Doesnt throw
     }
 }

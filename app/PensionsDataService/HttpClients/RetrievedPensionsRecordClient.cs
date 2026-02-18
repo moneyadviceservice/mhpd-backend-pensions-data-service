@@ -11,7 +11,7 @@ namespace PensionsDataService.HttpClients;
 
 public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory, ILogger<RetrievedPensionsRecordClient> logger) : IRetrievedPensionsRecordClient
 {
-    public async Task<int> DeleteAsync(string userSessionId, string correlationId)
+    public async Task DeleteAsync(string userSessionId, string correlationId)
     {
         logger.LogWarning("Sending request to delete retrieved pension records for session {Session}", correlationId);
 
@@ -23,8 +23,6 @@ public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory,
         var response = await httpClient.DeleteAsync(HttpEndpoints.Internal.RetrievedPensionRecords);
 
         response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<int>();
     }
 
     public async Task<List<RetrievedPensionRecord>> GetRetrievedPensionsAsync(RetrievedPensionsRequest request, RequestHeaderModel requestHeader)

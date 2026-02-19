@@ -1,6 +1,6 @@
 import { test, expect } from '@lib/test.lib';
 import { v4 as uuid } from 'uuid';
-import { setupAndRetrievePensionData, poll } from 'utilities/helpers';
+import { setupAndRetrievePensionData, poll, formatZodErrors } from 'utilities/helpers';
 import { PensionsSummarySchema } from 'schemas/pensionsSummary.schema';
 
 const iss = 'some-iss';
@@ -23,12 +23,7 @@ test.describe('GET - /pensions-summary', () => {
     expect(response.status).toBe(200);
 
     const validation = PensionsSummarySchema.safeParse(response.data);
-
-    if (!validation.success) {
-      console.error('❌ Summary Schema Validation Failed:', JSON.stringify(validation.error.issues, null, 2));
-    }
-
-    expect(validation.success).toBe(true);
+    expect(validation.success, formatZodErrors(validation, response.data)).toBe(true);
   });
 
   test('should return 200 with missing correlation id', async ({ pensionsDataService }) => {

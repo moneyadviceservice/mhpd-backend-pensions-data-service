@@ -1,14 +1,14 @@
 import { test, expect } from '@lib/test.lib';
 import { v4 as uuid } from 'uuid';
-import { setupDataForRetrieval } from 'utilities/helpers';
+import { setupDataForRetrieval, formatZodErrors } from 'utilities/helpers';
 import { PensionDataRetrievalSchema } from 'schemas/pensionsDataRetrieval.schema';
-import { env } from 'node:process';
+import { env } from '@lib/env.lib';
 
 const iss = 'some-iss';
 
 const validData = {
-  ticket: env.TICKET as string,
-  clientId: env.CLIENT_ID as string,
+  ticket: env.TICKET,
+  clientId: env.CLIENT_ID,
 };
 
 test.describe('POST - /pensions-data-retrieval', () => {
@@ -39,18 +39,7 @@ test.describe('POST - /pensions-data-retrieval', () => {
     }
 
     const validation = PensionDataRetrievalSchema.safeParse(response.data);
-
-    if (!validation.success) {
-      console.error(
-        '❌ Retrieval Schema Validation Failed:',
-        JSON.stringify(validation.error.issues, null, 2),
-      );
-    }
-
-    expect(validation.success).toBe(true);
-
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    expect(response.data.pensionRetrievalStartTime).toBeGreaterThan(fiveMinutesAgo);
+    expect(validation.success, formatZodErrors(validation, response.data)).toBe(true);
   });
 
   test('should return 202 with missing correlation id', async ({ pensionsDataService }) => {

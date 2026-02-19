@@ -1,15 +1,15 @@
 import { test, expect } from '@lib/test.lib';
 import { v4 as uuid } from 'uuid';
-import { env } from 'node:process';
+import { env } from '@lib/env.lib';
 
 const iss = 'some-iss';
 
 const validData = {
-  clientId: env.CLIENT_ID as string,
-  clientSecret: env.CLIENT_SECRET as string,
-  authorisationCode: env.AUTHORISATION_CODE as string,
-  redirectUrl: env.REDIRECT_URL as string,
-  codeVerifier: env.CODE_VERIFIER as string,
+  clientId: env.CLIENT_ID,
+  clientSecret: env.CLIENT_SECRET,
+  authorisationCode: env.AUTHORISATION_CODE,
+  redirectUrl: env.REDIRECT_URL,
+  codeVerifier: env.CODE_VERIFIER,
 };
 
 test.describe('POST - /pensions-data', () => {

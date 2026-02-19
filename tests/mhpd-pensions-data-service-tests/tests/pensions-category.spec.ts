@@ -1,7 +1,7 @@
 import { test, expect } from '@lib/test.lib';
 import { v4 as uuid } from 'uuid';
 import { PensionCategory } from '@services/pensions-data-service';
-import { setupAndRetrievePensionData, poll } from 'utilities/helpers';
+import { setupAndRetrievePensionData, poll, formatZodErrors } from 'utilities/helpers';
 import { PensionsCategorySchema } from 'schemas/pensionCategory.schema';
 
 const iss = 'some-iss';
@@ -27,10 +27,7 @@ test.describe('GET - /pensions/{category}', () => {
       }
 
       const validation = PensionsCategorySchema.safeParse(response.data);
-      if (!validation.success) {
-        console.error(`❌ ${category} Schema Error:`, JSON.stringify(validation.error.issues, null, 2));
-      }
-      expect(validation.success).toBe(true);
+      expect(validation.success, formatZodErrors(validation, response.data)).toBe(true);
 
       const arrangements = response.data.arrangements;
 

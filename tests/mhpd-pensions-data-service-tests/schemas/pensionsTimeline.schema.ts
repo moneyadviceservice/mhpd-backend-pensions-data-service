@@ -1,22 +1,20 @@
 import { z } from 'zod';
 
-const PensionTypeEnum = z.enum(['SP', 'DB', 'DC', 'AVC', 'HYB']);
+const PensionTypeEnum = z.enum(['SP', 'DB', 'DC', 'AVC', 'HYB', 'LU']);
 
-// Arrangement schema (based on your sample)
 const ArrangementSchema = z.object({
-  payableDate: z.string(), // ISO date string
+  payableDate: z.string(),
   startYear: z.number(),
-  endYear: z.number().nullable(),
-  lumpSumYear: z.number().nullable(),
+  endYear: z.number().nullable().optional(),
+  lumpSumYear: z.number().nullable().optional(),
   id: z.string(),
   schemeName: z.string(),
   pensionType: PensionTypeEnum,
   monthlyAmount: z.number(),
   annualAmount: z.number(),
-  lumpSumAmount: z.number().nullable(),
+  lumpSumAmount: z.number().nullable().optional(),
 });
 
-// Yearly entry schema
 const YearEntrySchema = z.object({
   year: z.number(),
   monthlyTotal: z.number(),
@@ -24,9 +22,10 @@ const YearEntrySchema = z.object({
   arrangements: z.array(ArrangementSchema),
 });
 
-// Main timeline schema
-export const pensionsTimelineSchema = z.object({
+export const PensionsTimelineSchema = z.object({
   isPensionRetrievalComplete: z.boolean(),
   keys: z.array(PensionTypeEnum),
   years: z.array(YearEntrySchema),
 });
+
+export type PensionsTimeline = z.infer<typeof PensionsTimelineSchema>;

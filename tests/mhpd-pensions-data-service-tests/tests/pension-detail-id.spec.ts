@@ -1,5 +1,5 @@
 import { test, expect } from '@lib/test.lib';
-import { setupAndRetrievePensionData, poll } from 'utilities/helpers';
+import { setupAndRetrievePensionData, poll, formatZodErrors } from 'utilities/helpers';
 import { v4 as uuid } from 'uuid';
 import { PensionDetailSchema } from 'schemas/pensionDetail.schema';
 
@@ -46,7 +46,7 @@ test.describe('GET - /pension-detail/{id}', () => {
         });
       }
 
-      expect(validation.success).toBe(true);
+      expect(validation.success, formatZodErrors(validation, response.data)).toBe(true);
       expect(detailRecord.externalAssetId).toBe(pensionId);
     }
   });

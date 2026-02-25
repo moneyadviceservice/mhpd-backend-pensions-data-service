@@ -12,16 +12,17 @@ interface ValidatedEnv {
 
 const env = rawEnv as unknown as ValidatedEnv;
 
+type ZodPathKey = string | number | symbol;
+
 interface ZodFormatResult {
   success: boolean;
   error?: {
     issues: {
-      path: (string | number | symbol)[];
+      path: ZodPathKey[];
       message: string;
     }[];
   };
 }
-
 /**
  * A Universal Polling Helper
  */

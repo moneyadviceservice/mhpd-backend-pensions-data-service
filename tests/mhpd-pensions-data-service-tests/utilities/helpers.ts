@@ -12,6 +12,16 @@ interface ValidatedEnv {
 
 const env = rawEnv as unknown as ValidatedEnv;
 
+interface ZodFormatResult {
+  success: boolean;
+  error?: {
+    issues: {
+      path: (string | number | symbol)[];
+      message: string;
+    }[];
+  };
+}
+
 /**
  * A Universal Polling Helper
  */
@@ -103,14 +113,7 @@ export async function setupAndRetrievePensionData(
   });
 }
 
-/**
- * Formats Zod errors and plucks the actual offending value.
- * Uses 'unknown' and type guards to satisfy strict ESLint 'no-explicit-any' rules.
- */
-export function formatZodErrors(
-  result: { success: boolean; error?: { issues: { path: (string | number | symbol)[]; message: string }[] } },
-  originalData: unknown,
-): string {
+export function formatZodErrors(result: ZodFormatResult, originalData: unknown): string {
   if (result.success || !result.error) return '';
 
   const details = result.error.issues
@@ -123,7 +126,6 @@ export function formatZodErrors(
       }, originalData);
 
       let displayValue: string;
-
       if (value === null) {
         displayValue = 'null';
       } else if (value === undefined) {

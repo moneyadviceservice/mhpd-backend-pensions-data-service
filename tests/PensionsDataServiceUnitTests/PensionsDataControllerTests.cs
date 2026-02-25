@@ -30,7 +30,6 @@ public class PensionsDataControllerTests
     private readonly Mock<IMapsCdaServiceClient> _mockMapsCdaServiceClient = new();
     private readonly Mock<IRetrievalRecordServiceClient> _mockRetrievalRecordFunctionClient = new();
     private readonly Mock<IRetrievedPensionsRecordClient> _mockRetrievedPensionsRecordClient = new();
-    private readonly Mock<IMessagingService> _mockMessagingService = new();
     private readonly Mock<ICosmosDbRepository<UserSessionData>> _mockUserSessionDataRepository = new();
     private readonly Mock<IPensionAnonymizer> _mockPensionAnonymizer = new();
 

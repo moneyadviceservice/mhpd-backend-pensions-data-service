@@ -131,25 +131,6 @@ public class PensionNavigatorTests
     }
 
     [Fact]
-    public void SelectIllustrationComponent_EriIsDBApHasNoAmount_PicksERI()
-    {
-        var node = JsonNode.Parse("""
-        {
-          "benefitIllustrations": [
-            { "illustrationDate": "2024-01-01", "illustrationComponents": [
-                { "illustrationType": "ERI", "unavailableReason": "DB", "payableDetails": { "payableDate": "2030-01-01" }},
-                { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01" }}
-            ] }
-          ]
-        }
-        """)!;
-
-        var component = _navigator.SelectIllustrationComponent(node);
-        var result = component!["illustrationType"]!.GetValue<string>();
-        Assert.Equal("ERI", result);
-    }
-
-    [Fact]
     public void SelectEarliestComponent_NoDates_PicksFirst()
     {
         var node = JsonNode.Parse("""

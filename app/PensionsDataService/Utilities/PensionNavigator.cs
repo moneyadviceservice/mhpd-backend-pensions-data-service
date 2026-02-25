@@ -17,36 +17,26 @@ public class PensionNavigator : IPensionNavigator
             return null;
         }
 
-        var earliestEriComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
+        var earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
 
-        if (earliestEriComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
+        if (earliestComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
         {
-            var earliestApComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
-
-            if (earliestApComponent?[PensionConstants.PayableDetails]?[PensionConstants.MonthlyAmount]?.GetValue<decimal>() > 0)
-            {
-                return earliestApComponent;
-            }
+            earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
         }
 
-        return earliestEriComponent;
+        return earliestComponent;
     }
 
     public JsonNode? SelectEarliestIllustrationComponent(JsonNode? illustration)
     {
-        var earliestEriComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
+        var earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Estimated);
 
-        if (earliestEriComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
+        if (earliestComponent?[PensionConstants.UnavailableReason]?.GetValue<string>() == Constants.UnavailableCodes.DB)
         {
-            var earliestApComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
-
-            if (earliestApComponent?[PensionConstants.PayableDetails]?[PensionConstants.MonthlyAmount]?.GetValue<decimal>() > 0)
-            {
-                return earliestApComponent;
-            }
+            earliestComponent = SelectEarliestComponent(illustration, EvaluationConstants.IllustrationType.Accrued);
         }
 
-        return earliestEriComponent;
+        return earliestComponent;
     }
 
     public JsonNode? SelectLatestIllustration(JsonNode retrievalResult)

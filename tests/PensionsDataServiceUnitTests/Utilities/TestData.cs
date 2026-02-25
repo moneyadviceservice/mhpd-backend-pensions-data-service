@@ -329,8 +329,60 @@ internal static class TestData
         };
     }
 
-    public static RetrievedPensionRecord CreatePensionWithWarnings()
-        => CreateConfirmedPensionWithDetailData();
+    public static RetrievedPensionRecord CreatePensionWithUnavailableCodeDB()
+    {
+        var json = """
+        {
+          "retirementDate": "2040-01-01",
+          "benefitIllustrations": [
+            {
+              "illustrationDate": "2025-01-01",
+              "payableDetailsType": "RECURRING",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "DB",
+                  "unavailableReason": "DB"
+                },
+                {
+                  "illustrationType": "AP",
+                  "dcPot": 125000,
+                  "unavailableReason": "WU"
+                }
+              ]
+            },
+            {
+              "illustrationDate": "2022-01-01",
+              "payableDetailsType": "LUMPSUM",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "payableDetails": {
+                    "amount": 25000,
+                    "payableDate": "2040-04-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "dcPot": 125000,
+                  "payableDetails": {
+                    "amount": 25000,
+                    "payableDate": "2040-05-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-1",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
 
     public static RetrievedPensionRecord CreatePensionWithoutLumpSum()
     {

@@ -144,3 +144,10 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 - Service to communicate with internal services directly
 - Service network rules changed to allow traffic from other apps on the vnet
 
+### 🔧 Release 0.9.1 — 2026-02-25
+- Moved business logic from front end to service layer to improve separation of concerns and maintainability.
+- Improved caching of Jwk Keys.
+- Corrected default classification of unsupported pensions
+- Improved efficiency of session data cleanup
+- Pension data service delete method changed to handle deletes in parallel in addition to deleting by partition key to improve performance and reduce cost.
+

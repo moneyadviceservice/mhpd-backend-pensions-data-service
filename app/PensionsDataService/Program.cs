@@ -5,7 +5,7 @@ using MhpdCommon.Models.OpenApi;
 using MhpdCommon.Repository;
 using MhpdCommon.TokenValidation;
 using Microsoft.AspNetCore.HttpLogging;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Utilities;
 using System.Diagnostics.CodeAnalysis;
@@ -43,7 +43,10 @@ builder.Services.AddMhpdUtilities();
 builder.Services.AddMhpdCosmosDb(builder.Configuration);
 builder.Services.AddAntiForgeryValidation();
 
-builder.Services.AddApplicationInsightsTelemetry();
+if (builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString") != "$(AppInsightsConnString)")
+{
+    builder.Services.AddApplicationInsightsTelemetry();
+}
 
 builder.Services.AddScoped<ICosmosDbRepository<UserSessionData>, UserSessionDataRepository>();
 
@@ -68,7 +71,7 @@ builder.Services.AddSwaggerGen(c =>
     c.DocumentFilter<CsrfEndpointFilter>();
     c.AddServer(new OpenApiServer
     {
-        Url = builder.Configuration.GetValue<string>("OpenApiServerUrl") ?? "https:\\localhost:3000"
+        Url = builder.Configuration.GetValue<string>("OpenApiServerUrl") ?? "https://localhost:3000"
     });
 });
 builder.Services.AddHttpClient(); 
@@ -78,7 +81,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger(c => c.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi2_0);
+    app.UseSwagger(c => c.OpenApiVersion = OpenApiSpecVersion.OpenApi2_0);
     app.UseSwaggerUI();
 }
 

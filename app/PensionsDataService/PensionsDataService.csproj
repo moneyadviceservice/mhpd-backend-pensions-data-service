@@ -1,25 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>PensionsDataService</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MhpdCommon" Version="2.1.43" />
-        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-        <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.15.0" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.1" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="MhpdCommon" Version="3.1.75" />
+        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
     </ItemGroup>
 
     <ItemGroup>
       <Folder Include="wwwroot\swagger\v1" />
     </ItemGroup>
-
-    <Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
-      <Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/pension-data.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
-    </Target>
+	
+	<Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
+		<Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/pension-data.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+	</Target>
 </Project>

@@ -43,7 +43,7 @@ builder.Services.AddMhpdUtilities();
 builder.Services.AddMhpdCosmosDb(builder.Configuration);
 builder.Services.AddAntiForgeryValidation();
 
-if (builder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString") != "$(AppInsightsConnString)")
+if (!string.IsNullOrEmpty(builder.Configuration.GetValue<string>("APPLICATIONINSIGHTS_CONNECTION_STRING")))
 {
     builder.Services.AddApplicationInsightsTelemetry();
 }

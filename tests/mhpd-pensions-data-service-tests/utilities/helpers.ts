@@ -1,7 +1,6 @@
 import { env as rawEnv } from 'node:process';
 import { PensionsDataService } from '@services/pensions-data-service';
 
-// 1. Force the type resolution using 'unknown' to bypass the overlap error
 interface ValidatedEnv {
   CLIENT_ID: string;
   CLIENT_SECRET: string;
@@ -13,6 +12,17 @@ interface ValidatedEnv {
 
 const env = rawEnv as unknown as ValidatedEnv;
 
+type ZodPathKey = string | number | symbol;
+
+interface ZodFormatResult {
+  success: boolean;
+  error?: {
+    issues: {
+      path: ZodPathKey[];
+      message: string;
+    }[];
+  };
+}
 /**
  * A Universal Polling Helper
  */
@@ -100,6 +110,40 @@ export async function setupAndRetrievePensionData(
 
   await pensionsDataService.postPensionsDataRetrieval(headers, {
     ticket: env.TICKET,
-    clientId: env.CLIENT_ID, // Verified capital 'I'
+    clientId: env.CLIENT_ID,
   });
+}
+
+export function formatZodErrors(result: ZodFormatResult, originalData: unknown): string {
+  if (result.success || !result.error) return '';
+
+  const details = result.error.issues
+    .map((issue) => {
+      const value = issue.path.reduce((acc: unknown, key: string | number | symbol) => {
+        if (acc !== null && typeof acc === 'object') {
+          return (acc as Record<string | number | symbol, unknown>)[key];
+        }
+        return undefined;
+      }, originalData);
+
+      let displayValue: string;
+      if (value === null) {
+        displayValue = 'null';
+      } else if (value === undefined) {
+        displayValue = 'undefined';
+      } else if (typeof value === 'string') {
+        displayValue = value;
+      } else if (typeof value === 'number' || typeof value === 'boolean') {
+        displayValue = value.toString();
+      } else {
+        displayValue = JSON.stringify(value);
+      }
+
+      const pathString = issue.path.map(String).join('.');
+
+      return `  • [${pathString}] => ${issue.message} (Received: "${displayValue}")`;
+    })
+    .join('\n');
+
+  return `\n\x1b[31mSchema Validation Failed:\x1b[0m\n${details}\n`;
 }

@@ -1,6 +1,6 @@
 import { test, expect } from '@lib/test.lib';
 import { v4 as uuid } from 'uuid';
-import { setupAndRetrievePensionData, poll } from 'utilities/helpers';
+import { setupAndRetrievePensionData, poll, formatZodErrors } from 'utilities/helpers';
 import { PensionStatusSchema } from 'schemas/pensionsStatus.schema';
 
 const iss = 'some-iss';
@@ -30,11 +30,7 @@ test.describe('GET - /pensions-status', () => {
 
     const validation = PensionStatusSchema.safeParse(response.data);
 
-    if (!validation.success) {
-      console.error('❌ Status Schema Validation Failed:', JSON.stringify(validation.error.issues, null, 2));
-    }
-
-    expect(validation.success).toBe(true);
+    expect(validation.success, formatZodErrors(validation, response.data)).toBe(true);
 
     if (response.data.pensionsDataRetrievalComplete) {
       expect(response.data.predictedRemainingDataRetrievalTime).toBe(0);

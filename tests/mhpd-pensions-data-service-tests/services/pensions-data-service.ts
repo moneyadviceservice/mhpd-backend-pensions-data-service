@@ -6,6 +6,7 @@ import { PensionStatus } from '../schemas/pensionsStatus.schema';
 import { PensionDataRetrieval } from 'schemas/pensionsDataRetrieval.schema';
 import { PensionsCategory } from 'schemas/pensionCategory.schema';
 import { PensionsAnalytics } from 'schemas/pensionsAnalytics.schema';
+import { PensionsTimeline } from 'schemas/pensionsTimeline.schema';
 import { env } from '@lib/env.lib';
 
 export type PensionCategory = 'CONFIRMED' | 'PENDING' | 'CONTACT' | 'UNSUPPORTED';

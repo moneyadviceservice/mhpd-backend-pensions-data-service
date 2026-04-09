@@ -151,3 +151,9 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 - Improved efficiency of session data cleanup
 - Pension data service delete method changed to handle deletes in parallel in addition to deleting by partition key to improve performance and reduce cost.
 
+### 🔧 Release 0.10.0 — 2026-03-25
+- Upgraded to .Net 10
+- Added response enrichment to support dashboard
+
+### 🔧 Release 0.11.0 — 2026-04-15
+- Updated correlation logging for .Net 10.

@@ -5,5 +5,9 @@ namespace PensionsDataService.Utilities;
 
 public interface ITimelineArrangementFactory
 {
-    TimelineArrangement? Create(RetrievedPensionRecord pension);
+    IEnumerable<TimelineArrangement> CreateAll(RetrievedPensionRecord pension, bool includeWithoutIncome);
+
+    IEnumerable<TimelineArrangement> CreateAllLegacy(RetrievedPensionRecord pension, bool includeWithoutIncome);
+
+    IEnumerable<TimelineArrangement> CreateAllAlternative(RetrievedPensionRecord pension, bool includeWithoutIncome);
 }

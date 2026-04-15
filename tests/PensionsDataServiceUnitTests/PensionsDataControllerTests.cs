@@ -115,10 +115,10 @@ public class PensionsDataControllerTests
         mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord>(), It.IsAny<IReadOnlyList<RetrievedPensionRecord>>()))
             .Returns(new SummaryData());
 
-        mockTimeSeriesBuilder.Setup(t => t.Build(It.IsAny<IEnumerable<RetrievedPensionRecord>>()))
+        mockTimeSeriesBuilder.Setup(t => t.Build(It.IsAny<IEnumerable<RetrievedPensionRecord>>(), false))
             .Returns(new TimelineSeries());
 
-        mockDetailDataRuleEngine.Setup(d => d.Evaluate(It.IsAny<JsonNode>()))
+        mockDetailDataRuleEngine.Setup(d => d.Evaluate(It.IsAny<RetrievedPensionRecord>()))
             .Returns(new DetailData());
 
         Mock<PensionServiceUtilities> mockServiceUtilities = new(
@@ -587,7 +587,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionTimelineAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
+        var result = await _controller.GetPensionTimelineAsync(requestHeader.UserSessionId, requestHeader.CorrelationId, Constants.TimeSeries.Standard);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);
@@ -618,7 +618,7 @@ public class PensionsDataControllerTests
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
         // Act
-        var result = await _controller.GetPensionTimelineAsync(requestHeader.UserSessionId, requestHeader.CorrelationId);
+        var result = await _controller.GetPensionTimelineAsync(requestHeader.UserSessionId, requestHeader.CorrelationId, Constants.TimeSeries.Standard);
 
         // Assert
         var okResult = Assert.IsType<OkObjectResult>(result);

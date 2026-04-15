@@ -19,7 +19,7 @@ public sealed class TimelineSeriesBuilderTests
     {
         var pensions = TestData.CreateTwoOverlappingPensions();
 
-        var series = _builder.Build(pensions);
+        var series = _builder.Build(pensions, false);
 
         Assert.Contains(series.Years, y => y.Year == 2030);
         Assert.Contains(series.Years, y => y.Year == 2035);
@@ -31,9 +31,9 @@ public sealed class TimelineSeriesBuilderTests
     {
         var pensions = TestData.CreatePensionsContainingLumpSum();
 
-        var series = _builder.Build(pensions);
+        var series = _builder.Build(pensions, true);
 
-        Assert.DoesNotContain(series.Years, year => year.AnnualTotal > 12000);
+        Assert.DoesNotContain(series.Years, year => year.AnnualTotal > 24000);
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class TimelineSeriesBuilderTests
     {
         var pensions = TestData.CreatePensionsContainingLumpSum();
 
-        var series = _builder.Build(pensions);
+        var series = _builder.Build(pensions, true);
 
         Assert.Contains(Constants.PensionTypes.LU, series.Keys);
     }
@@ -51,7 +51,7 @@ public sealed class TimelineSeriesBuilderTests
     {
         var pensions = TestData.CreateMultiplePensions();
 
-        var series = _builder.Build(pensions);
+        var series = _builder.Build(pensions, false);
 
         Assert.Equal(4, series.Keys.Count);
         Assert.Contains(series.Years, y => y.Year == 2030);

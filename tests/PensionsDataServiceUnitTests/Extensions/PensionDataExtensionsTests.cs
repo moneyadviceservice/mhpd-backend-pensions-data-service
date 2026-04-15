@@ -210,6 +210,7 @@ public class PensionDataExtensionsTests
         var illustration = new JsonObject
         {
             [PensionConstants.IllustrationDate] = "2024-01-01",
+            [PensionConstants.PayableDetailsType] = PayableDetailsType.Recurring,
             [PensionConstants.IllustrationComponents] = new JsonArray(component)
         };
 

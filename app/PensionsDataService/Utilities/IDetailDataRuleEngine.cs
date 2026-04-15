@@ -1,9 +1,9 @@
-﻿using PensionsDataService.Models;
-using System.Text.Json.Nodes;
+﻿using MhpdCommon.Models.MHPDModels;
+using PensionsDataService.Models;
 
 namespace PensionsDataService.Utilities;
 
 public interface IDetailDataRuleEngine
 {
-    DetailData Evaluate(JsonNode retrievalResult);
+    DetailData Evaluate(RetrievedPensionRecord pension);
 }

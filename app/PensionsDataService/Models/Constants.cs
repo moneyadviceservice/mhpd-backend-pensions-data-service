@@ -32,5 +32,27 @@ namespace PensionsDataService.Models
         {
             public const string DB = "DB";
         }
+
+        public static class PensionDetail
+        {
+            public const string DetailData = "detailData";
+            public const string StatePayment = "statePayment";
+            public const string StandardPayment = "standardPayment";
+            public const string LegacyPayment = "legacyPayment";
+            public const string AlternativePayment = "alternativePayment";
+            public const string Warnings = "warnings";
+            public const string IncomeAndValues = "incomeAndValues";
+            public const string StandardIncome = "standardIncome";
+            public const string LegacyIncome = "legacyIncome";
+            public const string AlternativeIncome = "alternativeIncome";
+            public const string UnavailableReasonCodes = "unavailableCodes";
+        }
+
+        public static class TimeSeries
+        {
+            public const string Standard = "standard";
+            public const string Legacy = "legacy";
+            public const string Alternative = "alternative";
+        }
     }
 }

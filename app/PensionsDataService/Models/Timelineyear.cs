@@ -5,6 +5,7 @@ public class TimelineYear
     public int Year { get; init; }
     public decimal MonthlyTotal { get; private set; }
     public decimal AnnualTotal { get; private set; }
+    public decimal LumpSumTotal { get; private set; }
     public List<TimelineArrangement> Arrangements { get; set; } = [];
 
     public void AddArrangement(TimelineArrangement arrangement)
@@ -15,6 +16,7 @@ public class TimelineYear
         {
             MonthlyTotal += arrangement.MonthlyAmount ?? 0m;
             AnnualTotal += arrangement.AnnualAmount ?? 0m;
+            LumpSumTotal += arrangement.LumpSumAmount ?? 0m;
         }
     }
 

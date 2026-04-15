@@ -5,17 +5,17 @@ namespace PensionsDataService.Utilities;
 
 public interface IPensionNavigator
 {
-    JsonNode? SelectIllustrationComponent(JsonNode retrievalResult);
+    JsonNode? SelectIllustrationComponent(JsonNode retrievalResult, string payableDetailsType);
 
-    JsonNode? SelectLatestIllustration(JsonNode retrievalResult);
+    JsonNode? SelectIllustrationByPayableType(JsonNode retrievalResult, string payableDetailsType);
 
-    JsonNode? SelectLatestIllustration(JsonNode retrievalResult, string payableDetailsType);
+    JsonNode? SelectEarliestIllustrationComponent(JsonNode? benefitIllustration);
 
-    JsonNode? SelectEarliestIllustrationComponent(JsonNode? illustration);
+    JsonNode? SelectComponentByType(JsonNode? benefitIllustration, string illustrationType);
 
-    JsonNode? SelectEarliestComponent(JsonNode? benefitIllustration, string illustrationType);
+    List<JsonNode> SelectAllComponentsByPayableType(JsonNode retrievalResult, string payableDetailsType);
 
-    JsonNode? SelectEarliestLumpSumComponent(JsonNode retrievalResult, string illustrationType);
+    List<JsonNode?> GetIllustrationsByType(JsonNode? retrievalResult, IEnumerable<string?> payableDetailsTypes);
 
     DateTime? SelectRetirementDate(JsonNode retrievalResult, JsonNode? component);
 
@@ -28,6 +28,8 @@ public interface IPensionNavigator
     string? SelectAmountNotProvidedReason(JsonNode? component);
 
     string? SelectUnavailableCode(JsonNode? component);
+
+    PensionProperties SelectPensionProperties(JsonNode? retrievalResult);
 
     PayableDetails GetPayableDetails(JsonNode? component);
 }

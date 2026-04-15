@@ -188,7 +188,7 @@ public class PensionsDataController(
     [HttpGet]
     [Route("pensions-timeline")]
     public async Task<IActionResult> GetPensionTimelineAsync([FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
-        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId, [FromQuery] string? type)
     {
         var (requestedPension, earlyResponse) = await TryGetRequestedPensionAsync(
         $"{Constants.LogSource} Summary - GET", userSessionId, correlationId);
@@ -206,7 +206,20 @@ public class PensionsDataController(
             retrievedPensions.Select(r => r.Pei!)
         );
 
-        var timeSeries = serviceUtilities.TimelineSeriesBuilder.Build(retrievedPensions.Where(pension => pension.Category == Category.Confirmed));
+        TimelineSeries timeSeries;
+
+        if (string.Equals(type, Constants.TimeSeries.Legacy))
+        {
+            timeSeries = serviceUtilities.TimelineSeriesBuilder.BuildLegacy(retrievedPensions.Where(pension => pension.Category == Category.Confirmed), false);
+        }
+        else if (string.Equals(type, Constants.TimeSeries.Alternative))
+        {
+            timeSeries = serviceUtilities.TimelineSeriesBuilder.BuildAlternative(retrievedPensions.Where(pension => pension.Category == Category.Confirmed), false);
+        }
+        else
+        {
+            timeSeries = serviceUtilities.TimelineSeriesBuilder.Build(retrievedPensions.Where(pension => pension.Category == Category.Confirmed), false);
+        }
 
         timeSeries.IsPensionRetrievalComplete = isComplete;
 
@@ -238,8 +251,7 @@ public class PensionsDataController(
         var enrichedPensions = retrievedPensions.EnrichLinkedPensions();
         var pensionDetail = enrichedPensions.Where(pension => pension.AssetId == id).Select(pension =>
         {
-            JsonNode node = JsonNode.Parse(pension.RetrievalResult!.GetRawText());
-            var enrichedJson = node.EnrichDetailData(serviceUtilities.DetailDataRuleEngine).ToJsonString();
+            var enrichedJson = pension.EnrichDetailData(serviceUtilities.DetailDataRuleEngine).ToJsonString();
 
             return JsonDocument.Parse(enrichedJson).RootElement;
         });

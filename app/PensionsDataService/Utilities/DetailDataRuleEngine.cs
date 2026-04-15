@@ -1,65 +1,118 @@
 ﻿using MhpdCommon.Constants;
 using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 using System.Text.Json.Nodes;
-using static MhpdCommon.ViewData.PensionEnums;
+using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataService.Utilities;
 
-public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
+public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineSeriesBuilder builder)
     : IDetailDataRuleEngine
 {
-    public DetailData Evaluate(JsonNode retrievalResult)
+    private static List<string?> PayableTypes = [
+            PayableDetailsType.RecurringLegacy,
+            PayableDetailsType.RecurringNew,
+            PayableDetailsType.LumpSumLegacy,
+            PayableDetailsType.LumpSumNew,
+            PayableDetailsType.Recurring,
+            PayableDetailsType.LumpSum,
+            PayableDetailsType.None,
+            PayableDetailsType.NoPayment,
+            null
+        ];
+
+    public DetailData Evaluate(RetrievedPensionRecord pension)
     {
-        ArgumentNullException.ThrowIfNull(retrievalResult);
+        JsonNode retrievalResult = JsonNode.Parse(pension.RetrievalResult!.GetRawText());
+        var pensionProperties = navigator.SelectPensionProperties(retrievalResult);
+
         // recurringComponent = The ERI component - unless the this has an unavailable code of DB in which case it will be the AP component.
         // recurringEriComponent = Always the ERI component of the recurring illustration
         // recurringApComponent = Always the AP component of the recurring illustration
-        var recurringIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.Recurring);
+        var recurringIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.Recurring);
         var recurringComponent = navigator.SelectEarliestIllustrationComponent(recurringIllustration);
-        var recurringEriComponent = navigator.SelectEarliestComponent(recurringIllustration, EvaluationConstants.IllustrationType.Estimated);
-        var recurringApComponent = navigator.SelectEarliestComponent(recurringIllustration, EvaluationConstants.IllustrationType.Accrued);
-
-        // lumpSumEriComponent = Always the ERI component of the lump sum illustration
-        // lumpSumApComponent = Always the AP component of the lump sum illustration
-        var lumpSumIllustration = navigator.SelectLatestIllustration(retrievalResult, EvaluationConstants.PayableDetailsType.LumpSum);
-        var lumpSumEriComponent = navigator.SelectEarliestIllustrationComponent(lumpSumIllustration);
-        var lumpSumApComponent = navigator.SelectEarliestComponent(lumpSumIllustration, EvaluationConstants.IllustrationType.Accrued);
-
-        PayableDetails recurringPayableDetails = navigator.GetPayableDetails(recurringComponent);
-        PayableDetails lumpSumPayableDetails = navigator.GetPayableDetails(lumpSumEriComponent);
-        var eriIllustrtationDate = FormatDate(recurringIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
-        var lumpSumIllustrationDate = FormatDate(lumpSumIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
+        var recurringEriComponent = navigator.SelectComponentByType(recurringIllustration, IllustrationType.Estimated);
+        var recurringApComponent = navigator.SelectComponentByType(recurringIllustration, IllustrationType.Accrued);
 
         var detailData = new DetailData
         {
-            RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent)),
-            IllustrationDate = eriIllustrtationDate,
-            MonthlyAmount = navigator.SelectMonthlyAmount(recurringComponent),
-            PayableDate = FormatDate(recurringPayableDetails.PayableDate),
-            PotValue = recurringApComponent?[PensionConstants.RetirementPot]?.GetValue<decimal?>(),
-            LumpSumAmount = navigator.SelectLumpSumAmount(lumpSumEriComponent),
-            LumpSumPayableDate = FormatDate((lumpSumPayableDetails.PayableDate)),
-            BenefitType = recurringComponent?[PensionConstants.BenefitType]?.GetValue<string>(),
-            UnavailableCode = navigator.SelectUnavailableCode(recurringComponent) ?? navigator.SelectUnavailableCode(recurringApComponent),
-            Warnings = ExtractWarnings(recurringComponent, recurringApComponent)
+            RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent))
         };
 
-        // For DC and AVC pension types, there will be no lump sum component,
-        // instead the retirement pot value from the recurring component will be used in the donut chart
-        var pensionType = recurringEriComponent?[PensionConstants.BenefitType]?.GetValue<string?>();
-        pensionType ??= retrievalResult[PensionConstants.PensionType]?.GetValue<string?>();
-        bool fabricateLumpSum = pensionType == PensionType.DC.GetDisplayValue() || pensionType == PensionType.AVC.GetDisplayValue();
+        var allIllustrations = navigator.GetIllustrationsByType(retrievalResult, PayableTypes);
 
-        detailData.IncomeAndValues.Add(ExtractIncomeAndValues(
-            eriIllustrtationDate,
-            recurringEriComponent,
-            recurringApComponent,
-            lumpSumIllustrationDate,
-            lumpSumEriComponent,
-            lumpSumApComponent,
-            fabricateLumpSum));
+        // Payable details information
+        if (pensionProperties.PensionType == PensionEnums.PensionType.SP.GetDisplayValue())
+        {
+            var eriIllustrtationDate = FormatDate(recurringIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
+            detailData.StatePayment = ExtractStatePayment(recurringEriComponent, recurringApComponent, eriIllustrtationDate);
+        }
+        else if (pensionProperties.HasMultipleIncomeOptions.GetValueOrDefault())
+        {
+            var inclIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.RecurringLegacy);
+            var incnIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.RecurringNew);
+            var cshlIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.LumpSumLegacy);
+            var cshnIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.LumpSumNew);
+
+            var legacyRecurringEri = navigator.SelectEarliestIllustrationComponent(inclIllustration);
+            var legacyRecurringAp = navigator.SelectComponentByType(inclIllustration, IllustrationType.Accrued);
+            var legacyLumpSum = navigator.SelectEarliestIllustrationComponent(cshlIllustration);
+            detailData.LegacyPayment = ExtractPayment(legacyRecurringEri, legacyRecurringAp, legacyLumpSum, allIllustrations);
+
+            var alternativeRecurringEri = navigator.SelectEarliestIllustrationComponent(incnIllustration);
+            var alternativeRecurringAp = navigator.SelectComponentByType(incnIllustration, IllustrationType.Accrued);
+            var alternativeLumpSum = navigator.SelectEarliestIllustrationComponent(cshnIllustration);
+            detailData.AlternativePayment = ExtractPayment(alternativeRecurringEri, alternativeRecurringAp, alternativeLumpSum, allIllustrations);
+        }
+        else
+        {
+            // lumpSumEriComponent = Always the ERI component of the lump sum illustration
+            var lumpSumIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.LumpSum);
+            var lumpSumEriComponent = navigator.SelectComponentByType(lumpSumIllustration, IllustrationType.Estimated);
+
+            detailData.StandardPayment = ExtractPayment(recurringComponent, recurringApComponent, lumpSumEriComponent, allIllustrations);
+        }
+
+        // Income timeline information
+        if (pensionProperties.PensionType != PensionEnums.PensionType.SP.GetDisplayValue())
+        {
+            detailData.IncomeAndValues = new DetailIncome();
+
+            if (pensionProperties.HasMultipleIncomeOptions.GetValueOrDefault())
+            {
+                var legacyTimelineSeries = builder.BuildLegacy([pension], true);
+                var alternativeTimelineSeries = builder.BuildAlternative([pension], true);
+
+                detailData.IncomeAndValues.LegacyIncome = GetTimeBasedIncome(legacyTimelineSeries);
+                detailData.IncomeAndValues.AlternativeIncome = GetTimeBasedIncome(alternativeTimelineSeries);
+            }
+            else
+            {
+                var timelineSeries = builder.Build([pension], true);
+                detailData.IncomeAndValues.StandardIncome = GetTimeBasedIncome(timelineSeries);
+            }
+        }
+
+        // Warnings and unavailable codes
+        List<string>? warnings = [];
+        List<string>? unavailableCodes = [];
+
+        foreach(var illustration in allIllustrations)
+        {
+            var eri = navigator.SelectComponentByType(illustration, IllustrationType.Estimated);
+            var ap = navigator.SelectComponentByType(illustration, IllustrationType.Accrued);
+
+            var illustrationWarnings = ExtractWarnings(eri, ap);
+            var illustrationCodes = ExtractUnavailableCodes(eri, ap);
+
+            warnings.AddRange(illustrationWarnings);
+            unavailableCodes.AddRange(illustrationCodes);
+        }
+
+        detailData.Warnings = warnings.Count > 0 ? warnings.Distinct().ToList() : null;
+        detailData.UnavailableCodes = unavailableCodes.Count > 0 ? unavailableCodes.Distinct().ToList() : null;
 
         return detailData;
     }
@@ -98,89 +151,114 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator)
             .ToList()!;
     }
 
-    private IllustrationIncome ExtractIncomeAndValues(string? recurringDate, JsonNode? eriComponent, JsonNode? apComponent, 
-        string? lumpSumDate, JsonNode? lumpSumEriComponent, JsonNode? lumpSumApComponent, bool fabricateLumpSum)
-    { 
-        JsonNode? eriPotComponent = null;
-        JsonNode? apPotComponent = null;
+    private List<string> ExtractUnavailableCodes(JsonNode? eriComponent, JsonNode? apComponent)
+    {
+        var eriCode = navigator.SelectUnavailableCode(eriComponent);
+        var apCode = navigator.SelectUnavailableCode(apComponent);
 
-        if (fabricateLumpSum)
-        {
-            // For DC and AVC pension types, there will be no lump sum component,
-            // instead the retirement pot value from the recurring component will be used in the donut chart
-            eriPotComponent = eriComponent;
-            apPotComponent = apComponent;
-            lumpSumDate = recurringDate;
-        }
+        var codes = new[] { eriCode, apCode }
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .Select(c => c!)
+            .Distinct()
+            .ToList();
 
-        IllustrationBarChart barChart = new()
+        return codes;
+    }
+
+    private PensionPayment? ExtractPayment(JsonNode? recurringEriComponent, JsonNode? recurringApComponent, 
+        JsonNode? lumpSumComponent, IEnumerable<JsonNode?> illustrations)
+    {
+        var recurringEriDetails = navigator.GetPayableDetails(recurringEriComponent);
+        var recurringApDetails = navigator.GetPayableDetails(recurringApComponent);
+        var lumpSumDetails = navigator.GetPayableDetails(lumpSumComponent);
+
+        var payment = new PensionPayment
         {
-            Eri = BuildRecurringChartData(eriComponent),
-            Ap = BuildRecurringChartData(apComponent),
-            IllustrationDate = recurringDate
+            MonthlyAmount = 0,
+            PotValue = 0,
+            LumpSumAmount = 0,
+            PayableDate = FormatDate(recurringEriDetails.PayableDate),
+            LumpSumPayableDate = FormatDate(lumpSumDetails.PayableDate),
+            BenefitType = recurringEriDetails.BenefitType
         };
 
-        IllustrationDonutChart? donutChart = null;
-
-        if (lumpSumEriComponent != null || lumpSumApComponent != null || fabricateLumpSum)
+        foreach (var illustration in illustrations)
         {
-            donutChart = new IllustrationDonutChart
+            var eriComponent = navigator.SelectEarliestIllustrationComponent(illustration);
+            var apComponent = navigator.SelectComponentByType(illustration, IllustrationType.Accrued);
+
+            var eriDetails = navigator.GetPayableDetails(eriComponent);
+            var apDetails = navigator.GetPayableDetails(apComponent);
+
+            // regular ERI
+            if (eriDetails.PayableDate == recurringEriDetails.PayableDate)
             {
-                Eri = BuildLumpSumChartData(lumpSumEriComponent, eriPotComponent),
-                Ap = BuildLumpSumChartData(lumpSumApComponent, apPotComponent),
-                IllustrationDate = lumpSumDate
-            };
+                payment.MonthlyAmount += (eriDetails.MonthlyAmount ?? 0m);
+            }
+
+            // AP Pot
+            if (apDetails.PayableDate == recurringApDetails.PayableDate)
+            {
+                payment.PotValue += (apDetails.PotValue ?? 0m);
+            }
+
+            // Lump sums
+            if (eriDetails.PayableDate == lumpSumDetails.PayableDate)
+            {
+                payment.LumpSumAmount += (eriDetails.LumpSumAmount ?? 0m);
+            }
         }
 
-        var income = new IllustrationIncome
-        {
-            Bar = barChart,
-            Donut = donutChart
-        };
+        payment.MonthlyAmount = payment.MonthlyAmount > 0 ? payment.MonthlyAmount : null;
+        payment.PotValue = payment.PotValue > 0 ? payment.PotValue : null;
+        payment.LumpSumAmount = payment.LumpSumAmount > 0 ? payment.LumpSumAmount : null;
 
-        return income;
+        return payment.HasAnyValues ? payment : null;
     }
 
-    private RecurringChartData BuildRecurringChartData(JsonNode? component)
+    private StatePayment? ExtractStatePayment(JsonNode? recurringEriComponent, JsonNode? recurringApComponent, string? illustrationDate)
     {
-        var payableDetails = navigator.GetPayableDetails(component);
+        var eriDetails = navigator.GetPayableDetails(recurringEriComponent);
+        var apDetails = navigator.GetPayableDetails(recurringApComponent);
 
-        return new RecurringChartData
+        var payment = new StatePayment
         {
-            MonthlyAmount = payableDetails.MonthlyAmount,
-            AnnualAmount = payableDetails.AnnualAmount,
-            PayableDate = FormatDate(payableDetails.PayableDate),
-            BenefitType = component?[PensionConstants.BenefitType]?.GetValue<string?>(),
-            CalculationMethod = component?[PensionConstants.CalculationMethod]?.GetValue<string?>(),
-            Increasing = payableDetails.IsIncreasing,
-            SafeguardedBenefit = component?[PensionConstants.SafeguardedBenefit]?.GetValue<bool>(),
-            SurvivorBenefit = component?[PensionConstants.SurvivorBenefit]?.GetValue<bool>(),
-            Warnings = ExtractWarnings(component)
+            EstimatedMonthlyAmount = eriDetails.MonthlyAmount,
+            EstimatedAnnualAmount = eriDetails.AnnualAmount,
+            AccruedMonthlyAmount = apDetails.MonthlyAmount,
+            AccruedAnnualAmount = apDetails.AnnualAmount,
+            IllustrationDate = illustrationDate,
+            BenefitType = eriDetails.BenefitType
         };
+
+        return payment.HasAnyValues ? payment : null;
     }
 
-    private LumpSumChartData BuildLumpSumChartData(JsonNode? lumpSumcomponent, JsonNode? potComponent)
+    private static List<IllustrationIncome>? GetTimeBasedIncome(TimelineSeries series)
     {
-        var component = potComponent ?? lumpSumcomponent;
-        var payableDetails = navigator.GetPayableDetails(component);
-
-        var amount = payableDetails.LumpSumAmount;
-
-        if(potComponent != null)
+        if(series.Years == null || series.Years.Count == 0)
         {
-            amount = potComponent[PensionConstants.RetirementPot]?.GetValue<decimal?>();
+            return null;
         }
 
-        return new LumpSumChartData
+        var incomeList = new List<IllustrationIncome>();
+        TimelineYear? previousYear = null;
+
+        foreach(var year in series.Years)
         {
-            Amount = amount,
-            PayableDate = FormatDate(payableDetails.PayableDate),
-            BenefitType = component?[PensionConstants.BenefitType]?.GetValue<string?>(),
-            CalculationMethod = component?[PensionConstants.CalculationMethod]?.GetValue<string?>(),
-            SafeguardedBenefit = component?[PensionConstants.SafeguardedBenefit]?.GetValue<bool>(),
-            SurvivorBenefit = component?[PensionConstants.SurvivorBenefit]?.GetValue<bool>(),
-            Warnings = ExtractWarnings(component)
-        };
+            incomeList.Add(new IllustrationIncome
+            {
+                Year = year.Year,
+                MonthlyAmount = year.MonthlyTotal,
+                AnnualAmount = year.AnnualTotal,
+                LumpSumAmount = year.LumpSumTotal,
+                Difference = previousYear == null ? null : year.MonthlyTotal - previousYear.MonthlyTotal
+            });
+
+            previousYear = year;
+        }
+
+        return incomeList;
     }
 }
 

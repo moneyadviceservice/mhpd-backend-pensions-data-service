@@ -1,7 +1,7 @@
 ﻿using MhpdCommon.Models.MHPDModels;
-using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 using System.Text.Json.Nodes;
+using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataService.Utilities;
 
@@ -13,7 +13,7 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
 
         var stateArrangement = JsonNode.Parse(statePension.RetrievalResult!.GetRawText());
 
-        var earliestComponent = navigator.SelectIllustrationComponent(stateArrangement);
+        var earliestComponent = navigator.SelectIllustrationComponent(stateArrangement, PayableDetailsType.Recurring);
 
         DateTime? spRetirementDate = navigator.SelectRetirementDate(stateArrangement, earliestComponent);
         summary.StatePensionDate = spRetirementDate?.ToString("yyyy-MM-dd");
@@ -36,16 +36,20 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
                 continue;
             }
 
-            var component = navigator.SelectIllustrationComponent(arrangement);
+            var illustrations = navigator.GetIllustrationsByType(arrangement, [PayableDetailsType.Recurring]);
 
-            PayableDetails payableDetails = navigator.GetPayableDetails(component);
-
-            //if the payable date is on or before the state pension date, and the last payment date is on or after the state pension date
-            if (payableDetails.PayableDate?.Year <= spRetirementDate?.Year &&
-                (payableDetails.LastPaymentDate == null || payableDetails.LastPaymentDate?.Year >= spRetirementDate.Value.Year))
+            foreach (var illustration in illustrations)
             {
-                summary.MonthlyTotal += (payableDetails.MonthlyAmount ?? 0m);
-                summary.AnnualTotal += (payableDetails.AnnualAmount ?? 0m);
+                var component = navigator.SelectEarliestIllustrationComponent(illustration);
+                PayableDetails payableDetails = navigator.GetPayableDetails(component);
+
+                //if the payable date is on or before the state pension date, and the last payment date is on or after the state pension date
+                if (payableDetails.PayableDate?.Year <= spRetirementDate?.Year &&
+                    (payableDetails.LastPaymentDate == null || payableDetails.LastPaymentDate?.Year >= spRetirementDate.Value.Year))
+                {
+                    summary.MonthlyTotal += (payableDetails.MonthlyAmount ?? 0m);
+                    summary.AnnualTotal += (payableDetails.AnnualAmount ?? 0m);
+                }
             }
         }
 

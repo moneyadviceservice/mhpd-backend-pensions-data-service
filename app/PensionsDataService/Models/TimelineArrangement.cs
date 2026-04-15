@@ -5,13 +5,13 @@ public class TimelineArrangement
     public DateTime PayableDate { get; init; }
     public int StartYear => PayableDate.Year;
     public int? EndYear { get; init; }
-    public int? LumpSumYear { get; init; }
+    public int? LumpSumYear { get; set; }
     public string Id { get; init; } = string.Empty;
     public string SchemeName { get; init; } = string.Empty;
     public string PensionType { get; init; } = string.Empty;
-    public decimal? MonthlyAmount { get; init; }
-    public decimal? AnnualAmount { get; init; }
-    public decimal? LumpSumAmount { get; init; }
+    public decimal? MonthlyAmount { get; set; }
+    public decimal? AnnualAmount { get; set; }
+    public decimal? LumpSumAmount { get; set; }
 
     public bool IsActiveInYear(int year)
     {

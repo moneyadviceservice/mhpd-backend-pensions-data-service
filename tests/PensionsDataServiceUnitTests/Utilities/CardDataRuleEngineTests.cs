@@ -2,6 +2,7 @@
 using Moq;
 using PensionsDataService.Utilities;
 using System.Text.Json.Nodes;
+using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataServiceUnitTests.Utilities;
 
@@ -21,12 +22,12 @@ public class CardDataRuleEngineTests
         var rr = JsonNode.Parse("{}")!;
         var illustration = JsonNode.Parse("{}")!;
 
-        _navigator.Setup(x => x.SelectIllustrationComponent(rr))
+        _navigator.Setup(x => x.SelectIllustrationComponent(rr, PayableDetailsType.Recurring))
             .Returns(illustration);
 
         _ruleEngine.Evaluate(rr, EvaluationConstants.Category.Confirmed);
 
-        _navigator.Verify(x => x.SelectIllustrationComponent(rr), Times.Once);
+        _navigator.Verify(x => x.SelectIllustrationComponent(rr, PayableDetailsType.Recurring), Times.Once);
         _navigator.Verify(x => x.SelectMonthlyAmount(illustration), Times.Once);
         _navigator.Verify(x => x.SelectUnavailableCode(illustration), Times.Once);
         _navigator.Verify(x => x.SelectRetirementDate(rr, illustration), Times.Once);
@@ -38,12 +39,12 @@ public class CardDataRuleEngineTests
         var rr = JsonNode.Parse("{}")!;
         var illustration = JsonNode.Parse("{}")!;
 
-        _navigator.Setup(x => x.SelectIllustrationComponent(rr))
+        _navigator.Setup(x => x.SelectIllustrationComponent(rr, PayableDetailsType.Recurring))
             .Returns(illustration);
 
         _ruleEngine.Evaluate(rr, EvaluationConstants.Category.Pending);
 
-        _navigator.Verify(x => x.SelectIllustrationComponent(rr), Times.Once);
+        _navigator.Verify(x => x.SelectIllustrationComponent(rr, PayableDetailsType.Recurring), Times.Once);
         _navigator.Verify(x => x.SelectMonthlyAmount(It.IsAny<JsonNode>()), Times.Never);
         _navigator.Verify(x => x.SelectUnavailableCode(It.IsAny<JsonNode>()), Times.Never);
         _navigator.Verify(x => x.SelectRetirementDate(rr, illustration), Times.Once);

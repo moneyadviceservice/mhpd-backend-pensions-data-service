@@ -1,4 +1,5 @@
-﻿using PensionsDataService.Models;
+﻿using MhpdCommon.Models.MHPDModels;
+using PensionsDataService.Models;
 using PensionsDataService.Utilities;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -8,12 +9,11 @@ namespace PensionsDataService.Extensions;
 
 public static partial class RetrievedPensionRecordExtensions
 { 
-    public static JsonNode EnrichDetailData(this JsonNode retrievalResult, IDetailDataRuleEngine ruleEngine)
+    public static JsonNode EnrichDetailData(this RetrievedPensionRecord pension, IDetailDataRuleEngine ruleEngine)
     {
-        ArgumentNullException.ThrowIfNull(retrievalResult);
-        ArgumentNullException.ThrowIfNull(ruleEngine);
+        DetailData detailData = ruleEngine.Evaluate(pension);
 
-        DetailData detailData = ruleEngine.Evaluate(retrievalResult);
+        JsonNode retrievalResult = JsonNode.Parse(pension.RetrievalResult!.GetRawText());
 
         retrievalResult["detailData"] = JsonSerializer.SerializeToNode(detailData, CreateDefaultOptions());
 

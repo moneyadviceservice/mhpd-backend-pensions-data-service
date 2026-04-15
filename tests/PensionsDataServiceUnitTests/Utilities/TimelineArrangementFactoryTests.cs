@@ -15,16 +15,16 @@ public class TimelineArrangementFactoryTests
     }
 
     [Fact]
-    public void Create_Returns_Null_When_HasIncome_IsFalse()
+    public void Create_Returns_Empty_When_HasIncome_IsFalse()
     {
         var pension = new RetrievedPensionRecord
         {
             HasIncome = Boolean.FalseString
         };
 
-        var result = _factory.Create(pension);
+        var result = _factory.CreateAll(pension, false);
 
-        Assert.Null(result);
+        Assert.Empty(result);
     }
 
     [Fact]
@@ -41,6 +41,7 @@ public class TimelineArrangementFactoryTests
               "benefitIllustrations": [
                 {
                   "illustrationDate": "2024-01-01",
+                  "payableDetailsType": "RECURRING",
                   "illustrationComponents": [
                     {
                       "illustrationType": "ERI",
@@ -54,6 +55,7 @@ public class TimelineArrangementFactoryTests
                 },
                 {
                   "illustrationDate": "2020-01-01",
+                  "payableDetailsType": "LUMPSUM",
                   "illustrationComponents": [
                     {
                       "illustrationType": "ERI",
@@ -69,13 +71,19 @@ public class TimelineArrangementFactoryTests
             """).RootElement
         };
 
-        var arrangement = _factory.Create(pension);
+        var arrangements = _factory.CreateAll(pension, true).ToList();
 
-        Assert.NotNull(arrangement);
-        Assert.Equal(1000m, arrangement!.MonthlyAmount);
-        Assert.Equal(12000m, arrangement.AnnualAmount);
-        Assert.Equal(40000m, arrangement.LumpSumAmount);
-        Assert.Equal(2035, arrangement.StartYear);
+        Assert.Equal(2, arrangements.Count);
+        Assert.Equal(1000m, arrangements[0].MonthlyAmount);
+        Assert.Equal(12000m, arrangements[0].AnnualAmount);
+        Assert.Null(arrangements[0].LumpSumAmount);
+        Assert.Null(arrangements[0].LumpSumYear);
+        Assert.Equal(2035, arrangements[0].StartYear);
+
+        Assert.Null(arrangements[1].MonthlyAmount);
+        Assert.Null(arrangements[1].AnnualAmount);
+        Assert.Equal(40000m, arrangements[1].LumpSumAmount);
+        Assert.Equal(2030, arrangements[1].LumpSumYear);
     }
 }
 

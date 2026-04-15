@@ -1,5 +1,6 @@
 ﻿using MhpdCommon.Constants;
 using PensionsDataService.Extensions;
+using PensionsDataService.Models;
 using PensionsDataService.Utilities;
 using System.Text.Json.Nodes;
 
@@ -8,12 +9,16 @@ namespace PensionsDataServiceUnitTests.Utilities;
 public class DetailDataRuleEngineTests
 {
     private readonly IPensionNavigator _navigator;
-    private readonly IDetailDataRuleEngine _engine;
+    private readonly ITimelineArrangementFactory _arrangementFactory;
+    private readonly ITimelineSeriesBuilder _seriesBuilder;
+    private readonly DetailDataRuleEngine _engine;
 
     public DetailDataRuleEngineTests()
     {
         _navigator = new PensionNavigator();
-        _engine = new DetailDataRuleEngine(_navigator);
+        _arrangementFactory = new TimelineArrangementFactory(_navigator);
+        _seriesBuilder = new TimelineSeriesBuilder(_arrangementFactory);
+        _engine = new DetailDataRuleEngine(_navigator, _seriesBuilder);
     }
 
     [Fact]
@@ -21,23 +26,21 @@ public class DetailDataRuleEngineTests
     {
         // Arrange
         var record = TestData.CreateConfirmedPensionWithDetailData();
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        JsonNode arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var detail = arrangement["detailData"];
+        var detail = arrangement[Constants.PensionDetail.DetailData];
         Assert.NotNull(detail);
 
         Assert.Equal("2040-02-01", detail![PensionConstants.RetirementDate]!.GetValue<string>());
-        Assert.Equal("2025-01-01", detail[PensionConstants.IllustrationDate]!.GetValue<string>());
-        Assert.Equal(3200m, detail[PensionConstants.MonthlyAmount]!.GetValue<decimal>());
-        Assert.Equal("2040-02-01", detail[PensionConstants.PayableDate]!.GetValue<string>());
-        Assert.Equal(125000m, detail["potValue"]!.GetValue<decimal>());
-        Assert.Equal(25000m, detail["lumpSumAmount"]!.GetValue<decimal>());
-        Assert.Equal("2040-04-01", detail["lumpSumPayableDate"]!.GetValue<string>());
-        Assert.Equal("DB", detail[PensionConstants.BenefitType]!.GetValue<string>());
+        Assert.Equal(3200m, detail[Constants.PensionDetail.StandardPayment]![PensionConstants.MonthlyAmount]!.GetValue<decimal>());
+        Assert.Equal("2040-02-01", detail[Constants.PensionDetail.StandardPayment]![PensionConstants.PayableDate]!.GetValue<string>());
+        Assert.Equal(125000m, detail[Constants.PensionDetail.StandardPayment]!["potValue"]!.GetValue<decimal>());
+        Assert.Equal(25000m, detail[Constants.PensionDetail.StandardPayment]!["lumpSumAmount"]!.GetValue<decimal>());
+        Assert.Equal("2040-04-01", detail[Constants.PensionDetail.StandardPayment]!["lumpSumPayableDate"]!.GetValue<string>());
+        Assert.Equal("DB", detail[Constants.PensionDetail.StandardPayment]![PensionConstants.BenefitType]!.GetValue<string>());
     }
 
     [Fact]
@@ -45,13 +48,12 @@ public class DetailDataRuleEngineTests
     {
         // Arrange
         var record = TestData.CreateConfirmedPensionWithDetailData();
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        var arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var warningsNode = arrangement["detailData"]!["warnings"]!.AsArray();
+        var warningsNode = arrangement[Constants.PensionDetail.DetailData]!["warnings"]!.AsArray();
 
         var warnings = ((IEnumerable<JsonNode?>)warningsNode)
             .Select(w => w!.GetValue<string>())
@@ -67,26 +69,22 @@ public class DetailDataRuleEngineTests
     {
         // Arrange
         var record = TestData.CreatePensionWithoutLumpSum();
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        var arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var detail = arrangement["detailData"];
+        var detail = arrangement[Constants.PensionDetail.DetailData];
         Assert.NotNull(detail);
 
         Assert.NotNull(detail[PensionConstants.RetirementDate]);
-        Assert.NotNull(detail[PensionConstants.MonthlyAmount]);
-        Assert.NotNull(detail[PensionConstants.BenefitType]);
-        Assert.NotNull(detail[PensionConstants.IllustrationDate]);
-        Assert.NotNull(detail[PensionConstants.PayableDate]);
-        Assert.Null(detail["potValue"]);
-        Assert.Null(detail["lumpSumAmount"]);
-        Assert.Equal("NEW", detail["unavailableCode"]!.GetValue<string>());
-        Assert.NotNull(detail["warnings"]);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
-        Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);
+        Assert.NotNull(detail[Constants.PensionDetail.StandardPayment]![PensionConstants.MonthlyAmount]);
+        Assert.NotNull(detail[Constants.PensionDetail.StandardPayment]![PensionConstants.BenefitType]);
+        Assert.NotNull(detail[Constants.PensionDetail.StandardPayment]![PensionConstants.PayableDate]);
+        Assert.Null(detail[Constants.PensionDetail.StandardPayment]!["potValue"]);
+        Assert.Null(detail[Constants.PensionDetail.StandardPayment]!["lumpSumAmount"]);
+        Assert.Equal("NEW", detail[Constants.PensionDetail.UnavailableReasonCodes]![0]!.GetValue<string>());
+        Assert.Null(detail[Constants.PensionDetail.Warnings]);
     }
 
     [Fact]
@@ -94,85 +92,84 @@ public class DetailDataRuleEngineTests
     {
         // Arrange
         var record = TestData.CreatePensionWithoutIllustrations();
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        var arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var detail = arrangement["detailData"];
+        var detail = arrangement[Constants.PensionDetail.DetailData];
         Assert.NotNull(detail);
-        Assert.Null(detail[PensionConstants.RetirementDate]);
-        Assert.Null(detail[PensionConstants.MonthlyAmount]);
-        Assert.Null(detail[PensionConstants.BenefitType]);
-        Assert.Null(detail[PensionConstants.IllustrationDate]);
-        Assert.Null(detail[PensionConstants.PayableDate]);
-        Assert.Null(detail["potValue"]);
-        Assert.Null(detail["lumpSumAmount"]);
-        Assert.Null(detail["unavailableCode"]);
-        Assert.NotNull(detail["warnings"]);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
-        Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);
+        Assert.NotNull(detail[PensionConstants.RetirementDate]);
+        Assert.Null(detail[Constants.PensionDetail.StandardPayment]);
+        Assert.Null(detail[Constants.PensionDetail.Warnings]);
+        Assert.Null(detail[Constants.PensionDetail.UnavailableReasonCodes]);
     }
 
     [Fact]
-    public void EnrichDetailData_PensionIsDCType_EnrichesWithBarAndDonutChartData()
+    public void EnrichDetailData_PensionIsDCType_EnrichesWithIncomeTimeline()
     {
         // Arrange
         var record = TestData.CreateDCPension();
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        var arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var detail = arrangement["detailData"];
+        var detail = arrangement[Constants.PensionDetail.DetailData];
         Assert.NotNull(detail);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["donut"]);
+        Assert.Equal(2038, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.StandardIncome]?[0]?["year"]!.GetValue<int>());
+        Assert.Equal(3000, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.StandardIncome]?[0]?["monthlyAmount"]!.GetValue<decimal>());
+        Assert.Equal(36000, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.StandardIncome]?[0]?["annualAmount"]!.GetValue<decimal>());
     }
 
     [Fact]
-    public void EnrichDetailData_PensionIsAVCTYpe_EnrichesWithBarAndDonutChartData()
+    public void EnrichDetailData_PensionIsAVCType_EnrichesWithDetailAndTimeline()
     {
         // Arrange
         var record = TestData.CreateAVCPension();
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        var arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var detail = arrangement["detailData"];
+        var detail = arrangement[Constants.PensionDetail.DetailData];
         Assert.NotNull(detail);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["donut"]);
+        Assert.Equal("SML", detail[Constants.PensionDetail.UnavailableReasonCodes]?[0]?.GetValue<string>());
     }
 
-    [Theory]
-    [InlineData("DB", false)]
-    [InlineData("DC", true)]
-    public void EnrichDetailData_PensionIsHYBTYpe_EnrichesWithBarAndDonutChartData(string benefitType, bool shouldHaveDonut)
+    [Fact]
+    public void EnrichDetailData_PensionIsMcCloud_EnrichesWithDetailAndTimeline()
     {
         // Arrange
-        var record = TestData.CreateHYBPension(benefitType);
-        JsonNode arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
+        var record = TestData.CreateMcCloudPension();
 
         // Act
-        arrangement.EnrichDetailData(_engine);
+        var arrangement = record.EnrichDetailData(_engine);
 
         // Assert
-        var detail = arrangement["detailData"];
+        var detail = arrangement[Constants.PensionDetail.DetailData];
         Assert.NotNull(detail);
-        Assert.NotNull(detail["incomeAndValues"]?[0]?["bar"]);
+        Assert.Null(detail[Constants.PensionDetail.StatePayment]);
+        Assert.Null(detail[Constants.PensionDetail.StandardPayment]);
+        Assert.NotNull(detail[Constants.PensionDetail.LegacyPayment]);
+        Assert.NotNull(detail[Constants.PensionDetail.AlternativePayment]);
 
-        if (shouldHaveDonut)
-        {
-            Assert.NotNull(detail["incomeAndValues"]?[0]?["donut"]);
-        }
-        else
-        {
-            Assert.Null(detail["incomeAndValues"]?[0]?["donut"]);
-        }
+        Assert.Null(detail[Constants.PensionDetail.IncomeAndValues]?[Constants.PensionDetail.StandardIncome]);
+        Assert.NotNull(detail[Constants.PensionDetail.IncomeAndValues]?[Constants.PensionDetail.LegacyIncome]);
+        Assert.NotNull(detail[Constants.PensionDetail.IncomeAndValues]?[Constants.PensionDetail.AlternativeIncome]);
+
+        Assert.Equal(2038, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.LegacyIncome]?[0]?["year"]!.GetValue<int>());
+        Assert.Equal(2040, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.LegacyIncome]?[1]?["year"]!.GetValue<int>());
+        Assert.Equal(3000, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.LegacyIncome]?[0]?["monthlyAmount"]!.GetValue<decimal>());
+        Assert.Equal(7000, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.LegacyIncome]?[1]?["monthlyAmount"]!.GetValue<decimal>());
+        Assert.Equal(6000, detail[Constants.PensionDetail.IncomeAndValues]?
+            [Constants.PensionDetail.AlternativeIncome]?[1]?["monthlyAmount"]!.GetValue<decimal>());
     }
 }

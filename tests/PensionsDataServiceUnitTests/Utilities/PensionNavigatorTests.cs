@@ -1,5 +1,6 @@
 ﻿using PensionsDataService.Utilities;
 using System.Text.Json.Nodes;
+using static MhpdCommon.ViewData.EvaluationConstants;
 
 namespace PensionsDataServiceUnitTests.Utilities;
 
@@ -8,19 +9,31 @@ public class PensionNavigatorTests
     private readonly PensionNavigator _navigator = new();
 
     [Fact]
-    public void SelectLatestIllustration_PicksLatestByDate()
+    public void SelectIllustration_PicksByEarliestPayableDate()
     {
         var node = JsonNode.Parse("""
         {
           "benefitIllustrations": [
-            { "illustrationDate": "2020-01-01" },
-            { "illustrationDate": "2024-01-01" },
-            { "illustrationDate": "2022-01-01" }
+            { "illustrationDate": "2020-01-01", "payableDetailsType": "RECURRING",
+                "illustrationComponents": [
+                    { "illustrationType": "ERI", "payableDetails": { "payableDate": "2032-01-01" }}
+                ]
+            },
+            { "illustrationDate": "2024-01-01", "payableDetailsType": "RECURRING",
+                    "illustrationComponents": [
+                    { "illustrationType": "ERI", "payableDetails": { "payableDate": "2031-01-01" }}
+                ]
+            },
+            { "illustrationDate": "2022-01-01", "payableDetailsType": "RECURRING",
+                    "illustrationComponents": [
+                    { "illustrationType": "ERI", "payableDetails": { "payableDate": "2033-01-01" }}
+                ]
+            }
           ]
         }
         """)!;
 
-        var illustration = _navigator.SelectLatestIllustration(node);
+        var illustration = _navigator.SelectIllustrationByPayableType(node, PayableDetailsType.Recurring);
         var result = illustration!["illustrationDate"]!.GetValue<string>();
 
         Assert.Equal("2024-01-01", result);
@@ -32,13 +45,13 @@ public class PensionNavigatorTests
         var node = JsonNode.Parse("""
         {
           "benefitIllustrations": [
-            { "illustrationDate": "2024-01-01", "id": 1 },
-            { "illustrationDate": "2024-01-01", "id": 2 }
+            { "illustrationDate": "2024-01-01", "id": 1, "payableDetailsType": "RECURRING" },
+            { "illustrationDate": "2024-01-01", "id": 2, "payableDetailsType": "RECURRING" }
           ]
         }
         """)!;
 
-        var illustration = _navigator.SelectLatestIllustration(node);
+        var illustration = _navigator.SelectIllustrationByPayableType(node, PayableDetailsType.Recurring);
         var result = illustration!["id"]!.GetValue<int>();
 
         Assert.Equal(1, result);
@@ -50,16 +63,16 @@ public class PensionNavigatorTests
         var node = JsonNode.Parse("""
         {
           "benefitIllustrations": [
-            { "foo": "bar" },
-            { "baz": "qux" }
+            { "id": 2, "payableDetailsType": "RECURRING" },
+            { "id": 3, "payableDetailsType": "RECURRING" }
           ]
         }
         """)!;
 
-        var illustration = _navigator.SelectLatestIllustration(node);
-        var result = illustration!["foo"]!.GetValue<string>();
+        var illustration = _navigator.SelectIllustrationByPayableType(node, PayableDetailsType.Recurring);
+        var result = illustration!["id"]!.GetValue<int>();
 
-        Assert.Equal("bar", result);
+        Assert.Equal(2, result);
     }
 
     [Fact]
@@ -69,7 +82,7 @@ public class PensionNavigatorTests
         { "benefitIllustrations": [] }
         """)!;
 
-        var result = _navigator.SelectLatestIllustration(node);
+        var result = _navigator.SelectIllustrationByPayableType(node, PayableDetailsType.Recurring);
 
         Assert.Null(result);
     }
@@ -79,17 +92,18 @@ public class PensionNavigatorTests
     {
         var node = JsonNode.Parse("""
         {
+          "payableDetailsType": "RECURRING",
           "illustrationComponents": [
             { "illustrationType": "ERI", "payableDetails": { "payableDate": "2035-01-01" }},
-            { "illustrationType": "ERI", "payableDetails": { "payableDate": "2030-01-01" }},
+            { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01" }},
             { "illustrationType": "ERI", "payableDetails": { "payableDate": "2040-01-01" }}
           ]
         }
         """)!;
 
-        var component = _navigator.SelectEarliestComponent(node, "ERI");
+        var component = _navigator.SelectEarliestIllustrationComponent(node);
         var result = component!["payableDetails"]!["payableDate"]!.GetValue<string>();
-        Assert.Equal("2030-01-01", result);
+        Assert.Equal("2035-01-01", result);
     }
 
     [Fact]
@@ -98,15 +112,19 @@ public class PensionNavigatorTests
         var node = JsonNode.Parse("""
         {
           "benefitIllustrations": [
-            { "illustrationDate": "2024-01-01", "illustrationComponents": [
+            {
+              "illustrationDate": "2024-01-01",
+              "payableDetailsType": "RECURRING",
+              "illustrationComponents": [
                 { "illustrationType": "ERI", "id": 1, "payableDetails": { "payableDate": "2030-01-01" }},
                 { "illustrationType": "ERI", "id": 2, "payableDetails": { "payableDate": "2030-01-01" }}
-            ] }
+              ]
+            }
           ]
         }
         """)!;
 
-        var component = _navigator.SelectIllustrationComponent(node);
+        var component = _navigator.SelectIllustrationComponent(node, PayableDetailsType.Recurring);
         var result = component!["id"]!.GetValue<int>();
         Assert.Equal(1, result);
     }
@@ -117,15 +135,19 @@ public class PensionNavigatorTests
         var node = JsonNode.Parse("""
         {
           "benefitIllustrations": [
-            { "illustrationDate": "2024-01-01", "illustrationComponents": [
-                { "illustrationType": "ERI", "unavailableReason": "DB", "payableDetails": { "payableDate": "2030-01-01" }},
-                { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01", "monthlyAmount": 24000 }}
-            ] }
+            {
+                "illustrationDate": "2024-01-01",
+                "payableDetailsType": "RECURRING",
+                "illustrationComponents": [
+                    { "illustrationType": "ERI", "unavailableReason": "DB", "payableDetails": { "payableDate": "2030-01-01" }},
+                    { "illustrationType": "AP", "payableDetails": { "payableDate": "2030-01-01", "monthlyAmount": 24000 }}
+                ]
+            }
           ]
         }
         """)!;
 
-        var component = _navigator.SelectIllustrationComponent(node);
+        var component = _navigator.SelectIllustrationComponent(node, PayableDetailsType.Recurring);
         var result = component!["illustrationType"]!.GetValue<string>();
         Assert.Equal("AP", result);
     }
@@ -142,7 +164,7 @@ public class PensionNavigatorTests
         }
         """)!;
 
-        var component = _navigator.SelectEarliestComponent(node, "ERI");
+        var component = _navigator.SelectComponentByType(node, "ERI");
         var result = component!["id"]!.GetValue<int>();
         Assert.Equal(1, result);
     }
@@ -158,7 +180,7 @@ public class PensionNavigatorTests
         }
         """)!;
 
-        var result = _navigator.SelectEarliestComponent(node, "ERI");
+        var result = _navigator.SelectComponentByType(node, "ERI");
 
         Assert.Null(result);
     }
@@ -210,6 +232,7 @@ public class PensionNavigatorTests
           "benefitIllustrations": [
             {
               "illustrationDate": "2023-01-01",
+              "payableDetailsType": "LUMPSUM",
               "illustrationComponents": [
                 {
                   "illustrationType": "ERI",
@@ -222,6 +245,7 @@ public class PensionNavigatorTests
             },
             {
               "illustrationDate": "2020-01-01",
+              "payableDetailsType": "LUMPSUM",
               "illustrationComponents": [
                 {
                   "illustrationType": "ERI",
@@ -236,7 +260,7 @@ public class PensionNavigatorTests
         }
         """)!;
 
-        var component = _navigator.SelectEarliestLumpSumComponent(json, "ERI");
+        var component = _navigator.SelectIllustrationComponent(json, PayableDetailsType.LumpSum);
 
         Assert.NotNull(component);
         Assert.Equal(30000m, _navigator.SelectLumpSumAmount(component));

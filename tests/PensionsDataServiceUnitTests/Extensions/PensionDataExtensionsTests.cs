@@ -64,8 +64,8 @@ public class PensionDataExtensionsTests
         response.EnrichSummaryData(pensions, Category.Confirmed, _engine);
 
         Assert.NotNull(response.SummaryData);
-        Assert.Equal(1500, response.SummaryData!.MonthlyTotal);
-        Assert.Equal(18000, response.SummaryData.AnnualTotal);
+        Assert.Equal(1500, response.SummaryData!.StandardPayment!.MonthlyAmount);
+        Assert.Equal(18000, response.SummaryData.StandardPayment.AnnualAmount);
         Assert.Equal("2035-01-01", response.SummaryData.StatePensionDate);
     }
 
@@ -88,8 +88,8 @@ public class PensionDataExtensionsTests
         response.EnrichSummaryData(pensions, Category.Confirmed, _engine);
 
         Assert.NotNull(response.SummaryData);
-        Assert.Equal(500, response.SummaryData!.MonthlyTotal);
-        Assert.Equal(6000, response.SummaryData.AnnualTotal);
+        Assert.Equal(500, response.SummaryData!.StandardPayment!.MonthlyAmount);
+        Assert.Equal(6000, response.SummaryData.StandardPayment.AnnualAmount);
         Assert.Equal("2035-01-01", response.SummaryData.StatePensionDate);
     }
 
@@ -98,7 +98,7 @@ public class PensionDataExtensionsTests
     {
         var statePension = CreatePension(Constants.PensionTypes.SP, "2035-01-01");
         var pension1 = CreatePension("DC", "2030-01-01", "2040-01-01", 1000, 12000);
-        var pension2 = CreatePension("DC", "2034-01-01", "2050-01-01", 500, 6000, Boolean.FalseString);
+        var pension2 = CreatePension("DC", "2034-01-01", "2050-01-01", 500, 6000, false);
 
         var pensions = new List<RetrievedPensionRecord>
         {
@@ -112,8 +112,8 @@ public class PensionDataExtensionsTests
         response.EnrichSummaryData(pensions, Category.Confirmed, _engine);
 
         Assert.NotNull(response.SummaryData);
-        Assert.Equal(1000, response.SummaryData!.MonthlyTotal);
-        Assert.Equal(12000, response.SummaryData.AnnualTotal);
+        Assert.Equal(1000, response.SummaryData!.StandardPayment!.MonthlyAmount);
+        Assert.Equal(12000, response.SummaryData.StandardPayment.AnnualAmount);
         Assert.Equal("2035-01-01", response.SummaryData.StatePensionDate);
     }
 
@@ -176,8 +176,8 @@ public class PensionDataExtensionsTests
         response.EnrichSummaryData(pensions, Category.Confirmed, _engine);
 
         Assert.NotNull(response.SummaryData);
-        Assert.Equal(0, response.SummaryData!.MonthlyTotal);
-        Assert.Equal(0, response.SummaryData.AnnualTotal);
+        Assert.Equal(0, response.SummaryData!.StandardPayment!.MonthlyAmount);
+        Assert.Equal(0, response.SummaryData.StandardPayment.AnnualAmount);
     }
 
     private static RetrievedPensionRecord CreatePension(
@@ -186,7 +186,7 @@ public class PensionDataExtensionsTests
         string? lastPaymentDate = null,
         decimal? monthlyAmount = null,
         decimal? annualAmount = null,
-        string hasIncome = "True",
+        bool hasIncome = true,
         string category = Category.Confirmed)
     {
         var component = new JsonObject
@@ -202,7 +202,10 @@ public class PensionDataExtensionsTests
             component[PensionConstants.PayableDetails]![PensionConstants.LastPaymentDate] = lastPaymentDate;
 
         if (monthlyAmount.HasValue)
+        {
             component[PensionConstants.PayableDetails]![PensionConstants.MonthlyAmount] = monthlyAmount.Value;
+            component[PensionConstants.PayableDetails]![PensionConstants.AmountType] = AmountType.INC;
+        }
 
         if (annualAmount.HasValue)
             component[PensionConstants.PayableDetails]![PensionConstants.AnnualAmount] = annualAmount.Value;

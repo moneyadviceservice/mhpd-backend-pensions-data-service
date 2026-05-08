@@ -15,7 +15,7 @@ internal static class TestData
                 Id = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -44,7 +44,7 @@ internal static class TestData
                 Id = "P2",
                 SchemeName = "Second Scheme",
                 PensionType = "DB",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -79,7 +79,7 @@ internal static class TestData
                 Id = "LS1",
                 SchemeName = "Lump Sum Scheme",
                 PensionType = "DB",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -122,7 +122,7 @@ internal static class TestData
                 Id = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -158,7 +158,7 @@ internal static class TestData
                 Id = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -188,7 +188,7 @@ internal static class TestData
                 Id = "P2",
                 SchemeName = "Second Scheme",
                 PensionType = "DC",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -217,7 +217,7 @@ internal static class TestData
                 Id = "LS1",
                 SchemeName = "Lump Sum Scheme",
                 PensionType = "DB",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {
@@ -274,7 +274,7 @@ internal static class TestData
                 Id = "SP",
                 SchemeName = "State Pension",
                 PensionType = "SP",
-                HasIncome = Boolean.TrueString,
+                HasIncome = true,
                 Category = Category.Confirmed,
                 RetrievalResult = JsonDocument.Parse("""
                 {

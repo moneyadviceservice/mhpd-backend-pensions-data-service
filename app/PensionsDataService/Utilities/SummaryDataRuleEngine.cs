@@ -1,4 +1,5 @@
 ﻿using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 using System.Text.Json.Nodes;
 using static MhpdCommon.ViewData.EvaluationConstants;
@@ -9,50 +10,89 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
 {
     public SummaryData Evaluate(RetrievedPensionRecord statePension, IEnumerable<RetrievedPensionRecord> pensions)
     {
-        var summary = new SummaryData();
-
         var stateArrangement = JsonNode.Parse(statePension.RetrievalResult!.GetRawText());
-
         var earliestComponent = navigator.SelectIllustrationComponent(stateArrangement, PayableDetailsType.Recurring);
-
         DateTime? spRetirementDate = navigator.SelectRetirementDate(stateArrangement, earliestComponent);
-        summary.StatePensionDate = spRetirementDate?.ToString("yyyy-MM-dd");
 
-        if (summary.StatePensionDate == null)
+        if (spRetirementDate == null)
         {
-            return summary;
+            return new SummaryData();
         }
 
-        foreach (var pension in pensions)
+        var summary = new SummaryData 
+        { 
+            StatePensionDate = spRetirementDate.Value.ToString("yyyy-MM-dd") 
+        };
+
+        var activePayments = GetActivePayableDetails(pensions, spRetirementDate.Value).ToList();
+
+        var standardPayment = new PensionPayment { MonthlyAmount = 0, AnnualAmount = 0 };
+        var legacyPayment = new PensionPayment { MonthlyAmount = 0, AnnualAmount = 0 };
+        var alternativePayment = new PensionPayment{ MonthlyAmount = 0, AnnualAmount = 0 };
+        var hasMcCloudPension = false;
+
+        foreach (var details in activePayments)
         {
-            if(pension.HasIncome == Boolean.FalseString)
+            var type = details.PaymentType;
+
+            if (type == PensionEnums.PayableDetailsType.Recurring)
             {
-                continue;
+                Accumulate(standardPayment, details);
+                Accumulate(legacyPayment, details);
+                Accumulate(alternativePayment, details);
             }
-
-            JsonNode? arrangement = JsonNode.Parse(pension.RetrievalResult!.GetRawText());
-            if (arrangement == null)
+            else if (type == PensionEnums.PayableDetailsType.RecurringLegacy)
             {
-                continue;
+                hasMcCloudPension = true;
+                Accumulate(legacyPayment, details);
             }
-
-            var illustrations = navigator.GetIllustrationsByType(arrangement, [PayableDetailsType.Recurring]);
-
-            foreach (var illustration in illustrations)
+            else if (type == PensionEnums.PayableDetailsType.RecurringNew)
             {
-                var component = navigator.SelectEarliestIllustrationComponent(illustration);
-                PayableDetails payableDetails = navigator.GetPayableDetails(component);
-
-                //if the payable date is on or before the state pension date, and the last payment date is on or after the state pension date
-                if (payableDetails.PayableDate?.Year <= spRetirementDate?.Year &&
-                    (payableDetails.LastPaymentDate == null || payableDetails.LastPaymentDate?.Year >= spRetirementDate.Value.Year))
-                {
-                    summary.MonthlyTotal += (payableDetails.MonthlyAmount ?? 0m);
-                    summary.AnnualTotal += (payableDetails.AnnualAmount ?? 0m);
-                }
+                hasMcCloudPension = true;
+                Accumulate(alternativePayment, details);
             }
+        }
+
+        if (hasMcCloudPension)
+        {
+            summary.LegacyPayment = legacyPayment.HasAnyValues ? legacyPayment : null;
+            summary.AlternativePayment = alternativePayment.HasAnyValues ? alternativePayment : null;
+        }
+        else
+        {
+            summary.StandardPayment = standardPayment.HasAnyValues ? standardPayment : null;
         }
 
         return summary;
+    }
+
+    private IEnumerable<PayableDetails> GetActivePayableDetails(IEnumerable<RetrievedPensionRecord> pensions, DateTime spDate)
+    {
+        var targetTypes = new[] {
+        PayableDetailsType.Recurring,
+        PayableDetailsType.RecurringLegacy,
+        PayableDetailsType.RecurringNew
+    };
+
+        return pensions
+            .Where(p => p.HasIncome)
+            .Select<RetrievedPensionRecord, JsonNode?>(p => JsonNode.Parse(p.RetrievalResult!.GetRawText()))
+            .Where(node => node != null)
+            .SelectMany(node => navigator.GetIllustrationsByType(node!, targetTypes))
+            .Select(illustration => navigator.SelectEarliestIllustrationComponent(illustration))
+            .Select(component => navigator.GetPayableDetails(component))
+            .Where(details => IsActiveAtRetirement(details, spDate));
+    }
+
+    private static bool IsActiveAtRetirement(PayableDetails details, DateTime spDate)
+    {
+        return details.PayableDate?.Year <= spDate.Year &&
+               (details.LastPaymentDate == null || details.LastPaymentDate?.Year >= spDate.Year);
+    }
+
+    private static void Accumulate(PensionPayment total, PayableDetails details)
+    {
+        total.MonthlyAmount += (details.MonthlyAmount ?? 0m);
+        total.AnnualAmount += (details.AnnualAmount ?? 0m);
     }
 }

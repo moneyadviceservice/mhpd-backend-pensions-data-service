@@ -41,7 +41,7 @@ public static partial class RetrievedPensionRecordExtensions
                         [PensionConstants.SchemeName] = record.SchemeName,
                         [PensionConstants.PensionType] = record.PensionType,
                         [PensionConstants.PensionCategory] = record.Category,
-                        [PensionConstants.HasIncome] = bool.TryParse(record.HasIncome, out var hasIncome) && hasIncome
+                        [PensionConstants.HasIncome] = record.HasIncome
                     }
                 };
             }).ToList()

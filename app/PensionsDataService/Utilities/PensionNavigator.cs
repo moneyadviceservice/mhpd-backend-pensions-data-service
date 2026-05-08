@@ -3,6 +3,7 @@ using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 using System.Globalization;
 using System.Text.Json.Nodes;
+using static MhpdCommon.ViewData.PensionEnums;
 
 namespace PensionsDataService.Utilities;
 
@@ -131,7 +132,7 @@ public class PensionNavigator : IPensionNavigator
 
         var components = illustrations.Select(illustration =>
         {
-            return SelectComponentByType(illustration, EvaluationConstants.IllustrationType.Estimated)!;
+            return SelectEarliestIllustrationComponent(illustration)!;
         }).ToList();
 
         return components;
@@ -179,7 +180,8 @@ public class PensionNavigator : IPensionNavigator
             LastPaymentDate = SelectLastPaymentDate(component),
             IsIncreasing = SelectIncreasing(component),
             BenefitType = SelectBenefitType(component),
-            AmountNotProvidedReason = SelectAmountNotProvidedReason(component)
+            AmountNotProvidedReason = SelectAmountNotProvidedReason(component),
+            PaymentType = SelectPaymentType(component)
         };
     }
 
@@ -285,5 +287,21 @@ public class PensionNavigator : IPensionNavigator
     private static bool? SelectBooleanProperty(JsonNode? node, string propertyName)
     {
         return node?[propertyName]?.GetValue<bool>();
+    }
+
+    public static PayableDetailsType SelectPaymentType(JsonNode? component)
+    {
+        var amountType = component?[PensionConstants.PayableDetails]?[PensionConstants.AmountType]?.GetValue<string>();
+
+        return amountType switch
+        {
+            EvaluationConstants.AmountType.INC => PayableDetailsType.Recurring,
+            EvaluationConstants.AmountType.INCL => PayableDetailsType.RecurringLegacy,
+            EvaluationConstants.AmountType.INCN => PayableDetailsType.RecurringNew,
+            EvaluationConstants.AmountType.CSH => PayableDetailsType.LumpSum,
+            EvaluationConstants.AmountType.CSHL => PayableDetailsType.LumpSumLegacy,
+            EvaluationConstants.AmountType.CSHN => PayableDetailsType.LumpSumNew,
+            _ => PayableDetailsType.None,
+        };
     }
 }

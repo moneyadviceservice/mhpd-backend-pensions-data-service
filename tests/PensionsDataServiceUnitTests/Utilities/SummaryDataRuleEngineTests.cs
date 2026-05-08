@@ -73,8 +73,54 @@ public class SummaryDataRuleEngineTests
 
         var result = _engine.Evaluate(statePension, pensions);
 
-        Assert.Equal(2400, result.MonthlyTotal);
-        Assert.Equal(27600, result.AnnualTotal);
+        Assert.Equal(2400, result.StandardPayment!.MonthlyAmount);
+        Assert.Equal(27600, result.StandardPayment.AnnualAmount);
+        Assert.Null(result.LegacyPayment);
+        Assert.Null(result.AlternativePayment);
+    }
+
+    [Fact]
+    public void Evaluate_ShouldCreateLegacyAndNewPayments_WhenHasMcCloudPension()
+    {
+        var statePension = CreatePension(
+            pensionType: Constants.PensionTypes.SP,
+            payableDate: "2035-01-01");
+
+        var pension1 = CreatePension(
+            payableDate: "2034-01-01",
+            lastPaymentDate: "2040-01-01",
+            monthlyAmount: 1000,
+            annualAmount: 12000);
+
+        var pension2 = CreatePension(
+            payableDate: "2035-01-01",
+            lastPaymentDate: "2050-01-01",
+            monthlyAmount: 500,
+            annualAmount: 6000);
+
+        var mcCloudPension = CreateMultiplicityPension(
+        [
+            new(PayableDetailsType.RecurringNew, 300, 3600, "2033-01-01"),
+            new(PayableDetailsType.LumpSumNew, 400, 3600, "2034-01-01"),
+            new(PayableDetailsType.RecurringLegacy, 500, 6000, "2035-01-01"),
+            new(PayableDetailsType.LumpSumLegacy, 600, 7200, "2036-01-01"),
+        ]);
+
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            statePension,
+            pension1,
+            pension2,
+            mcCloudPension
+        };
+
+        var result = _engine.Evaluate(statePension, pensions);
+
+        Assert.Equal(2000, result.LegacyPayment!.MonthlyAmount);
+        Assert.Equal(24000, result.LegacyPayment.AnnualAmount);
+        Assert.Equal(1800, result.AlternativePayment!.MonthlyAmount);
+        Assert.Equal(21600, result.AlternativePayment.AnnualAmount);
+        Assert.Null(result.StandardPayment);
     }
 
     [Fact]
@@ -98,8 +144,8 @@ public class SummaryDataRuleEngineTests
 
         var result = _engine.Evaluate(statePension, pensions);
 
-        Assert.Equal(0, result.MonthlyTotal);
-        Assert.Equal(0, result.AnnualTotal);
+        Assert.Equal(0, result.StandardPayment!.MonthlyAmount);
+        Assert.Equal(0, result.StandardPayment.AnnualAmount);
     }
 
     [Fact]
@@ -123,8 +169,8 @@ public class SummaryDataRuleEngineTests
 
         var result = _engine.Evaluate(statePension, pensions);
 
-        Assert.Equal(0, result.MonthlyTotal);
-        Assert.Equal(0, result.AnnualTotal);
+        Assert.Equal(0, result.StandardPayment!.MonthlyAmount);
+        Assert.Equal(0, result.StandardPayment.AnnualAmount);
     }
 
     [Fact]
@@ -148,8 +194,8 @@ public class SummaryDataRuleEngineTests
 
         var result = _engine.Evaluate(statePension, pensions);
 
-        Assert.Equal(0, result.MonthlyTotal);
-        Assert.Equal(0, result.AnnualTotal);
+        Assert.Equal(0, result.StandardPayment!.MonthlyAmount);
+        Assert.Equal(0, result.StandardPayment.AnnualAmount);
     }
 
     [Fact]
@@ -174,8 +220,7 @@ public class SummaryDataRuleEngineTests
         var result = _engine.Evaluate(statePension, pensions);
 
         Assert.Null(result.StatePensionDate);
-        Assert.Equal(0, result.MonthlyTotal);
-        Assert.Equal(0, result.AnnualTotal);
+        Assert.Null(result.StandardPayment);
     }
 
     // ---------------------------
@@ -209,6 +254,7 @@ public class SummaryDataRuleEngineTests
         if (monthlyAmount.HasValue)
         {
             component[PensionConstants.PayableDetails]![PensionConstants.MonthlyAmount] = monthlyAmount.Value;
+            component[PensionConstants.PayableDetails]![PensionConstants.AmountType] = AmountType.INC;
         }
 
         if (annualAmount.HasValue)
@@ -225,12 +271,17 @@ public class SummaryDataRuleEngineTests
 
         var root = new JsonObject
         {
+            [PensionConstants.PensionType] = pensionType,
+            [PensionConstants.HasIncome] = true,
+            [PensionConstants.HasMultipleIncomeOptions] = false,
             [PensionConstants.BenefitIllustrations] = new JsonArray(illustration)
         };
 
         return new RetrievedPensionRecord
         {
             PensionType = pensionType,
+            HasIncome = monthlyAmount.HasValue,
+            IsMcCloudPension = false,
             RetrievalResult = JsonSerializer.SerializeToElement(root)
         };
     }
@@ -258,6 +309,17 @@ public class SummaryDataRuleEngineTests
             if (data.MonthlyAmount.HasValue)
             {
                 component[PensionConstants.PayableDetails]![PensionConstants.MonthlyAmount] = data.MonthlyAmount.Value;
+                var amountType = data.PayableDetailsType switch
+                {
+                    PayableDetailsType.Recurring => AmountType.INC,
+                    PayableDetailsType.LumpSum => AmountType.CSH,
+                    PayableDetailsType.RecurringNew => AmountType.INCN,
+                    PayableDetailsType.LumpSumNew => AmountType.CSHN,
+                    PayableDetailsType.RecurringLegacy => AmountType.INCL,
+                    PayableDetailsType.LumpSumLegacy => AmountType.CSHL,
+                    _ => AmountType.INC
+                };
+            component[PensionConstants.PayableDetails]![PensionConstants.AmountType] = amountType;
             }
 
             if (data.AnnualAmount.HasValue)
@@ -281,7 +343,8 @@ public class SummaryDataRuleEngineTests
         return new RetrievedPensionRecord
         {
             PensionType = PensionEnums.PensionType.DB.GetDisplayValue(),
-            RetrievalResult = JsonSerializer.SerializeToElement(root)
+            RetrievalResult = JsonSerializer.SerializeToElement(root),
+            HasIncome = true
         };
     }
 }

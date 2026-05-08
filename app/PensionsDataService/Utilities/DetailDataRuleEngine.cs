@@ -11,10 +11,30 @@ namespace PensionsDataService.Utilities;
 public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineSeriesBuilder builder)
     : IDetailDataRuleEngine
 {
-    private static List<string?> PayableTypes = [
+    private static readonly List<string?> AllPayableTypes = [
             PayableDetailsType.RecurringLegacy,
             PayableDetailsType.RecurringNew,
             PayableDetailsType.LumpSumLegacy,
+            PayableDetailsType.LumpSumNew,
+            PayableDetailsType.Recurring,
+            PayableDetailsType.LumpSum,
+            PayableDetailsType.None,
+            PayableDetailsType.NoPayment,
+            null
+        ];
+
+    private static readonly List<string?> LegacyPayableTypes = [
+            PayableDetailsType.RecurringLegacy,
+            PayableDetailsType.LumpSumLegacy,
+            PayableDetailsType.Recurring,
+            PayableDetailsType.LumpSum,
+            PayableDetailsType.None,
+            PayableDetailsType.NoPayment,
+            null
+        ];
+
+    private static readonly List<string?> AlternativePayableTypes = [
+            PayableDetailsType.RecurringNew,
             PayableDetailsType.LumpSumNew,
             PayableDetailsType.Recurring,
             PayableDetailsType.LumpSum,
@@ -41,7 +61,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
             RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent))
         };
 
-        var allIllustrations = navigator.GetIllustrationsByType(retrievalResult, PayableTypes);
+        var allIllustrations = navigator.GetIllustrationsByType(retrievalResult, AllPayableTypes);
 
         // Payable details information
         if (pensionProperties.PensionType == PensionEnums.PensionType.SP.GetDisplayValue())
@@ -55,16 +75,18 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
             var incnIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.RecurringNew);
             var cshlIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.LumpSumLegacy);
             var cshnIllustration = navigator.SelectIllustrationByPayableType(retrievalResult, PayableDetailsType.LumpSumNew);
+            var legacyIllustrations = navigator.GetIllustrationsByType(retrievalResult, LegacyPayableTypes);
+            var alternativeIllustrations = navigator.GetIllustrationsByType(retrievalResult, AlternativePayableTypes);
 
             var legacyRecurringEri = navigator.SelectEarliestIllustrationComponent(inclIllustration);
             var legacyRecurringAp = navigator.SelectComponentByType(inclIllustration, IllustrationType.Accrued);
             var legacyLumpSum = navigator.SelectEarliestIllustrationComponent(cshlIllustration);
-            detailData.LegacyPayment = ExtractPayment(legacyRecurringEri, legacyRecurringAp, legacyLumpSum, allIllustrations);
+            detailData.LegacyPayment = ExtractPayment(legacyRecurringEri, legacyRecurringAp, legacyLumpSum, legacyIllustrations);
 
             var alternativeRecurringEri = navigator.SelectEarliestIllustrationComponent(incnIllustration);
             var alternativeRecurringAp = navigator.SelectComponentByType(incnIllustration, IllustrationType.Accrued);
             var alternativeLumpSum = navigator.SelectEarliestIllustrationComponent(cshnIllustration);
-            detailData.AlternativePayment = ExtractPayment(alternativeRecurringEri, alternativeRecurringAp, alternativeLumpSum, allIllustrations);
+            detailData.AlternativePayment = ExtractPayment(alternativeRecurringEri, alternativeRecurringAp, alternativeLumpSum, alternativeIllustrations);
         }
         else
         {

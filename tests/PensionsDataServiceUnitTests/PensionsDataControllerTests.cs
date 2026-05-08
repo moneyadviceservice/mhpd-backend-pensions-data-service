@@ -1263,7 +1263,7 @@ public class PensionsDataControllerTests
             AssetId = "asset-2",
             Category = category,
             SchemeName = "Scheme Two",
-            HasIncome = "true",
+            HasIncome = true,
             Administrator = "Admin Two",
             RetrievalResult = JsonSerializer.Deserialize<dynamic>(arrangement)
         };
@@ -1281,7 +1281,7 @@ public class PensionsDataControllerTests
             AssetId = "asset-2",
             Category = Category.Error,
             SchemeName = "",
-            HasIncome = "true",
+            HasIncome = true,
             Administrator = "Admin Two",
             RetrievalResult = JsonSerializer.Deserialize<dynamic>(error)
         };

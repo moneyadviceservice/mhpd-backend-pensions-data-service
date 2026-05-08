@@ -19,7 +19,7 @@ public class TimelineArrangementFactoryTests
     {
         var pension = new RetrievedPensionRecord
         {
-            HasIncome = Boolean.FalseString
+            HasIncome = false
         };
 
         var result = _factory.CreateAll(pension, false);
@@ -35,7 +35,7 @@ public class TimelineArrangementFactoryTests
             Id = "P1",
             SchemeName = "Test Scheme",
             PensionType = "DB",
-            HasIncome = Boolean.TrueString,
+            HasIncome = true,
             RetrievalResult = JsonDocument.Parse("""
             {
               "benefitIllustrations": [
@@ -45,6 +45,10 @@ public class TimelineArrangementFactoryTests
                   "illustrationComponents": [
                     {
                       "illustrationType": "ERI",
+                      "unavailableReason": "DB"
+                    },
+                    {
+                      "illustrationType": "AP",
                       "payableDetails": {
                         "payableDate": "2035-01-01",
                         "monthlyAmount": 1000,

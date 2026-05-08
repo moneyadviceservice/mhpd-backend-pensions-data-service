@@ -170,7 +170,7 @@ public class RetrievedPensionRecordExtensionTests
     }
 
     private static RetrievedPensionRecord CreateRecord(string assetId, string? linkId,
-        string category = "Main", string scheme = "Scheme", string type = "DB", string hasIncome = "false"
+        string category = "Main", string scheme = "Scheme", string type = "DB", bool hasIncome = false
     )
     {
         var arrangement = new JsonObject

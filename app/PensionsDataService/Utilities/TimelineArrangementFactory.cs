@@ -11,7 +11,7 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
 
     public IEnumerable<TimelineArrangement> CreateAll(RetrievedPensionRecord pension, bool includeWithoutIncome)
     {
-        if (!includeWithoutIncome && pension.HasIncome == Boolean.FalseString)
+        if (!includeWithoutIncome && !pension.HasIncome)
         {
             yield break;
         }
@@ -35,7 +35,7 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
 
     public IEnumerable<TimelineArrangement> CreateAllLegacy(RetrievedPensionRecord pension, bool includeWithoutIncome)
     {
-        if (!includeWithoutIncome && pension.HasIncome == Boolean.FalseString)
+        if (!includeWithoutIncome && !pension.HasIncome)
         {
             yield break;
         }
@@ -69,7 +69,7 @@ public sealed class TimelineArrangementFactory(IPensionNavigator navigator) : IT
 
     public IEnumerable<TimelineArrangement> CreateAllAlternative(RetrievedPensionRecord pension, bool includeWithoutIncome)
     {
-        if (!includeWithoutIncome && pension.HasIncome == Boolean.FalseString)
+        if (!includeWithoutIncome && !pension.HasIncome)
         {
             yield break;
         }

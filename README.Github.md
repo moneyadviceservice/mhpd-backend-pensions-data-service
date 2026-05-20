@@ -159,3 +159,7 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 - Updated correlation logging for .Net 10.
 - Added support for pensions with multiple benefit illustrations.
 - Updated pension classification for DB pensions
+
+### 🔧 Release 0.14.0 — 2026-05-20
+- Added Support for McCloud DB Pensions.
+- Reduced Holdername configuration cache lifespan to 8 hours.

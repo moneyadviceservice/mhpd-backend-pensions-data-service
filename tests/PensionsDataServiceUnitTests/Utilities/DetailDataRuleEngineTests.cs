@@ -44,6 +44,25 @@ public class DetailDataRuleEngineTests
     }
 
     [Fact]
+    public void EnrichDetailData_AppendsBenefitType_WhenPensionIsCBL()
+    {
+        // Arrange
+        var record = TestData.CreateCBLPension();
+
+        // Act
+        JsonNode arrangement = record.EnrichDetailData(_engine);
+
+        // Assert
+        var detail = arrangement[Constants.PensionDetail.DetailData];
+        Assert.NotNull(detail);
+
+        Assert.Equal("2040-04-01", detail![PensionConstants.RetirementDate]!.GetValue<string>());
+        Assert.Equal(28500m, detail[Constants.PensionDetail.StandardPayment]!["lumpSumAmount"]!.GetValue<decimal>());
+        Assert.Equal("2040-04-01", detail[Constants.PensionDetail.StandardPayment]!["lumpSumPayableDate"]!.GetValue<string>());
+        Assert.Equal("CBL", detail[Constants.PensionDetail.StandardPayment]![PensionConstants.BenefitType]!.GetValue<string>());
+    }
+
+    [Fact]
     public void EnrichDetailData_IncludesWarnings_WhenPresent()
     {
         // Arrange

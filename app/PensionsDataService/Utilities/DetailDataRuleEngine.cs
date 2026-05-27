@@ -56,10 +56,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
         var recurringEriComponent = navigator.SelectComponentByType(recurringIllustration, IllustrationType.Estimated);
         var recurringApComponent = navigator.SelectComponentByType(recurringIllustration, IllustrationType.Accrued);
 
-        var detailData = new DetailData
-        {
-            RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent))
-        };
+        var detailData = new DetailData();
 
         var allIllustrations = navigator.GetIllustrationsByType(retrievalResult, AllPayableTypes);
 
@@ -68,6 +65,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
         {
             var eriIllustrtationDate = FormatDate(recurringIllustration?[PensionConstants.IllustrationDate]?.GetValue<DateTime?>());
             detailData.StatePayment = ExtractStatePayment(recurringEriComponent, recurringApComponent, eriIllustrtationDate);
+            detailData.RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent));
         }
         else if (pensionProperties.HasMultipleIncomeOptions.GetValueOrDefault())
         {
@@ -87,6 +85,8 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
             var alternativeRecurringAp = navigator.SelectComponentByType(incnIllustration, IllustrationType.Accrued);
             var alternativeLumpSum = navigator.SelectEarliestIllustrationComponent(cshnIllustration);
             detailData.AlternativePayment = ExtractPayment(alternativeRecurringEri, alternativeRecurringAp, alternativeLumpSum, alternativeIllustrations);
+
+            detailData.RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent));
         }
         else
         {
@@ -95,6 +95,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
             var lumpSumEriComponent = navigator.SelectComponentByType(lumpSumIllustration, IllustrationType.Estimated);
 
             detailData.StandardPayment = ExtractPayment(recurringComponent, recurringApComponent, lumpSumEriComponent, allIllustrations);
+            detailData.RetirementDate = FormatDate(navigator.SelectRetirementDate(retrievalResult, recurringComponent ?? lumpSumEriComponent));
         }
 
         // Income timeline information
@@ -201,7 +202,7 @@ public sealed class DetailDataRuleEngine(IPensionNavigator navigator, ITimelineS
             LumpSumAmount = 0,
             PayableDate = FormatDate(recurringEriDetails.PayableDate),
             LumpSumPayableDate = FormatDate(lumpSumDetails.PayableDate),
-            BenefitType = recurringEriDetails.BenefitType
+            BenefitType = recurringEriDetails.BenefitType ?? lumpSumDetails.BenefitType,
         };
 
         foreach (var illustration in illustrations)

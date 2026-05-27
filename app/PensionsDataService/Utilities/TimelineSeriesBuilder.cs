@@ -1,4 +1,6 @@
-﻿using MhpdCommon.Models.MHPDModels;
+﻿using MhpdCommon.Extensions;
+using MhpdCommon.Models.MHPDModels;
+using MhpdCommon.ViewData;
 using PensionsDataService.Models;
 
 namespace PensionsDataService.Utilities;
@@ -102,7 +104,7 @@ public class TimelineSeriesBuilder(ITimelineArrangementFactory arrangementFactor
             .Distinct()
             .ToList();
 
-        var hasLumpSum = arrangements.Any(a => a.LumpSumAmount.HasValue);
+        var hasLumpSum = arrangements.Any(a => a.HasLumpSum && a.PensionType != PensionEnums.PensionType.CB.GetDisplayValue());
 
         series.Keys.AddRange(pensionTypes);
 

@@ -16,7 +16,7 @@ public class PayableDetails
 
     public DateTime? LastPaymentDate { get; init; }
 
-    public string? AmountNotProvidedReason { get; init; }
+    public string? UnavailableCode { get; init; }
 
     public string? BenefitType { get; init; }
 

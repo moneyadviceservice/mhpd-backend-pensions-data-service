@@ -36,7 +36,7 @@ public static partial class RetrievedPensionRecordExtensions
 
             var arrangement = JsonNode.Parse(record.RetrievalResult!.GetRawText())!;
 
-            var cardData = ruleEngine.Evaluate(arrangement, record.Category);
+            CardData cardData = ruleEngine.Evaluate(arrangement, record.Category);
 
             if (cardData.HasAnyValue)
             {
@@ -66,9 +66,19 @@ public static partial class RetrievedPensionRecordExtensions
             node[PensionConstants.MonthlyAmount] = data.MonthlyAmount.Value;
         }
 
+        if (data.LumpSumAmount.HasValue)
+        {
+            node[Constants.CardData.LumpSumAmount] = data.LumpSumAmount.Value;
+        }
+
         if (!string.IsNullOrWhiteSpace(data.UnavailableCode))
         {
             node[PensionConstants.UnavailableReason] = data.UnavailableCode;
+        }
+
+        if (!string.IsNullOrWhiteSpace(data.BenefitType))
+        {
+            node[PensionConstants.BenefitType] = data.BenefitType;
         }
 
         if (data.RetirementDate.HasValue)

@@ -54,5 +54,10 @@ namespace PensionsDataService.Models
             public const string Legacy = "legacy";
             public const string Alternative = "alternative";
         }
+
+        public static class CardData
+        {
+            public const string LumpSumAmount = "lumpSumAmount";
+        }
     }
 }

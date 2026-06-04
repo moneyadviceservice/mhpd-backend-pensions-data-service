@@ -389,7 +389,7 @@ public class PensionNavigatorTests
         Assert.Equal(50000m, result.LumpSumAmount);
         Assert.Equal(new DateTime(2035, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), result.PayableDate);
         Assert.Equal(new DateTime(2065, 1, 1, 0, 0, 0, DateTimeKind.Unspecified), result.LastPaymentDate);
-        Assert.Equal("N/A", result.AmountNotProvidedReason);
+        Assert.Equal("N/A", result.UnavailableCode);
     }
 
     [Fact]
@@ -402,7 +402,7 @@ public class PensionNavigatorTests
         Assert.Null(result.LumpSumAmount);
         Assert.Null(result.PayableDate);
         Assert.Null(result.LastPaymentDate);
-        Assert.Null(result.AmountNotProvidedReason);
+        Assert.Null(result.UnavailableCode);
     }
 
     [Fact]
@@ -423,7 +423,7 @@ public class PensionNavigatorTests
         Assert.Null(result.LumpSumAmount);
         Assert.Null(result.PayableDate);
         Assert.Null(result.LastPaymentDate);
-        Assert.Null(result.AmountNotProvidedReason);
+        Assert.Null(result.UnavailableCode);
     }
 
     #endregion

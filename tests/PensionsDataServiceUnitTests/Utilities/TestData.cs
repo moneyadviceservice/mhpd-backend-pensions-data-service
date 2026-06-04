@@ -119,6 +119,98 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
+                Id = "LS1",
+                SchemeName = "Lump Sum Scheme",
+                PensionType = "CB",
+                HasIncome = true,
+                Category = Category.Confirmed,
+                RetrievalResult = JsonDocument.Parse("""
+                {
+                  "benefitIllustrations": [
+                    {
+                      "illustrationDate": "2020-01-01",
+                      "payableDetailsType": "LUMPSUM",
+                      "illustrationComponents": [
+                        {
+                          "illustrationType": "ERI",
+                          "payableDetails": {
+                            "payableDate": "2035-01-01",
+                            "amount": 50000
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """).RootElement
+            },
+
+            new RetrievedPensionRecord
+            {
+                Id = "P1",
+                SchemeName = "First Scheme",
+                PensionType = "DB",
+                HasIncome = true,
+                Category = Category.Confirmed,
+                RetrievalResult = JsonDocument.Parse("""
+                {
+                  "benefitIllustrations": [
+                    {
+                      "illustrationDate": "2024-01-01",
+                      "payableDetailsType": "RECURRING",
+                      "illustrationComponents": [
+                        {
+                          "illustrationType": "ERI",
+                          "payableDetails": {
+                            "payableDate": "2030-01-01",
+                            "lastPaymentDate": "2060-01-01",
+                            "monthlyAmount": 1000,
+                            "annualAmount": 12000
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """).RootElement
+            }
+        ];
+    }
+
+    public static IEnumerable<RetrievedPensionRecord> CreatePensionsContainingCashBalance()
+    {
+        return
+        [
+            new RetrievedPensionRecord
+            {
+                Id = "LS1",
+                SchemeName = "Lump Sum Scheme",
+                PensionType = "CB",
+                HasIncome = true,
+                Category = Category.Confirmed,
+                RetrievalResult = JsonDocument.Parse("""
+                {
+                  "benefitIllustrations": [
+                    {
+                      "illustrationDate": "2020-01-01",
+                      "payableDetailsType": "LUMPSUM",
+                      "illustrationComponents": [
+                        {
+                          "illustrationType": "ERI",
+                          "payableDetails": {
+                            "payableDate": "2035-01-01",
+                            "amount": 50000
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """).RootElement
+            },
+
+            new RetrievedPensionRecord
+            {
                 Id = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
@@ -506,6 +598,97 @@ internal static class TestData
                     "monthlyAmount": 3000,
                     "annualAmount": 36000,
                     "payableDate": "2038-02-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-2",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreateCBLPension()
+    {
+        var json = """
+        {
+            "pensionType": "CB",
+            "hasIncome": true,
+            "hasMultipleTranches": false,
+            "hasMultipleIncomeOptions": false,
+            "retirementDate": "2040-01-01",
+            "benefitIllustrations": [
+            {
+              "illustrationDate": "2022-01-01",
+              "payableDetailsType": "LUMPSUM",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "CBL",
+                  "payableDetails": {
+                    "amount": 28500,
+                    "payableDate": "2040-04-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "benefitType": "CBL",
+                  "dcPot": 125000,
+                  "payableDetails": {
+                    "amount": 25000,
+                    "payableDate": "2040-05-01"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        return new RetrievedPensionRecord
+        {
+            AssetId = "pension-2",
+            Category = Category.Confirmed,
+            RetrievalResult = JsonSerializer.Deserialize<JsonElement>(json)
+        };
+    }
+
+    public static RetrievedPensionRecord CreateCBSPension()
+    {
+        var json = """
+        {
+            "pensionType": "CB",
+            "hasIncome": true,
+            "hasMultipleTranches": false,
+            "hasMultipleIncomeOptions": false,
+            "benefitIllustrations": [
+            {
+              "illustrationDate": "2022-01-01",
+              "payableDetailsType": "RECURRING",
+              "illustrationComponents": [
+                {
+                  "illustrationType": "ERI",
+                  "benefitType": "CBS",
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "annualAmount": 36000,
+                    "payableDate": "2040-04-01"
+                  }
+                },
+                {
+                  "illustrationType": "AP",
+                  "benefitType": "CBS",
+                  "dcPot": 125000,
+                  "payableDetails": {
+                    "monthlyAmount": 3000,
+                    "annualAmount": 36000,
+                    "payableDate": "2040-04-01"
                   }
                 }
               ]

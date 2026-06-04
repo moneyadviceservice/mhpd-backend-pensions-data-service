@@ -180,7 +180,7 @@ public class PensionNavigator : IPensionNavigator
             LastPaymentDate = SelectLastPaymentDate(component),
             IsIncreasing = SelectIncreasing(component),
             BenefitType = SelectBenefitType(component),
-            AmountNotProvidedReason = SelectAmountNotProvidedReason(component),
+            UnavailableCode = SelectUnavailableCode(component),
             PaymentType = SelectPaymentType(component)
         };
     }

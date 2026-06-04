@@ -47,6 +47,16 @@ public sealed class TimelineSeriesBuilderTests
     }
 
     [Fact]
+    public void Keys_DoesNotContain_LU_When_Only_CashBalance_Present()
+    {
+        var pensions = TestData.CreatePensionsContainingCashBalance();
+
+        var series = _builder.Build(pensions, true);
+
+        Assert.DoesNotContain(Constants.PensionTypes.LU, series.Keys);
+    }
+
+    [Fact]
     public void Build_Generates_TimeSeries_ForPensions()
     {
         var pensions = TestData.CreateMultiplePensions();

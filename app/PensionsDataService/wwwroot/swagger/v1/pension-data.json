@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.4",
   "info": {
-    "title": "PensionsDataService, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "title": "PensionsDataService, Version=0.14.0.0, Culture=neutral, PublicKeyToken=null",
     "version": "1.0"
   },
   "servers": [
@@ -307,6 +307,18 @@
         }
       }
     },
+    "/service/status": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/csrf-token": {
       "get": {
         "summary": "Get CSRF token",
@@ -411,6 +423,9 @@
   "tags": [
     {
       "name": "PensionsData"
+    },
+    {
+      "name": "Status"
     }
   ]
 }

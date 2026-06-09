@@ -78,7 +78,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowDashboard", policy =>
     {
-        policy.WithOrigins("http://localhost:5500", "http://127.0.0.1:5500", "https://mhpddev.z33.web.core.windows.net/")
+        policy.WithOrigins("http://localhost:5500", "http://127.0.0.1:5500", "https://mhpddev.z33.web.core.windows.net")
               .AllowAnyMethod()
               .AllowAnyHeader();
     });

@@ -6,6 +6,10 @@ resource "azurerm_service_plan" "this" {
   sku_name               = local.sku_name
   zone_balancing_enabled = local.zone_redundant
   worker_count           = local.zone_redundant ? 3 : null
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "azurerm_linux_web_app" "this" {
@@ -57,6 +61,10 @@ resource "azurerm_linux_web_app" "this" {
         ip_address                = ip_restriction.value.ip_address
       }
     }
+  }
+
+  lifecycle {
+    ignore_changes = [tags]
   }
 }
 
@@ -112,6 +120,10 @@ resource "azurerm_monitor_autoscale_setting" "this" {
       }
     }
   }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "azurerm_linux_web_app_slot" "staging" {
@@ -163,6 +175,10 @@ resource "azurerm_linux_web_app_slot" "staging" {
       }
     }
   }
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "azurerm_application_insights" "this" {
@@ -176,4 +192,8 @@ resource "azurerm_application_insights" "this" {
   workspace_id                          = local.logs_workspace_id
   retention_in_days                     = 90
   daily_data_cap_notifications_disabled = true
+
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }

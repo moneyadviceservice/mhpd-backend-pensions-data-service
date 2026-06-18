@@ -5,5 +5,5 @@ namespace PensionsDataService.Utilities;
 
 public interface ISummaryDataRuleEngine
 {
-    SummaryData Evaluate(RetrievedPensionRecord statePension, IEnumerable<RetrievedPensionRecord> pensions);
+    SummaryData Evaluate(RetrievedPensionRecord? statePension, IEnumerable<RetrievedPensionRecord> pensions);
 }

@@ -106,6 +106,8 @@ public class SummaryDataRuleEngineTests
             new(PayableDetailsType.LumpSumLegacy, 600, 7200, "2036-01-01"),
         ]);
 
+        mcCloudPension.IsMcCloudPension = true;
+
         var pensions = new List<RetrievedPensionRecord>
         {
             statePension,
@@ -220,7 +222,7 @@ public class SummaryDataRuleEngineTests
         var result = _engine.Evaluate(statePension, pensions);
 
         Assert.Null(result.StatePensionDate);
-        Assert.Null(result.StandardPayment);
+        Assert.NotNull(result.StandardPayment);
     }
 
     // ---------------------------

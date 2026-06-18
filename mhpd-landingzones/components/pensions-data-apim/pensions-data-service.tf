@@ -17,7 +17,7 @@ resource "azurerm_api_management_api" "pension_data_service" {
 
   import {
     content_format = "openapi+json"
-    content_value  = data.http.pension_data_spec.response_body
+    content_value  = replace(data.http.pension_data_spec.response_body, "\"openapi\": \"3.0.4\"", "\"openapi\": \"3.0.1\"")
   }
 
   lifecycle {

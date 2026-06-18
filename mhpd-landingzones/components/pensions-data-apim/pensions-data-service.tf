@@ -16,8 +16,8 @@ resource "azurerm_api_management_api" "pension_data_service" {
   }
 
   import {
-    content_format = "openapi+json-link"
-    content_value  = "https://raw.githubusercontent.com/moneyadviceservice/api-docs/refs/heads/main/specs/pension-data.json"
+    content_format = "openapi+json"
+    content_value  = data.http.pension_data_spec.response_body
   }
 
   lifecycle {

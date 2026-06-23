@@ -35,6 +35,7 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
         var standardPayment = new PensionPayment { MonthlyAmount = 0, AnnualAmount = 0 };
         var legacyPayment = new PensionPayment { MonthlyAmount = 0, AnnualAmount = 0 };
         var alternativePayment = new PensionPayment { MonthlyAmount = 0, AnnualAmount = 0 };
+        var isMcCloudPensionInRange = false;
 
         foreach (var details in activePayments)
         {
@@ -48,15 +49,17 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
             }
             else if (type == PensionEnums.PayableDetailsType.RecurringLegacy)
             {
+                isMcCloudPensionInRange = true;
                 Accumulate(legacyPayment, details);
             }
             else if (type == PensionEnums.PayableDetailsType.RecurringNew)
             {
+                isMcCloudPensionInRange = true;
                 Accumulate(alternativePayment, details);
             }
         }
 
-        if (hasMcCloudPension)
+        if (isMcCloudPensionInRange)
         {
             summary.LegacyPayment = legacyPayment.HasAnyValues ? legacyPayment : null;
             summary.AlternativePayment = alternativePayment.HasAnyValues ? alternativePayment : null;
@@ -73,6 +76,7 @@ public class SummaryDataRuleEngine(IPensionNavigator navigator) : ISummaryDataRu
     {
         return new SummaryData
         {
+            IsMcCloudPensionPresent = hasMcCloudPension,
             AlternativePayment = hasMcCloudPension ? new PensionPayment() : null,
             LegacyPayment = hasMcCloudPension ? new PensionPayment() : null,
             StandardPayment = hasMcCloudPension ? null : new PensionPayment()

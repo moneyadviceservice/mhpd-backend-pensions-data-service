@@ -71,7 +71,7 @@ public class PensionsDataController(
                 PredictedRemainingDataRetrievalTime = GetRemainingRetrievalTime(retrievalRecord, _predictedTotalDataRetrievalTime)
             };
 
-            logger.LogResponseSent(response);
+            LogResponse(response);
 
             return Ok(response);
         });
@@ -119,7 +119,7 @@ public class PensionsDataController(
                 });
             }
 
-            logger.LogResponseSent(response);
+            LogResponse(response);
 
             return Ok(response);
         });
@@ -163,7 +163,7 @@ public class PensionsDataController(
 
             response.EnrichSummaryData(enrichedPensions, category, serviceUtilities.SummaryDataRuleEngine);
 
-            logger.LogResponseSent(response);
+            LogResponse(response);
 
             return Ok(response);
         });
@@ -201,7 +201,7 @@ public class PensionsDataController(
 
             timeSeries.IsPensionRetrievalComplete = isComplete;
 
-            logger.LogResponseSent(timeSeries);
+            LogResponse(timeSeries);
 
             return Ok(timeSeries);
         });
@@ -229,7 +229,7 @@ public class PensionsDataController(
                 return JsonDocument.Parse(enrichedJson).RootElement;
             });
 
-            logger.LogResponseSent(pensionDetail);
+            LogResponse(pensionDetail);
             return Ok(pensionDetail);
         });
     }
@@ -275,7 +275,7 @@ public class PensionsDataController(
                 return StatusCode(500, "Unable to collect pension retrieval analytics data");
             }
 
-            logger.LogResponseSent(response);
+            LogResponse(response);
 
             return Ok(response);
         });
@@ -315,8 +315,11 @@ public class PensionsDataController(
             PeisId = result.PeisId!,
             ClientId = request.ClientId!,
         }, userSessionId);
-        
-        logger.LogInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
+        }
 
         var response = Accepted();
         logger.LogResponseSent(response);
@@ -401,6 +404,13 @@ public class PensionsDataController(
         logger.LogWarning("Deleted data for {UserSessionId}", userSessionId);
 
         return new NoContentResult();
+    }
+
+    private void LogResponse<T>(T response)
+    {
+        var responseJson = JsonSerializer.Serialize(response);
+
+        logger.LogResponseSent(responseJson);
     }
 
     private static int GetRemainingRetrievalTime(PensionsRetrievalRecord retrievalRecord, int totalEstimatedDuration)

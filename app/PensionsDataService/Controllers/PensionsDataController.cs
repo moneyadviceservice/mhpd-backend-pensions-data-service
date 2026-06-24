@@ -408,9 +408,7 @@ public class PensionsDataController(
 
     private void LogResponse<T>(T response)
     {
-        var responseJson = JsonSerializer.Serialize(response);
-
-        logger.LogResponseSent(responseJson);
+        logger.LogResponseSent(JsonSerializer.Serialize(response));
     }
 
     private static int GetRemainingRetrievalTime(PensionsRetrievalRecord retrievalRecord, int totalEstimatedDuration)

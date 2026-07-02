@@ -50,6 +50,7 @@ public static partial class RetrievedPensionRecordExtensions
                 Category = record.Category,
                 PensionType = record.PensionType,
                 HasIncome = record.HasIncome,
+                IsMcCloudPension = record.IsMcCloudPension,
                 RetrievalResult = JsonSerializer.SerializeToElement(arrangement)
             });
         }

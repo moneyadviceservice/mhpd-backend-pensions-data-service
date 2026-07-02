@@ -42,7 +42,9 @@ public class PensionDataExtensionsTests
 
         response.EnrichSummaryData(pensions, Category.Confirmed, _engine);
 
-        Assert.Null(response.SummaryData);
+        Assert.Null(response.SummaryData?.LegacyPayment);
+        Assert.Null(response.SummaryData?.AlternativePayment);
+        Assert.NotNull(response.SummaryData?.StandardPayment);
     }
 
     [Fact]
@@ -131,7 +133,9 @@ public class PensionDataExtensionsTests
 
         response.EnrichSummaryData(pensions, Category.Confirmed, _engine);
 
-        Assert.Null(response.SummaryData);
+        Assert.Null(response.SummaryData?.LegacyPayment);
+        Assert.Null(response.SummaryData?.AlternativePayment);
+        Assert.NotNull(response.SummaryData?.StandardPayment);
     }
 
     [Fact]

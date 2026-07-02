@@ -112,7 +112,7 @@ public class PensionsDataControllerTests
         mockCardDataRuleEngine.Setup(c => c.Evaluate(It.IsAny<JsonNode>(), It.IsAny<string>()))
             .Returns(new CardData());
 
-        mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord>(), It.IsAny<IReadOnlyList<RetrievedPensionRecord>>()))
+        mockSummaryDataRuleEngine.Setup(s => s.Evaluate(It.IsAny<RetrievedPensionRecord?>(), It.IsAny<IEnumerable<RetrievedPensionRecord>>()))
             .Returns(new SummaryData());
 
         mockTimeSeriesBuilder.Setup(t => t.Build(It.IsAny<IEnumerable<RetrievedPensionRecord>>(), false))

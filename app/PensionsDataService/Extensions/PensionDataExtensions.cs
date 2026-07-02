@@ -22,17 +22,7 @@ public static class PensionDataExtensions
         // Only enrich if a State pension exists
         var statePension = pensions.FirstOrDefault(p => p.PensionType == Constants.PensionTypes.SP);
 
-        if (statePension == null)
-        {
-            return;
-        }
-
         SummaryData summary = ruleEngine.Evaluate(statePension, pensions.Where(pension => pension.Category == pensionCategory));
-
-        if (!summary.HasAnyValue)
-        {
-            return;
-        }
 
         response.SummaryData = summary;
     }

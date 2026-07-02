@@ -167,3 +167,6 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 ### 🔧 Release 0.16.0 — 2026-06-17
 - Added Support for CB Pension Type.
 - Added support for all benefit types in the HYB Pension arrangement type.
+
+### 🔧 Release 0.17.0 — 2026-07-01
+- Improved logging data capture for all GET endpoints to include full JSON payload.

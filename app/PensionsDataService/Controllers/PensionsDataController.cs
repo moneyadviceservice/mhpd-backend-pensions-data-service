@@ -97,25 +97,22 @@ public class PensionsDataController(
                 IsPensionRetrievalComplete = isComplete
             };
 
-            foreach (var peiData in retrievalRecord.PeiData)
+            foreach (var pension in retrievedPensions)
             {
-                // Check if there is a matching pei in the retrievedPensionsRecords
-                var matchingRecord = retrievedPensions.Find(record => record.Pei == peiData.Pei);
-
-                if (!ExcludedCategories.Contains(matchingRecord?.Category))
+                if (!ExcludedCategories.Contains(pension.Category))
                 {
                     response.TotalPensionsFound++;
                 }
 
                 response.Pensions.Add(new PensionItem
                 {
-                    Pei = peiData.Pei,
-                    RetrievalStatus = GetPeiStatus(matchingRecord),
-                    SchemeName = !string.IsNullOrEmpty(matchingRecord?.SchemeName) ? matchingRecord.SchemeName : peiData.Description ?? Constants.Unknown,
-                    AdministratorName = matchingRecord?.Administrator ?? Constants.Unknown,
-                    HasIncome = matchingRecord?.HasIncome ?? false,
-                    PensionType = matchingRecord?.PensionType ?? Constants.Unknown,
-                    Category = matchingRecord?.Category ?? Category.None
+                    Pei = pension.Pei,
+                    RetrievalStatus = GetPeiStatus(pension),
+                    SchemeName = !string.IsNullOrEmpty(pension?.SchemeName) ? pension.SchemeName : string.Empty,
+                    AdministratorName = pension?.Administrator ?? Constants.Unknown,
+                    HasIncome = pension?.HasIncome ?? false,
+                    PensionType = pension?.PensionType ?? Constants.Unknown,
+                    Category = pension?.Category ?? Category.None
                 });
             }
 

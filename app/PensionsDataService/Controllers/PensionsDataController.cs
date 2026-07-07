@@ -108,11 +108,11 @@ public class PensionsDataController(
                 {
                     Pei = pension.Pei,
                     RetrievalStatus = GetPeiStatus(pension),
-                    SchemeName = !string.IsNullOrEmpty(pension?.SchemeName) ? pension.SchemeName : string.Empty,
-                    AdministratorName = pension?.Administrator ?? Constants.Unknown,
-                    HasIncome = pension?.HasIncome ?? false,
-                    PensionType = pension?.PensionType ?? Constants.Unknown,
-                    Category = pension?.Category ?? Category.None
+                    SchemeName = pension.SchemeName,
+                    AdministratorName = pension.Administrator,
+                    HasIncome = pension.HasIncome,
+                    PensionType = pension.PensionType,
+                    Category = pension.Category
                 });
             }
 

@@ -170,3 +170,6 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 
 ### 🔧 Release 0.17.0 — 2026-07-01
 - Improved logging data capture for all GET endpoints to include full JSON payload.
+
+### 🔧 Release 1.0.0 — 2026-07-15
+- Added handling for McCloud pensions that either arrived with no state pension or after the state pension date

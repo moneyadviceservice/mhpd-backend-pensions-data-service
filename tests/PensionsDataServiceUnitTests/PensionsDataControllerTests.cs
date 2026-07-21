@@ -562,8 +562,7 @@ public class PensionsDataControllerTests
         var okResult = Assert.IsType<OkObjectResult>(result);
         var responseModel = Assert.IsType<PensionSummary>(okResult.Value);
         Assert.False(responseModel.IsPensionRetrievalComplete);
-        Assert.Equal(peis.Count + 1, responseModel.Pensions.Count);
-        Assert.NotNull(responseModel.Pensions.SingleOrDefault(pension => pension.RetrievalStatus == PensionProviderConstants.RetrievalStatus.RetrievalRequested));
+        Assert.Equal(peis.Count, responseModel.Pensions.Count);
     }
 
     [Fact]

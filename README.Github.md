@@ -173,3 +173,6 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 
 ### 🔧 Release 1.0.0 — 2026-07-15
 - Added handling for McCloud pensions that either arrived with no state pension or after the state pension date
+
+### 🔧 Release 1.1.0 — 2026-08-03
+- Implemented support for multiple pension arrangements returned from a provider for a single PEI request.

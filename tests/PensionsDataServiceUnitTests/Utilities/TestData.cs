@@ -12,7 +12,7 @@ internal static class TestData
         [
             new RetrievedPensionRecord
             {
-                Id = "P1",
+                UserSessionId = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -41,7 +41,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "P2",
+                UserSessionId = "P2",
                 SchemeName = "Second Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -76,7 +76,7 @@ internal static class TestData
         [
             new RetrievedPensionRecord
             {
-                Id = "LS1",
+                UserSessionId = "LS1",
                 SchemeName = "Lump Sum Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -119,7 +119,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "LS1",
+                UserSessionId = "LS1",
                 SchemeName = "Lump Sum Scheme",
                 PensionType = "CB",
                 HasIncome = true,
@@ -147,7 +147,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "P1",
+                UserSessionId = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -183,7 +183,7 @@ internal static class TestData
         [
             new RetrievedPensionRecord
             {
-                Id = "LS1",
+                UserSessionId = "LS1",
                 SchemeName = "Lump Sum Scheme",
                 PensionType = "CB",
                 HasIncome = true,
@@ -211,7 +211,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "P1",
+                UserSessionId = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -247,7 +247,7 @@ internal static class TestData
         [
             new RetrievedPensionRecord
             {
-                Id = "P1",
+                UserSessionId = "P1",
                 SchemeName = "First Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -277,7 +277,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "P2",
+                UserSessionId = "P2",
                 SchemeName = "Second Scheme",
                 PensionType = "DC",
                 HasIncome = true,
@@ -306,7 +306,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "LS1",
+                UserSessionId = "LS1",
                 SchemeName = "Lump Sum Scheme",
                 PensionType = "DB",
                 HasIncome = true,
@@ -363,7 +363,7 @@ internal static class TestData
 
             new RetrievedPensionRecord
             {
-                Id = "SP",
+                UserSessionId = "SP",
                 SchemeName = "State Pension",
                 PensionType = "SP",
                 HasIncome = true,

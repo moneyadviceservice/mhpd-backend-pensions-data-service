@@ -40,13 +40,12 @@ builder.Services.AddMhpdHttpClients();
 builder.Services.AddCommonConfigurations();
 builder.Services.AddIntegrationServices();
 builder.Services.AddMhpdUtilities();
+builder.Services.AddMhpdRedis(builder.Configuration);
 builder.Services.AddMhpdCosmosDb(builder.Configuration);
 builder.Services.AddAntiForgeryValidation();
 
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Logging.AddMhpdTelemetry(builder.Configuration);
-
-builder.Services.AddScoped<ICosmosDbRepository<UserSessionData>, UserSessionDataRepository>();
 
 builder.Services.AddControllers().AddJsonOptions(options =>
 {

@@ -32,7 +32,7 @@ public class TimelineArrangementFactoryTests
     {
         var pension = new RetrievedPensionRecord
         {
-            Id = "P1",
+            UserSessionId = "P1",
             SchemeName = "Test Scheme",
             PensionType = "DB",
             HasIncome = true,

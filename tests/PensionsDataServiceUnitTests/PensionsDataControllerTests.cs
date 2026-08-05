@@ -30,7 +30,7 @@ public class PensionsDataControllerTests
     private readonly Mock<IMapsCdaServiceClient> _mockMapsCdaServiceClient = new();
     private readonly Mock<IRetrievalRecordServiceClient> _mockRetrievalRecordFunctionClient = new();
     private readonly Mock<IRetrievedPensionsRecordClient> _mockRetrievedPensionsRecordClient = new();
-    private readonly Mock<ICosmosDbRepository<UserSessionData>> _mockUserSessionDataRepository = new();
+    private readonly Mock<IHashRedisRepository<UserSessionData>> _mockUserSessionDataRepository = new();
     private readonly Mock<IPensionAnonymizer> _mockPensionAnonymizer = new();
 
     private readonly PensionsDataController _controller;
@@ -54,16 +54,6 @@ public class PensionsDataControllerTests
         Mock<ISummaryDataRuleEngine> mockSummaryDataRuleEngine = new();
         Mock<ITimelineSeriesBuilder> mockTimeSeriesBuilder = new();
         Mock<IDetailDataRuleEngine> mockDetailDataRuleEngine = new();
-
-        var configuration = new CosmosBusinessConfiguration
-        {
-            DatabaseId = "TestDatabase",
-            UserSessionDataContainer = "TestUserSessionDataContainer",
-        };
-        
-        Mock<IOptions<CosmosBusinessConfiguration>> mockCosmosConfigOptions = new();
-        mockCosmosConfigOptions.Setup(x => x.Value).Returns(configuration);
-
         
         UserSessionData? model = null;
 
@@ -431,7 +421,7 @@ public class PensionsDataControllerTests
 
         var retrievalRecord = new PensionsRetrievalRecord
         {
-            Id = Guid.NewGuid().ToString(),
+            UserSessionId = requestHeader.UserSessionId,
             PeiData = [
                 new PeiDataModel { 
                     Pei = "123e4567-e89b-12d3-a456-426614174000:123e4567-e89b-12d3-a456-426614174001",
@@ -737,7 +727,7 @@ public class PensionsDataControllerTests
 
         var retrievalRecord = new PensionsRetrievalRecord
         {
-            Id = Guid.NewGuid().ToString(),
+            UserSessionId = Guid.NewGuid().ToString(),
             PeiData = [
                 new PeiDataModel {
                     Pei = arrangementPei1,
@@ -803,7 +793,7 @@ public class PensionsDataControllerTests
 
         var getResult = new PensionsRetrievalRecord
         {
-            Id = recordsExist ? Guid.NewGuid().ToString() : string.Empty
+            UserSessionId = userSessionId
         };
 
         // Simulate a successful response from the retrieval record function client
@@ -812,7 +802,7 @@ public class PensionsDataControllerTests
             .ReturnsAsync(getResult);
 
         _mockUserSessionDataRepository
-            .Setup(repo => repo.DeleteByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+            .Setup(repo => repo.DeleteByIdUserSessionIdAsync(It.IsAny<string>()))
             .Returns(Task.FromResult(recordsExist));
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
@@ -830,7 +820,7 @@ public class PensionsDataControllerTests
         }
 
         _mockUserSessionDataRepository
-            .Verify(repo => repo.DeleteByIdAsync(userSessionId, userSessionId), Times.Once);
+            .Verify(repo => repo.DeleteByIdUserSessionIdAsync(userSessionId), Times.Once);
         Assert.IsType<NoContentResult>(deleteResult);
     }
 
@@ -917,10 +907,10 @@ public class PensionsDataControllerTests
         
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
         
-        _mockUserSessionDataRepository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+        _mockUserSessionDataRepository.Setup(x => x.GetByUserSessionIdAsync(It.IsAny<string>()))
             .ReturnsAsync(testInstanceData);
 
-        _mockUserSessionDataRepository.Setup(x => x.InsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<string>()))
+        _mockUserSessionDataRepository.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>()))
             .Verifiable();
         
         // Act
@@ -1020,10 +1010,10 @@ public class PensionsDataControllerTests
         
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
-        _mockUserSessionDataRepository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+        _mockUserSessionDataRepository.Setup(x => x.GetByUserSessionIdAsync(It.IsAny<string>()))
             .ReturnsAsync(userSessionData);
 
-        _mockUserSessionDataRepository.Setup(x => x.InsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<string>()))
+        _mockUserSessionDataRepository.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>()))
             .Verifiable();
 
         // Act
@@ -1066,10 +1056,10 @@ public class PensionsDataControllerTests
 
         _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
 
-        _mockUserSessionDataRepository.Setup(x => x.GetByIdAsync(It.IsAny<string>(), It.IsAny<string>()))
+        _mockUserSessionDataRepository.Setup(x => x.GetByUserSessionIdAsync(It.IsAny<string>()))
             .ReturnsAsync(testInstanceData);
 
-        _mockUserSessionDataRepository.Setup(x => x.InsertItemAsync(It.IsAny<UserSessionData>(), It.IsAny<string>()))
+        _mockUserSessionDataRepository.Setup(x => x.UpsertItemAsync(It.IsAny<UserSessionData>()))
             .Verifiable();
 
         // Act
@@ -1214,7 +1204,7 @@ public class PensionsDataControllerTests
     {
         var record = new PensionsRetrievalRecord
         {
-            Id = Guid.NewGuid().ToString(),
+            UserSessionId = Guid.NewGuid().ToString(),
             PeiData = [.. peis.Select(pei =>
             {
                 return new PeiDataModel
@@ -1256,6 +1246,7 @@ public class PensionsDataControllerTests
 
         return new RetrievedPensionRecord
         {
+            UserSessionId = Guid.NewGuid().ToString(),
             Pei = pei,
             PensionType = "DB",
             MatchType = "POSS",
@@ -1274,6 +1265,7 @@ public class PensionsDataControllerTests
 
         return new RetrievedPensionRecord
         {
+            UserSessionId = Guid.NewGuid().ToString(),
             Pei = pei,
             PensionType = "DB",
             MatchType = "POSS",

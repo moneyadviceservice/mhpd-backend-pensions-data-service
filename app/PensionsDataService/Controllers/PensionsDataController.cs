@@ -27,7 +27,7 @@ public class PensionsDataController(
     PensionsDataRequestValidatorPipeline requestValidators,
     PensionServiceClients serviceClients,
     IOptions<PeiOrchestrationSettings> peiRetrievalOptions,
-    ICosmosDbRepository<UserSessionData> userSessionDataRepository,
+    IHashRedisRepository<UserSessionData> userSessionDataRepository,
     PensionServiceUtilities serviceUtilities)
     : ControllerBase
 {
@@ -305,13 +305,12 @@ public class PensionsDataController(
         }
         
         // Add the idToken to the userSessionData container against the userSessionId for downstream use
-        await userSessionDataRepository.InsertItemAsync(new UserSessionData
+        await userSessionDataRepository.UpsertItemAsync(new UserSessionData
         {
-            Id = userSessionId,
             UserSessionId = userSessionId,
             PeisId = result.PeisId!,
             ClientId = request.ClientId!,
-        }, userSessionId);
+        });
 
         if (logger.IsEnabled(LogLevel.Information))
         {
@@ -394,7 +393,7 @@ public class PensionsDataController(
 
         var retrievalCountTask = _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
         var retrievedCountTask = _retrievedPensionsRecordClient.DeleteAsync(userSessionId!, correlationId!);
-        var userSessionDeleteTask = userSessionDataRepository.DeleteByIdAsync(userSessionId!, userSessionId!);
+        var userSessionDeleteTask = userSessionDataRepository.DeleteByIdUserSessionIdAsync(userSessionId!);
 
         await Task.WhenAll(retrievalCountTask, retrievedCountTask, userSessionDeleteTask);
 
@@ -578,7 +577,7 @@ public class PensionsDataController(
         // Get the pensions retrieval record associated with the passed userSessionId
         var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
 
-        if (string.IsNullOrEmpty(retrievalRecordResult.Id))
+        if (string.IsNullOrEmpty(retrievalRecordResult.UserSessionId))
         {
             // No session data found, return an empty response
             return new JsonResult(null) { StatusCode = StatusCodes.Status200OK };
@@ -661,8 +660,11 @@ public class PensionsDataController(
 
     private async Task<string?> StoreSessionData(string userSessionId, CdaTokenResponseModel tokenResult)
     {
-        var userSessionData = await userSessionDataRepository.GetByIdAsync(userSessionId, userSessionId);
-        if (userSessionData == null) return null;
+        var userSessionData = await userSessionDataRepository.GetByUserSessionIdAsync(userSessionId);
+        if (userSessionData == null)
+        {
+            return null;
+        }
 
         var clientId = userSessionData.ClientId;
         var peisId = userSessionData.PeisId;
@@ -672,15 +674,14 @@ public class PensionsDataController(
             return null;
         }
 
-        await userSessionDataRepository.InsertItemAsync(new UserSessionData
+        await userSessionDataRepository.UpsertItemAsync(new UserSessionData
         {
-            Id = userSessionId,
             UserSessionId = userSessionId,
             AccessToken = tokenResult.AccessToken!,
             PeisId = peisId,
             Pct = tokenResult.Pct,
             ClientId = clientId
-        }, userSessionId);
+        });
 
         return peisId;
     }

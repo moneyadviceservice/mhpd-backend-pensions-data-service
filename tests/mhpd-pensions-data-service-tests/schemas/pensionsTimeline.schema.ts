@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const PensionTypeEnum = z.enum(['SP', 'DB', 'DC', 'AVC', 'HYB', 'LU']);
+const PensionTypeEnum = z.enum(['SP', 'DB', 'DC', 'AVC', 'HYB', 'LU', 'VAR']);
 
 const ArrangementSchema = z.object({
   payableDate: z.string(),

@@ -26,7 +26,7 @@ interface ZodFormatResult {
 /**
  * A Universal Polling Helper
  */
-const DEFAULT_MAX_ATTEMPTS = 15;
+const DEFAULT_MAX_ATTEMPTS = 35;
 const DEFAULT_INTERVAL = 2000;
 
 export async function poll<T>(

@@ -176,3 +176,6 @@ Submit a pull request or open an issue for any enhancements or bug fixes.
 
 ### 🔧 Release 1.1.0 — 2026-08-03
 - Implemented support for multiple pension arrangements returned from a provider for a single PEI request.
+
+### 🔧 Release 1.3.0 — 2026-08-26
+- Moved session storage from Cosmos DB to Redis.

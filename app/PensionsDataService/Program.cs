@@ -40,7 +40,7 @@ builder.Services.AddMhpdHttpClients();
 builder.Services.AddCommonConfigurations();
 builder.Services.AddIntegrationServices();
 builder.Services.AddMhpdUtilities();
-builder.Services.AddMhpdRedis(builder.Configuration);
+builder.Services.AddMhpdRedisWithDataProtectionStore(builder.Environment.ApplicationName, builder.Configuration);
 builder.Services.AddMhpdCosmosDb(builder.Configuration);
 builder.Services.AddAntiForgeryValidation();
 

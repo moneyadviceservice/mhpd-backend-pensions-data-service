@@ -73,16 +73,6 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddHttpClient();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowDashboard", policy =>
-    {
-        policy.WithOrigins("http://localhost:5500", "http://127.0.0.1:5500", "https://mhpddev.z33.web.core.windows.net")
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -92,7 +82,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowDashboard");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();

@@ -10,5 +10,5 @@ public interface IRetrievalRecordServiceClient
 
     Task<PensionsRetrievalRecord> GetAsync(RequestHeaderModel requestHeader);
 
-    Task DeleteAsync(string userSessionId, string correlationId);
+    Task DeleteAsync(RequestHeaderModel requestHeader);
 }

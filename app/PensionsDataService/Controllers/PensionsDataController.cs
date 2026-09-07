@@ -391,8 +391,8 @@ public class PensionsDataController(
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} - {Constants.HttpDelete}");
         logger.LogRequestReceived(requestHeader);
 
-        var retrievalCountTask = _retrievalRecordServiceClient.DeleteAsync(userSessionId!, correlationId!);
-        var retrievedCountTask = _retrievedPensionsRecordClient.DeleteAsync(userSessionId!, correlationId!);
+        var retrievalCountTask = _retrievalRecordServiceClient.DeleteAsync(requestHeader);
+        var retrievedCountTask = _retrievedPensionsRecordClient.DeleteAsync(requestHeader);
         var userSessionDeleteTask = userSessionDataRepository.DeleteByIdUserSessionIdAsync(userSessionId!);
 
         await Task.WhenAll(retrievalCountTask, retrievedCountTask, userSessionDeleteTask);

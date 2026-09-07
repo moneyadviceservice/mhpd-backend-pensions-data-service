@@ -1,7 +1,7 @@
-using System.Net;
-using System.Net.Http.Json;
+using MhpdCommon.Constants;
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.CustomExceptions;
+using MhpdCommon.ErrorHandling;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
 using Microsoft.Extensions.Configuration;
@@ -10,6 +10,8 @@ using Moq;
 using Moq.Protected;
 using PensionsDataService.HttpClients;
 using PensionsDataService.Models;
+using System.Net;
+using System.Net.Http.Json;
 
 namespace PensionsDataServiceUnitTests;
 
@@ -17,6 +19,7 @@ public class RetrievedPensionsRecordClientTests
 {
     private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
     private readonly Mock<ILogger<RetrievedPensionsRecordClient>> _mockLogger;
+    private readonly Mock<IErrorResolver> _mockErrorResolver;
     private readonly RetrievedPensionsRecordClient _client;
     private readonly RequestHeaderModel _requestHeaderModel;
 
@@ -24,6 +27,7 @@ public class RetrievedPensionsRecordClientTests
     {
         _mockHttpClientFactory = new Mock<IHttpClientFactory>();
         _mockLogger = new Mock<ILogger<RetrievedPensionsRecordClient>>();
+        _mockErrorResolver = new Mock<IErrorResolver>();
         Mock<IConfiguration> mockConfiguration = new();
         _requestHeaderModel = new RequestHeaderModel
         {
@@ -44,7 +48,7 @@ public class RetrievedPensionsRecordClientTests
             .Returns("https://mockendpoint.com/");
 
         // Initialize the client
-        _client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
+        _client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object, _mockErrorResolver.Object);
     }
 
     [Fact]
@@ -75,11 +79,9 @@ public class RetrievedPensionsRecordClientTests
             {
                 BaseAddress = new Uri("http://localhost:1234")
             });
-
-        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
         
         // Act
-        var result = await client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel);
+        var result = await _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel);
 
         // Assert
         Assert.IsType<List<RetrievedPensionRecord>>(result);
@@ -114,10 +116,8 @@ public class RetrievedPensionsRecordClientTests
                 BaseAddress = new Uri("http://localhost:1234")
             });
 
-        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
-
         // Act
-        var result = await client.GetRetrievedPeisAsync(_requestHeaderModel);
+        var result = await _client.GetRetrievedPeisAsync(_requestHeaderModel);
 
         // Assert
         Assert.IsType<List<string>>(result);
@@ -141,8 +141,7 @@ public class RetrievedPensionsRecordClientTests
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
-        Assert.Equal("An invalid operation occurred during retrieved pensions service communication", exception.Message);
+        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
     }
 
     [Fact]
@@ -163,8 +162,7 @@ public class RetrievedPensionsRecordClientTests
         _mockHttpClientFactory.Setup(factory => factory.CreateClient(It.IsAny<string>())).Returns(httpClient);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
-        Assert.Equal("An invalid operation occurred during retrieved pensions service communication", exception.Message);
+        await Assert.ThrowsAsync<ServiceCommunicationException>(() => _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
     }
 
     [Fact]
@@ -186,12 +184,9 @@ public class RetrievedPensionsRecordClientTests
             {
                 BaseAddress = new Uri("http://localhost:1234")
             });
-        
-        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
-        Assert.Equal("An unexpected error occurred during retrieved pensions service communication", exception.Message);
+        await Assert.ThrowsAsync<ServiceCommunicationException>(() => _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
     }
 
     [Fact]
@@ -216,12 +211,9 @@ public class RetrievedPensionsRecordClientTests
             {
                 BaseAddress = new Uri("http://localhost:1234")
             });
-        
-        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ServiceCommunicationException>(() => client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
-        Assert.Equal("Error communicating with retrieved record endpoint", exception.Message);
+        await Assert.ThrowsAsync<HttpRequestException>(() => _client.GetRetrievedPensionsAsync(new RetrievedPensionsRequest(), _requestHeaderModel));
     }
 
     [Fact]
@@ -252,12 +244,21 @@ public class RetrievedPensionsRecordClientTests
                 BaseAddress = new Uri("http://localhost:1234")
             });
 
-        var client = new RetrievedPensionsRecordClient(_mockHttpClientFactory.Object, _mockLogger.Object);
-
         // Act
-        await client.DeleteAsync("user-session-Id", "correlation-Id");
+        await _client.DeleteAsync(new RequestHeaderModel { UserSessionId = "user-session-Id", CorrelationId = "correlation-Id" });
 
         // Assert
-        // Doesnt throw
+        handlerMock.Protected().Verify(
+        "SendAsync",
+        Times.Once(),
+        ItExpr.Is<HttpRequestMessage>(req =>
+            req.Method == HttpMethod.Delete &&
+            req.Headers.Contains(HeaderConstants.UserSessionId) &&
+            req.Headers.GetValues(HeaderConstants.UserSessionId).Single() == "user-session-Id" &&
+            req.Headers.Contains(HeaderConstants.CorrelationId) &&
+            req.Headers.GetValues(HeaderConstants.CorrelationId).Single() == "correlation-Id"
+        ),
+        ItExpr.IsAny<CancellationToken>()
+    );
     }
 }

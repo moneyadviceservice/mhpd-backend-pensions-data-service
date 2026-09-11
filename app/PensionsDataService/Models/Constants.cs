@@ -6,6 +6,7 @@ namespace PensionsDataService.Models
     {
         public const string HttpGet = "GET";
         public const string HttpDelete = "DELETE";
+        public const string HttpPost = "POST";
         public const string LogSource = "Pension Data Service";
         public const string InvalidCorrelationId = "Invalid correlation Id";
         public const string Unknown = "Unknown";

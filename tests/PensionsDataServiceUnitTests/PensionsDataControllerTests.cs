@@ -814,9 +814,9 @@ public class PensionsDataControllerTests
         if (recordsExist)
         {
             _mockRetrievalRecordFunctionClient
-                .Verify(client => client.DeleteAsync(userSessionId, correlationId), Times.Once);
+                .Verify(client => client.DeleteAsync(It.IsAny<RequestHeaderModel>()), Times.Once);
             _mockRetrievedPensionsRecordClient
-                .Verify(client => client.DeleteAsync(userSessionId, correlationId), Times.Once);
+                .Verify(client => client.DeleteAsync(It.IsAny<RequestHeaderModel>()), Times.Once);
         }
 
         _mockUserSessionDataRepository

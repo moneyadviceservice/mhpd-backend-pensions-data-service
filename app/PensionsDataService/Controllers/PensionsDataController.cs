@@ -173,7 +173,7 @@ public class PensionsDataController(
 
             foreach (var pension in enrichedPensions)
             {
-                if (!(requestedCategories.Count == 1 && requestedCategories.Contains(Category.Contact)) &&
+                if (!requestedCategories.Contains(Category.Contact) &&
                     pension.Category == Category.Contact)
                 {
                     ++response.TotalContactPensions;

@@ -747,6 +747,40 @@ public class PensionsDataControllerTests
         Assert.Equal(1, response.TotalContactPensions);
     }
 
+    [Fact]
+    public async Task GetPensionsByCategoriesAsync_DoesNotCountContactsAsAdditional_WhenContactCategoryIsRequested()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+        var confirmedPei = CreatePei();
+        var contactPei = CreatePei();
+        var peis = new[] { confirmedPei, contactPei };
+        var requestedPension = CreateRetrievalRecord(peis);
+        var retrievedPensions = new List<RetrievedPensionRecord>
+        {
+            CreateValidRetrievedPension(confirmedPei, Category.Confirmed),
+            CreateValidRetrievedPension(contactPei, Category.Contact)
+        };
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(requestedPension);
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetRetrievedPensionsAsync(It.IsAny<RetrievedPensionsRequest>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievedPensions);
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionsByCategoriesAsync(
+            [Category.Confirmed, Category.Contact], requestHeader.UserSessionId, requestHeader.CorrelationId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<PensionData>(okResult.Value);
+        Assert.Equal(2, response.Arrangements.Count);
+        Assert.Equal(0, response.TotalContactPensions);
+    }
+
     private static IEnumerable<string?> GetExternalPensionPolicyIds(PensionData response)
     {
         return response.Arrangements

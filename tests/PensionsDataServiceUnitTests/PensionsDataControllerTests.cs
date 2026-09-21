@@ -668,6 +668,92 @@ public class PensionsDataControllerTests
         }
     }
 
+    [Fact]
+    public async Task GetPensionsByCategoriesAsync_DefaultsToConfirmed_WhenCategoriesAreOmitted()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+        var confirmedPei = CreatePei();
+        var pendingPei = CreatePei();
+        var contactPei = CreatePei();
+        var peis = new[] { confirmedPei, pendingPei, contactPei };
+        var requestedPension = CreateRetrievalRecord(peis);
+        var confirmedPension = CreateValidRetrievedPension(confirmedPei, Category.Confirmed);
+        confirmedPension.RetrievalResult = JsonSerializer.SerializeToElement(new { externalPensionPolicyId = "confirmed" });
+        var retrievedPensions = new List<RetrievedPensionRecord>
+        {
+            confirmedPension,
+            CreateValidRetrievedPension(pendingPei, Category.Pending),
+            CreateValidRetrievedPension(contactPei, Category.Contact)
+        };
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(requestedPension);
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetRetrievedPensionsAsync(It.IsAny<RetrievedPensionsRequest>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievedPensions);
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionsByCategoriesAsync(null, requestHeader.UserSessionId, requestHeader.CorrelationId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<PensionData>(okResult.Value);
+        Assert.Single(response.Arrangements);
+        Assert.Contains("confirmed", GetExternalPensionPolicyIds(response));
+        Assert.Equal(1, response.TotalContactPensions);
+    }
+
+    [Fact]
+    public async Task GetPensionsByCategoriesAsync_ReturnsConfirmedAndPending_WhenBothCategoriesAreRequested()
+    {
+        // Arrange
+        var requestHeader = new RequestHeaderModel { UserSessionId = "123e4567-e89b-12d3-a456-426614174000" };
+        var confirmedPei = CreatePei();
+        var pendingPei = CreatePei();
+        var contactPei = CreatePei();
+        var peis = new[] { confirmedPei, pendingPei, contactPei };
+        var requestedPension = CreateRetrievalRecord(peis);
+        var confirmedPension = CreateValidRetrievedPension(confirmedPei, Category.Confirmed);
+        confirmedPension.RetrievalResult = JsonSerializer.SerializeToElement(new { externalPensionPolicyId = "confirmed" });
+        var pendingPension = CreateValidRetrievedPension(pendingPei, Category.Pending);
+        pendingPension.RetrievalResult = JsonSerializer.SerializeToElement(new { externalPensionPolicyId = "pending" });
+        var retrievedPensions = new List<RetrievedPensionRecord>
+        {
+            confirmedPension,
+            pendingPension,
+            CreateValidRetrievedPension(contactPei, Category.Contact)
+        };
+
+        _mockRetrievalRecordFunctionClient
+            .Setup(client => client.GetAsync(It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(requestedPension);
+        _mockRetrievedPensionsRecordClient
+            .Setup(client => client.GetRetrievedPensionsAsync(It.IsAny<RetrievedPensionsRequest>(), It.IsAny<RequestHeaderModel>()))
+            .ReturnsAsync(retrievedPensions);
+        _mockIdValidator.Setup(v => v.IsValidGuid(It.IsAny<string>())).Returns(true);
+
+        // Act
+        var result = await _controller.GetPensionsByCategoriesAsync(
+            [Category.Confirmed, Category.Pending], requestHeader.UserSessionId, requestHeader.CorrelationId);
+
+        // Assert
+        var okResult = Assert.IsType<OkObjectResult>(result);
+        var response = Assert.IsType<PensionData>(okResult.Value);
+        Assert.Equal(2, response.Arrangements.Count);
+        Assert.Equal(["confirmed", "pending"], GetExternalPensionPolicyIds(response).Order().ToArray());
+        Assert.Equal(1, response.TotalContactPensions);
+    }
+
+    private static IEnumerable<string?> GetExternalPensionPolicyIds(PensionData response)
+    {
+        return response.Arrangements
+            .Cast<JsonElement>()
+            .Select(arrangement => arrangement.GetProperty("externalPensionPolicyId").GetString());
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

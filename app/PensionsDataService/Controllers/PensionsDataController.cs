@@ -127,6 +127,33 @@ public class PensionsDataController(
     public async Task<IActionResult> GetPensionsByCategoryAsync([FromRoute] string category, [FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
         [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
     {
+        return await GetPensionsByCategoriesCoreAsync([category], userSessionId, correlationId);
+    }
+
+    [HttpGet]
+    [Route("pensions")]
+    public async Task<IActionResult> GetPensionsByCategoriesAsync([FromQuery(Name = "categories")] string[]? categories,
+        [FromHeader(Name = HeaderConstants.UserSessionId)] string? userSessionId,
+        [FromHeader(Name = HeaderConstants.CorrelationId)] string? correlationId)
+    {
+        var requestedCategories = categories?
+            .SelectMany(category => category.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(category => !string.IsNullOrWhiteSpace(category))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase) ?? [];
+
+        if (requestedCategories.Count == 0)
+        {
+            requestedCategories.Add(Category.Confirmed);
+        }
+
+        return await GetPensionsByCategoriesCoreAsync(requestedCategories, userSessionId, correlationId);
+    }
+
+    private async Task<IActionResult> GetPensionsByCategoriesCoreAsync(IReadOnlyCollection<string> categories,
+        string? userSessionId, string? correlationId)
+    {
+        var requestedCategories = categories.ToHashSet(StringComparer.OrdinalIgnoreCase);
+
         return await TryGetRequestedPensionAsync("By Category - GET", userSessionId, correlationId, async (retrievalRecord) =>
         {
             var retrievedPensions = await GetRetrievedPensionsAsync(userSessionId!, correlationId!);
@@ -146,19 +173,19 @@ public class PensionsDataController(
 
             foreach (var pension in enrichedPensions)
             {
-                if (category != Category.Contact &&
+                if (!(requestedCategories.Count == 1 && requestedCategories.Contains(Category.Contact)) &&
                     pension.Category == Category.Contact)
                 {
                     ++response.TotalContactPensions;
                 }
 
-                if (pension.Category == category)
+                if (requestedCategories.Contains(pension.Category))
                 {
                     response.Arrangements.Add(pension.RetrievalResult);
                 }
             }
 
-            response.EnrichSummaryData(enrichedPensions, category, serviceUtilities.SummaryDataRuleEngine);
+            response.EnrichSummaryData(enrichedPensions, requestedCategories, serviceUtilities.SummaryDataRuleEngine);
 
             LogResponse(response);
 

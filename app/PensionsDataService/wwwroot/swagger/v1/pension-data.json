@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.4",
   "info": {
-    "title": "PensionsDataService, Version=1.1.0.0, Culture=neutral, PublicKeyToken=null",
+    "title": "PensionsDataService, Version=1.4.0.0, Culture=neutral, PublicKeyToken=null",
     "version": "1.0"
   },
   "servers": [
@@ -78,6 +78,44 @@
             "required": true,
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "userSessionId",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mhpdCorrelationId",
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/pensions": {
+      "get": {
+        "tags": [
+          "PensionsData"
+        ],
+        "parameters": [
+          {
+            "name": "categories",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           {

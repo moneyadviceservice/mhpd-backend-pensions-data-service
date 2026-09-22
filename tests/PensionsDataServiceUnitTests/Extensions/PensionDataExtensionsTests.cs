@@ -96,6 +96,26 @@ public class PensionDataExtensionsTests
     }
 
     [Fact]
+    public void EnrichSummaryData_IncludesEachRequestedCategory()
+    {
+        var statePension = CreatePension(Constants.PensionTypes.SP, "2035-01-01");
+        var confirmedPension = CreatePension("DC", "2030-01-01", "2040-01-01", 500, 6000);
+        var pendingPension = CreatePension("DC", "2030-01-01", "2040-01-01", 1000, 12000, category: Category.Pending);
+        var pensions = new List<RetrievedPensionRecord>
+        {
+            statePension,
+            confirmedPension,
+            pendingPension
+        };
+        var response = new PensionData();
+
+        response.EnrichSummaryData(pensions, [Category.Confirmed, Category.Pending], _engine);
+
+        Assert.Equal(1500, response.SummaryData!.StandardPayment!.MonthlyAmount);
+        Assert.Equal(18000, response.SummaryData.StandardPayment.AnnualAmount);
+    }
+
+    [Fact]
     public void EnrichSummaryData_SetsSummaryData_ExcludesPensionsWithoutIncome()
     {
         var statePension = CreatePension(Constants.PensionTypes.SP, "2035-01-01");

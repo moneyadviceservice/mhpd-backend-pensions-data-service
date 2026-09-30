@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MhpdCommon" Version="4.0.4" />
+        <PackageReference Include="MhpdCommon" Version="4.0.9" />
         <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.4" />
@@ -19,6 +19,6 @@
     </ItemGroup>
 	
 	<Target Name="OpenAPI" AfterTargets="Build" Condition="$(Configuration)=='Debug'">
-		<Exec Command="dotnet swagger tofile --output ./wwwroot/swagger/v1/pension-data.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />
+		<!--<Exec Command="dotnet swagger tofile -/-output ./wwwroot/swagger/v1/pension-data.json $(OutputPath)$(AssemblyName).dll v1" WorkingDirectory="$(ProjectDir)" />-->
 	</Target>
 </Project>

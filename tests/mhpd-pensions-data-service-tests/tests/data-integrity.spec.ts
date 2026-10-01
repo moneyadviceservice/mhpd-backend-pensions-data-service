@@ -119,7 +119,10 @@ test.describe('Data Integrity tests', () => {
 
     const targetId = target.pei.split(':')[1];
 
-    const catRes = await pensionsDataService.getPensionsByCategory(headers, 'CONFIRMED');
+    const catRes = await pensionsDataService.getPensionsByCategories(
+      headers,
+      '?categories=CONFIRMED&categories=PENDING',
+    );
     if (!catRes.data) throw new Error('Category data is null');
 
     const catVersion = catRes.data.arrangements.find((a) => a.externalAssetId === targetId);

@@ -88,6 +88,12 @@ export class PensionsDataService {
     });
   }
 
+  async getPensionsByCategories(headers: GetPensionsHeaders, query: string) {
+    return this.apiClient.get<PensionsCategory>(`/pensions${query}`, {
+      headers: headers as unknown as Record<string, string>,
+    });
+  }
+
   async getPensionsById(headers: GetPensionsHeaders, pensionId: string) {
     return this.apiClient.get<PensionDetail[]>(`/pension-detail/${pensionId}`, {
       headers: headers as unknown as Record<string, string>,

@@ -20,7 +20,7 @@ resource "azurerm_linux_web_app" "this" {
   app_settings                  = local.pension_data_app_settings
   client_affinity_enabled       = true
   https_only                    = true
-  public_network_access_enabled = false
+  public_network_access_enabled = !local.pe_enabled
   virtual_network_subnet_id     = local.enable_vnet_integration ? local.apps_subnet_id : null
   tags                          = {}
 

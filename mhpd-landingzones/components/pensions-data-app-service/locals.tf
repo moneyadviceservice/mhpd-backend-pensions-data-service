@@ -8,7 +8,7 @@ locals {
   resource_group_name = "rg-${var.product}-${var.env}-${var.location}"
 
   pe_enabled     = var.env == "nft" || var.env == "stg" || var.env == "prod"
-  sku_name       = local.pe_enabled ? "P1v2" : "B3"
+  sku_name       = "P0v3"
   zone_redundant = var.env == "prod" && var.location == "uksouth"
 
   app_name          = "pension-data-service-${local.loc}-${var.env}"
@@ -63,7 +63,7 @@ locals {
 
   apim_base_url = local.pe_enabled ? "https://apim-internal-mhpd-${var.env}-uks.azure-api.net" : "https://apim-mhpd-${var.env}-uks.azure-api.net"
 
-  redis_connection_string = "${data.azurerm_key_vault_secret.redis_endpoint.value}:10000,password=${data.azurerm_key_vault_secret.redis_primary_key.value},ssl=True,abortConnect=False"
+  redis_connection_string = "${data.azurerm_key_vault_secret.redis_endpoint.value}:10000,password=${data.azurerm_key_vault_secret.redis_primary_key.value},ssl=True,abortConnect=False,keepAlive=60,connectTimeout=3000,syncTimeout=3000"
 
   pension_data_app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING"                 = azurerm_application_insights.this.connection_string

@@ -690,6 +690,7 @@ public class PensionsDataController(
         var userSessionData = await userSessionDataRepository.GetByUserSessionIdAsync(userSessionId);
         if (userSessionData == null)
         {
+            logger.LogError("Unable to locate UserSessionData {UserSessionId}", userSessionId);
             return null;
         }
 

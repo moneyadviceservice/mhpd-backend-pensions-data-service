@@ -3,7 +3,7 @@ resource "azurerm_api_management_api" "pension_data_service" {
   description           = "This API describes the service that provides pension data for a user session."
   resource_group_name   = data.azurerm_api_management.this.resource_group_name
   api_management_name   = data.azurerm_api_management.this.name
-  revision              = "1"
+  revision              = "13"
   display_name          = "pension-data-service"
   path                  = "pension-data-service"
   service_url           = local.pension_data_backend_url_uks

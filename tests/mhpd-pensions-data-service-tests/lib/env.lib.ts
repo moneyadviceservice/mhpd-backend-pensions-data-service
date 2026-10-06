@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { configDotenv } from 'dotenv';
+import { resolve } from 'node:path';
 
-configDotenv({ quiet: true });
+configDotenv({ path: resolve(__dirname, '../.env'), quiet: true });
 
 const envSchema = z.object({
   BASE_URL: z.string(),
@@ -12,7 +13,7 @@ const envSchema = z.object({
   CODE_VERIFIER: z.string(),
   TICKET: z.string(),
   CI: z.any().optional(),
-  USER_AGENT: z.string(),
+  USER_AGENT: z.string().optional(),
 });
 
 type Env = z.infer<typeof envSchema>;

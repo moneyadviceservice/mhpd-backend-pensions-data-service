@@ -9,7 +9,7 @@ import { PensionsAnalytics } from 'schemas/pensionsAnalytics.schema';
 import { PensionsTimeline } from 'schemas/pensionsTimeline.schema';
 import { env } from '@lib/env.lib';
 
-export type PensionCategory = 'CONFIRMED' | 'PENDING' | 'CONTACT' | 'UNSUPPORTED';
+export type PensionCategory = 'CONFIRMED' | 'PENDING' | 'CONTACT' | 'UNSUPPORTED' | 'ERROR';
 
 interface PensionsDataHeaders {
   userSessionId: string;

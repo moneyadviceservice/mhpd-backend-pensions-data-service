@@ -3,6 +3,8 @@ import { v4 as uuid } from 'uuid';
 import { PensionCategory } from '@services/pensions-data-service';
 import { setupAndRetrievePensionData, poll, formatZodErrors } from 'utilities/helpers';
 import { PensionsCategorySchema } from 'schemas/pensionCategory.schema';
+import { ErrorCategoryResponseSchema } from 'schemas/pensionError.schema';
+import { env } from '@lib/env.lib';
 
 const iss = 'some-iss';
 
@@ -119,6 +121,62 @@ test.describe('GET - /pensions/{category}', () => {
     expect(response.data.totalContactPensions).toBe(0);
 
     console.log(`✅ PENDING and CONTACT verified with ${arrangements.length.toString()} arrangements.`);
+  });
+
+  test('should return Error category and Error ID when present', async ({ pensionsDataService }) => {
+    const csrfResponse = await pensionsDataService.getCSRFToken();
+    const csrfToken = csrfResponse.cookies.get('X-XSRF-TOKEN');
+    if (!csrfToken) {
+      throw new Error('X-XSRF-TOKEN missing from cookies');
+    }
+    const sessionId = uuid();
+    const headers = {
+      userSessionId: sessionId,
+      iss,
+      mhpdCorrelationId: sessionId,
+      'X-XSRF-TOKEN': csrfToken,
+    };
+
+    await pensionsDataService.postPensionsData(headers, {
+      clientId: env.CLIENT_ID,
+      clientSecret: env.CLIENT_SECRET,
+      authorisationCode: 'testScenario20',
+      redirectUrl: env.REDIRECT_URL,
+      codeVerifier: env.CODE_VERIFIER,
+    });
+
+    await pensionsDataService.postPensionsDataRetrieval(headers, {
+      ticket: env.TICKET,
+      clientId: env.CLIENT_ID,
+    });
+
+    const response = await poll(
+      () => pensionsDataService.getPensionsByCategory(headers, 'ERROR'),
+      (res) => res.status === 200 && (res.data?.isPensionRetrievalComplete ?? false),
+      { label: 'ERROR Retrieval' },
+    );
+    console.log(response.data);
+
+    if (!response.data) {
+      throw new Error('Data is null for ERROR category');
+    }
+
+    const validation = ErrorCategoryResponseSchema.safeParse(response.data);
+    expect(validation.success, formatZodErrors(validation, response.data)).toBe(true);
+
+    if (!validation.success) {
+      throw new Error(`Schema validation failed: ${formatZodErrors(validation, response.data)}`);
+    }
+    console.log(validation);
+
+    const arrangements = validation.data.arrangements;
+    validation.data.arrangements.forEach((p) => {
+      expect(p.errorCode).toBeDefined();
+      expect(p.errorId).toBeDefined();
+    });
+    console.log(arrangements);
+
+    console.log(`✅ pensions/ERROR verified with ${arrangements.length.toString()} error arrangements.`);
   });
 
   test('should default to CONFIRMED pensions when no categories are provided', async ({

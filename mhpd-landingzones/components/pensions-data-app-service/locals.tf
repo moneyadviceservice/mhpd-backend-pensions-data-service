@@ -74,6 +74,8 @@ locals {
     "tokenIntegrationServiceUrl"                            = "https://token-integration-service-${local.loc}-${var.env}.azurewebsites.net/"
     "MapsCdaServiceUrl"                                     = "https://cda-service-${local.loc}-${var.env}.azurewebsites.net/"
     "OpenApiServerUrl"                                      = "https://pension-data-service-${local.loc}-${var.env}.azurewebsites.net/"
+    "PeiIntegrationServiceUrl"                              = "https://pei-integration-service-${local.loc}-${var.env}.azurewebsites.net/"
+    "ViewDataIntegrationServiceUrl"                         = "https://func-pension-request-${local.loc}-${var.env}.azurewebsites.net/"
     "PeiRetrievalDuration"                                  = local.pe_enabled ? "60" : "10"
     "ViewDataRetrievalDuration"                             = "5"
     "CosmosBusinessConfiguration__DatabaseId"               = "mhpd-business-layer"

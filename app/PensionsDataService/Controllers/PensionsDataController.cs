@@ -71,8 +71,6 @@ public class PensionsDataController(
                 PredictedRemainingDataRetrievalTime = GetRemainingRetrievalTime(retrievalRecord, _predictedTotalDataRetrievalTime)
             };
 
-            LogResponse(response);
-
             return Ok(response);
         });
     }
@@ -187,8 +185,6 @@ public class PensionsDataController(
 
             response.EnrichSummaryData(enrichedPensions, requestedCategories, serviceUtilities.SummaryDataRuleEngine);
 
-            LogResponse(response);
-
             return Ok(response);
         });
     }
@@ -225,8 +221,6 @@ public class PensionsDataController(
 
             timeSeries.IsPensionRetrievalComplete = isComplete;
 
-            LogResponse(timeSeries);
-
             return Ok(timeSeries);
         });
     }
@@ -253,7 +247,6 @@ public class PensionsDataController(
                 return JsonDocument.Parse(enrichedJson).RootElement;
             });
 
-            LogResponse(pensionDetail);
             return Ok(pensionDetail);
         });
     }
@@ -299,8 +292,6 @@ public class PensionsDataController(
                 return StatusCode(500, "Unable to collect pension retrieval analytics data");
             }
 
-            LogResponse(response);
-
             return Ok(response);
         });
     }
@@ -317,8 +308,6 @@ public class PensionsDataController(
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST");
-        logger.LogRequestReceived(requestHeader);
-        logger.LogRequestReceived(request);
 
         // Get pei from the token integration service
         var result = await _tokenIntegrationServiceClientRpts
@@ -339,10 +328,7 @@ public class PensionsDataController(
             ClientId = request.ClientId!,
         });
 
-        if (logger.IsEnabled(LogLevel.Information))
-        {
-            logger.LogInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
-        }
+        logger.LogMhpdInformation("UserSessionData created for userSessionId {UserSessionId} with PeisId {PeisId}", userSessionId, result.PeisId);
 
         var response = Accepted();
         logger.LogResponseSent(response);
@@ -363,8 +349,6 @@ public class PensionsDataController(
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} POST PensionsDataRetrieval");
-        logger.LogRequestReceived(requestHeader);
-        logger.LogRequestReceived(request);
 
         var userSessionId = requestHeader.UserSessionId!;
 
@@ -424,7 +408,7 @@ public class PensionsDataController(
 
         await Task.WhenAll(retrievalCountTask, retrievedCountTask, userSessionDeleteTask);
 
-        logger.LogWarning("Deleted data for {UserSessionId}", userSessionId);
+        logger.LogMhpdWarning("Deleted data for {UserSessionId}", userSessionId);
 
         return new NoContentResult();
     }
@@ -599,7 +583,6 @@ public class PensionsDataController(
         }
 
         using var scope = logger.BeginCorrelationScope(requestHeader.CorrelationId!, $"{Constants.LogSource} {endpoint}");
-        logger.LogRequestReceived(requestHeader);
 
         // Get the pensions retrieval record associated with the passed userSessionId
         var retrievalRecordResult = await _retrievalRecordServiceClient.GetAsync(requestHeader);
@@ -716,7 +699,7 @@ public class PensionsDataController(
 
     private async Task<PensionsRetrievalRecord> PostPensionDataRetrievalMessage(string peisId, RequestHeaderModel requestHeader, string userSessionId)
     {
-        logger.LogWarning("Posting request to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
+        logger.LogMhpdInformation("Posting request to initiate Pensions Data retrieval for UserSessionId {UserSessionId}", userSessionId);
         var message = CreateRequestPayload(peisId, requestHeader);
         var pensionsRetrievalRecord = await _retrievalRecordServiceClient.PostAsync(requestHeader, message);
         return pensionsRetrievalRecord;

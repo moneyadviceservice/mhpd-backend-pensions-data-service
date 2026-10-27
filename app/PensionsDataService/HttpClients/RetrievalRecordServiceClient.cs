@@ -1,5 +1,6 @@
 using MhpdCommon.Constants.HttpClient;
 using MhpdCommon.ErrorHandling;
+using MhpdCommon.Extensions;
 using MhpdCommon.Models.MessageBodyModels;
 using MhpdCommon.Models.MHPDModels;
 using MhpdCommon.Models.RequestHeaderModel;
@@ -14,7 +15,7 @@ public class RetrievalRecordServiceClient(IHttpClientFactory httpClientFactory, 
 
     public async Task DeleteAsync(RequestHeaderModel requestHeader)
     {
-        logger.LogWarning("Sending request to delete pensions retrieval records for session {Session}", requestHeader.UserSessionId);
+        logger.LogMhpdInformation("Sending request to delete pensions retrieval records for session {Session}", requestHeader.UserSessionId);
 
         await ExecuteAsync(requestHeader, () => new HttpRequestMessage(HttpMethod.Delete, HttpEndpoints.Internal.PensionsRetrievalRecords), 
             HttpClientNames.PensionRetrievalService, Constants.HttpDelete);

@@ -15,7 +15,7 @@ public class RetrievedPensionsRecordClient(IHttpClientFactory httpClientFactory,
 
     public async Task DeleteAsync(RequestHeaderModel requestHeader)
     {
-        logger.LogWarning("Sending request to delete retrieved pension records for session {Session}", requestHeader.UserSessionId);
+        logger.LogMhpdInformation("Sending request to delete retrieved pension records for session {Session}", requestHeader.UserSessionId);
 
         await ExecuteAsync(requestHeader, () => new HttpRequestMessage(HttpMethod.Delete, HttpEndpoints.Internal.RetrievedPensionRecords),
             HttpClientNames.RetrievedPensionsService, Constants.HttpDelete);
